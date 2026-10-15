@@ -228,7 +228,7 @@ final int B = 10;    // 상수 (재할당 시 오류)
 </details>
 
 <details>
-<summary><b 값 표기 방법 (리터럴)</b></summary>
+<summary><b> 값 표기 방법 (리터럴)</b></summary>
 
 <br>
 
