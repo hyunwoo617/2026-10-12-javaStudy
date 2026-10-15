@@ -31,7 +31,7 @@
 </details>
 
 <details>
-<summary><b>📌 프로그램이 동작하는 기본 순서</b></summary>
+<summary><b> 프로그램이 동작하는 기본 순서</b></summary>
 
 <br>
 
@@ -45,7 +45,7 @@
 </details>
 
 <details>
-<summary><b>📌 변수와 데이터형 첫 소개</b></summary>
+<summary><b> 변수와 데이터형 첫 소개</b></summary>
 
 <br>
 
@@ -62,7 +62,7 @@
 ## 2일차 | 2026.10.13 (화) | Chapter 01. 자바 소개
 
 <details>
-<summary><b>📌 자바의 특징</b></summary>
+<summary><b> 자바의 특징</b></summary>
 
 <br>
 
@@ -76,7 +76,7 @@
 </details>
 
 <details>
-<summary><b>📌 자바 실행 과정 (컴파일 / 인터프리터)</b></summary>
+<summary><b> 자바 실행 과정 (컴파일 / 인터프리터)</b></summary>
 
 <br>
 
@@ -92,7 +92,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b>📌 개발 환경 설치</b></summary>
+<summary><b> 개발 환경 설치</b></summary>
 
 <br>
 
@@ -106,7 +106,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b>📌 코딩 기본 규칙과 주석</b></summary>
+<summary><b> 코딩 기본 규칙과 주석</b></summary>
 
 <br>
 
@@ -121,7 +121,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b>📌 좋은 프로그램의 조건과 앞으로의 학습 흐름</b></summary>
+<summary><b> 좋은 프로그램의 조건과 앞으로의 학습 흐름</b></summary>
 
 <br>
 
@@ -143,7 +143,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b>📌 실습</b></summary>
+<summary><b> 실습</b></summary>
 
 <br>
 
@@ -164,7 +164,7 @@ public class 자바동작과정 {
 ## 3일차 | 2026.10.14 (수) | Chapter 02. 변수와 데이터형
 
 <details>
-<summary><b>📌 변수란? (메모리 저장 원리)</b></summary>
+<summary><b> 변수란? (메모리 저장 원리)</b></summary>
 
 <br>
 
@@ -176,7 +176,7 @@ public class 자바동작과정 {
 </details>
 
 <details>
-<summary><b>📌 데이터형 (기본형 8종 + 참조형)</b></summary>
+<summary><b> 데이터형 (기본형 8종 + 참조형)</b></summary>
 
 <br>
 
@@ -203,7 +203,7 @@ public class 자바동작과정 {
 </details>
 
 <details>
-<summary><b>📌 변수 선언과 명명 규칙</b></summary>
+<summary><b> 변수 선언과 명명 규칙</b></summary>
 
 <br>
 
@@ -230,7 +230,7 @@ final int B = 10;    // 상수 (재할당 시 오류)
 </details>
 
 <details>
-<summary><b>📌 값 표기 방법 (리터럴)</b></summary>
+<summary><b 값 표기 방법 (리터럴)</b></summary>
 
 <br>
 
@@ -251,7 +251,7 @@ final int B = 10;    // 상수 (재할당 시 오류)
 </details>
 
 <details>
-<summary><b>📌 형변환 (자동 / 강제)</b></summary>
+<summary><b> 형변환 (자동 / 강제)</b></summary>
 
 <br>
 
@@ -282,7 +282,7 @@ byte < char < int < long < float < double
 </details>
 
 <details>
-<summary><b>📌 변수 초기화와 키보드 입력 (Scanner)</b></summary>
+<summary><b> 변수 초기화와 키보드 입력 (Scanner)</b></summary>
 
 <br>
 
@@ -308,7 +308,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b>📌 출력 방법</b></summary>
+<summary><b> 출력 방법</b></summary>
 
 <br>
 
@@ -323,7 +323,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b>📌 JVM / JDK 구조 정리</b></summary>
+<summary><b> JVM / JDK 구조 정리</b></summary>
 
 <br>
 
@@ -354,7 +354,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b>📌 실습</b></summary>
+<summary><b> 실습</b></summary>
 
 <br>
 
@@ -370,7 +370,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 ## 4일차 | 2026.10.15 (목) | Chapter 03. 연산자
 
 <details>
-<summary><b>📌 연산자 큰 그림과 변수 초기화 정리</b></summary>
+<summary><b> 연산자 큰 그림과 변수 초기화 정리</b></summary>
 
 <br>
 
@@ -410,7 +410,7 @@ b = temp;
 </details>
 
 <details>
-<summary><b>📌 단항 연산자 ① 증감 연산자 (++, --)</b></summary>
+<summary><b> 단항 연산자 ① 증감 연산자 (++, --)</b></summary>
 
 <br>
 
@@ -437,7 +437,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 단항 연산자 ② 부정 연산자(!)와 형변환 연산자</b></summary>
+<summary><b> 단항 연산자 ② 부정 연산자(!)와 형변환 연산자</b></summary>
 
 <br>
 
@@ -466,7 +466,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 이항 연산자 ① 산술 연산자 (+ - * / %)</b></summary>
+<summary><b> 이항 연산자 ① 산술 연산자 (+ - * / %)</b></summary>
 
 <br>
 
@@ -496,7 +496,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 이항 연산자 ② 비교 연산자</b></summary>
+<summary><b> 이항 연산자 ② 비교 연산자</b></summary>
 
 <br>
 
@@ -519,7 +519,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 이항 연산자 ③ 논리 연산자 (&&, ||)</b></summary>
+<summary><b> 이항 연산자 ③ 논리 연산자 (&&, ||)</b></summary>
 
 <br>
 
@@ -544,7 +544,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 이항 연산자 ④ 대입 연산자와 복합 대입 연산자</b></summary>
+<summary><b> 이항 연산자 ④ 대입 연산자와 복합 대입 연산자</b></summary>
 
 <br>
 
@@ -561,7 +561,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 이항 연산자 ⑤ 비트 연산자와 비트 이동 연산자</b></summary>
+<summary><b> 이항 연산자 ⑤ 비트 연산자와 비트 이동 연산자</b></summary>
 
 <br>
 
@@ -584,7 +584,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 삼항 연산자</b></summary>
+<summary><b> 삼항 연산자</b></summary>
 
 <br>
 
@@ -603,7 +603,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 자바 기초 종합 테스트 (20문항) 풀이</b></summary>
+<summary><b> 자바 기초 종합 테스트 (20문항) 풀이</b></summary>
 
 <br>
 
@@ -641,7 +641,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 앞으로 배울 내용 (로드맵)</b></summary>
+<summary><b> 앞으로 배울 내용 (로드맵)</b></summary>
 
 <br>
 
@@ -652,7 +652,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b>📌 실습</b></summary>
+<summary><b> 실습</b></summary>
 
 <br>
 
