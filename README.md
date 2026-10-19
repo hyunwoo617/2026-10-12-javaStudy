@@ -1,7 +1,20 @@
 # Java 학습 기록
 
+## 학습 현황
+
+| 일차 | 날짜 | 주제 | 핵심 키워드 | 폴더 링크 |
+|:-:|---|---|---|---|
+| 1일차 | 2026.10.12 (월) | 과정 소개 | 커리큘럼 로드맵, 프로그램 동작 순서, 변수 | [Java-1일차-과정소개](./Java-1일차-과정소개) |
+| 2일차 | 2026.10.13 (화) | Chapter 01. 자바 소개 | javac, java, JDK 21, main() | [Chapter01-자바소개](./Chapter01-자바소개) |
+| 3일차 | 2026.10.14 (수) | Chapter 02. 변수와 데이터형 | 기본형 8종, 형변환, Scanner, final | [Chapter02-변수-데이터형](./Chapter02-변수-데이터형) |
+| 4일차 | 2026.10.15 (목) | Chapter 03. 연산자 | 증감, 산술, 논리(단락 평가), 삼항, 비트 | [Chapter03-연산자](./Chapter03-연산자) |
+| 5일차 | 2026.10.16 (금) | Chapter 04. 제어문 | if ~ else, else if, switch | [Chapter04-제어문](./Chapter04-제어문) |
+
+---
 
 ## 1일차 | 2026.10.12 (월) | 과정 소개
+
+- 코드: [과정소개.java](./Java-1일차-과정소개/src/과정소개.java)
 
 <details>
 <summary><b>자바 전체 커리큘럼 로드맵</b></summary>
@@ -29,7 +42,7 @@
 </details>
 
 <details>
-<summary><b> 프로그램이 동작하는 기본 순서</b></summary>
+<summary><b>프로그램이 동작하는 기본 순서</b></summary>
 
 <br>
 
@@ -43,7 +56,7 @@
 </details>
 
 <details>
-<summary><b> 변수와 데이터형 첫 소개</b></summary>
+<summary><b>변수와 데이터형 첫 소개</b></summary>
 
 <br>
 
@@ -60,7 +73,7 @@
 ## 2일차 | 2026.10.13 (화) | Chapter 01. 자바 소개
 
 <details>
-<summary><b> 자바의 특징</b></summary>
+<summary><b>자바의 특징</b></summary>
 
 <br>
 
@@ -74,7 +87,7 @@
 </details>
 
 <details>
-<summary><b> 자바 실행 과정 (컴파일 / 인터프리터)</b></summary>
+<summary><b>자바 실행 과정 (컴파일 / 인터프리터)</b></summary>
 
 <br>
 
@@ -90,7 +103,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b> 개발 환경 설치</b></summary>
+<summary><b>개발 환경 설치</b></summary>
 
 <br>
 
@@ -104,7 +117,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b> 코딩 기본 규칙과 주석</b></summary>
+<summary><b>코딩 기본 규칙과 주석</b></summary>
 
 <br>
 
@@ -119,7 +132,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b> 좋은 프로그램의 조건과 앞으로의 학습 흐름</b></summary>
+<summary><b>좋은 프로그램의 조건과 앞으로의 학습 흐름</b></summary>
 
 <br>
 
@@ -141,7 +154,7 @@ A.java  ──── javac ────▶  A.class  ──── java ───
 </details>
 
 <details>
-<summary><b> 실습</b></summary>
+<summary><b>실습</b></summary>
 
 <br>
 
@@ -154,6 +167,7 @@ public class 자바동작과정 {
 ```
 
 - 첫 프로그램 작성, 컴파일, 실행 확인
+- 코드: [자바동작과정.java](./Chapter01-자바소개/src/자바동작과정.java)
 
 </details>
 
@@ -162,7 +176,7 @@ public class 자바동작과정 {
 ## 3일차 | 2026.10.14 (수) | Chapter 02. 변수와 데이터형
 
 <details>
-<summary><b> 변수란? (메모리 저장 원리)</b></summary>
+<summary><b>변수란? (메모리 저장 원리)</b></summary>
 
 <br>
 
@@ -174,7 +188,7 @@ public class 자바동작과정 {
 </details>
 
 <details>
-<summary><b> 데이터형 (기본형 8종 + 참조형)</b></summary>
+<summary><b>데이터형 (기본형 8종 + 참조형)</b></summary>
 
 <br>
 
@@ -201,7 +215,7 @@ public class 자바동작과정 {
 </details>
 
 <details>
-<summary><b> 변수 선언과 명명 규칙</b></summary>
+<summary><b>변수 선언과 명명 규칙</b></summary>
 
 <br>
 
@@ -228,7 +242,7 @@ final int B = 10;    // 상수 (재할당 시 오류)
 </details>
 
 <details>
-<summary><b> 값 표기 방법 (리터럴)</b></summary>
+<summary><b>값 표기 방법 (리터럴)</b></summary>
 
 <br>
 
@@ -249,7 +263,7 @@ final int B = 10;    // 상수 (재할당 시 오류)
 </details>
 
 <details>
-<summary><b> 형변환 (자동 / 강제)</b></summary>
+<summary><b>형변환 (자동 / 강제)</b></summary>
 
 <br>
 
@@ -280,7 +294,7 @@ byte < char < int < long < float < double
 </details>
 
 <details>
-<summary><b> 변수 초기화와 키보드 입력 (Scanner)</b></summary>
+<summary><b>변수 초기화와 키보드 입력 (Scanner)</b></summary>
 
 <br>
 
@@ -306,7 +320,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b> 출력 방법</b></summary>
+<summary><b>출력 방법</b></summary>
 
 <br>
 
@@ -321,7 +335,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b> JVM / JDK 구조 정리</b></summary>
+<summary><b>JVM / JDK 구조 정리</b></summary>
 
 <br>
 
@@ -352,7 +366,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 </details>
 
 <details>
-<summary><b> 실습</b></summary>
+<summary><b>실습</b></summary>
 
 <br>
 
@@ -360,6 +374,7 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 - 자동 형변환과 강제 형변환 확인, 문자 ↔ 유니코드 변환 출력
 - `Scanner`로 정수 입력받아 출력
 - `print`와 `println`, 탭 문자 출력 차이 확인
+- 코드: [Chapter02-변수-데이터형/src](./Chapter02-변수-데이터형/src)
 
 </details>
 
@@ -367,8 +382,12 @@ int a = scan.nextInt();    // 입력값을 a라는 메모리 공간에 저장
 
 ## 4일차 | 2026.10.15 (목) | Chapter 03. 연산자
 
+- 범위: 단항(증감, 부정, 형변환), 이항(산술, 비교, 논리, 대입, 비트), 삼항
+- 결과를 직접 계산해 적어 둔 항목: 증감 연산자 합산, 문자열 `+` 결합, 부동소수점 오차(77)
+- 코드: [Chapter03-연산자/src](./Chapter03-연산자/src)
+
 <details>
-<summary><b> 연산자 큰 그림과 변수 초기화 정리</b></summary>
+<summary><b>연산자 큰 그림과 변수 초기화 정리</b></summary>
 
 <br>
 
@@ -408,7 +427,7 @@ b = temp;
 </details>
 
 <details>
-<summary><b> 단항 연산자 ① 증감 연산자 (++, --)</b></summary>
+<summary><b>단항 연산자 - 증감 연산자 (++, --)</b></summary>
 
 <br>
 
@@ -435,7 +454,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 단항 연산자 ② 부정 연산자(!)와 형변환 연산자</b></summary>
+<summary><b>단항 연산자 - 부정 연산자(!)와 형변환 연산자</b></summary>
 
 <br>
 
@@ -464,7 +483,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 이항 연산자 ① 산술 연산자 (+ - * / %)</b></summary>
+<summary><b>이항 연산자 - 산술 연산자 (+ - * / %)</b></summary>
 
 <br>
 
@@ -477,7 +496,8 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 ```
 - **`/`**
   - 정수 / 정수 = 정수 (소수점 제거) → `5/2 = 2`, `5/2.0 = 2.5`
-  - 0으로 나누면 오류 발생 → 삼항 연산자로 방어: `b == 0 ? "0으로 나눌 수 없다" : a / b`
+  - 정수를 0으로 나누면 오류 발생 → 삼항 연산자로 방어: `b == 0 ? "0으로 나눌 수 없다" : a / b`
+  - 실수는 오류 없이 `5 / 0.0` → Infinity, `5 % 0.0` → NaN (5일차 [기타.java](./Chapter04-제어문/src/기타.java))
 - **`%`** (나머지)
   - 부호는 **앞(왼쪽) 피연산자의 부호**를 따른다
     - `5 % 2 = 1`, `5 % -2 = 1`, `-5 % 2 = -1`, `-5 % -2 = -1`
@@ -494,7 +514,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 이항 연산자 ② 비교 연산자</b></summary>
+<summary><b>이항 연산자 - 비교 연산자</b></summary>
 
 <br>
 
@@ -517,7 +537,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 이항 연산자 ③ 논리 연산자 (&&, ||)</b></summary>
+<summary><b>이항 연산자 - 논리 연산자 (&&, ||)</b></summary>
 
 <br>
 
@@ -530,19 +550,19 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 
 - `&&` : **범위 안**에 있는 경우 (`score >= 90 && score <= 100`), id && pwd
 - `||` : **범위 밖**에 있는 경우 (`score < 0 || score > 100`)
-- **단락 평가(Short-circuit)**: `&&`는 앞이 false, `||`는 앞이 true면 뒤를 계산하지 않는다 (효율적인 연산)
+- **단락 평가(Short-circuit)**: `&&`는 앞이 false, `||`는 앞이 true면 뒤를 계산하지 않는다 (뒤 조건의 코드는 실행되지 않음)
 - 실습: 입력한 문자가 알파벳인지 판별
 ```java
   c >= 'A' && c <= 'Z'                          // 대문자
   c >= 'a' && c <= 'z'                          // 소문자
   !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))   // 알파벳이 아님
 ```
-- 응용: **Jsoup**으로 지니 차트를 크롤링해 입력한 검색어가 포함된 곡명만 출력 (`contains` 활용, 외부 라이브러리 맛보기)
+- 응용: **Jsoup**으로 지니 차트를 크롤링해 입력한 검색어가 포함된 곡명만 출력 (`contains` 활용, 외부 라이브러리 맛보기). 코드: [이항연산자_논리연산자.java](./Chapter03-연산자/src/이항연산자_논리연산자.java)
 
 </details>
 
 <details>
-<summary><b> 이항 연산자 ④ 대입 연산자와 복합 대입 연산자</b></summary>
+<summary><b>이항 연산자 - 대입 연산자와 복합 대입 연산자</b></summary>
 
 <br>
 
@@ -559,7 +579,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 이항 연산자 ⑤ 비트 연산자와 비트 이동 연산자</b></summary>
+<summary><b>이항 연산자 - 비트 연산자와 비트 이동 연산자</b></summary>
 
 <br>
 
@@ -582,7 +602,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 삼항 연산자</b></summary>
+<summary><b>삼항 연산자</b></summary>
 
 <br>
 
@@ -601,7 +621,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 자바 기초 종합 테스트 (20문항) 풀이</b></summary>
+<summary><b>자바 기초 종합 테스트 (20문항) 풀이</b></summary>
 
 <br>
 
@@ -639,7 +659,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 앞으로 배울 내용 (로드맵)</b></summary>
+<summary><b>앞으로 배울 내용 (로드맵)</b></summary>
 
 <br>
 
@@ -650,7 +670,7 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 </details>
 
 <details>
-<summary><b> 실습</b></summary>
+<summary><b>실습</b></summary>
 
 <br>
 
@@ -661,3 +681,158 @@ int s = a++ + ++a + a++ + ++a; // 10 + 12 + 12 + 14 = 48
 - 배열 난수에서 특정 값의 **개수 세기** (증감 연산자)
 - 문자열 `equals()`로 **로그인 ID 비교**
 - 연산자 결과 직접 출력으로 **나머지 부호 규칙 확인**
+- 코드: [Chapter03-연산자/src](./Chapter03-연산자/src)
+
+</details>
+
+---
+
+## 5일차 | 2026.10.16 (금) | Chapter 04. 제어문 (조건문, 선택문)
+
+- 범위: if, if ~ else, else if, switch
+- 코드: [Chapter04-제어문/src](./Chapter04-제어문/src) (소스 18개)
+
+<details>
+<summary><b>제어문 분류와 기본 규칙</b></summary>
+
+<br>
+
+| 목적 | 문장 |
+|---|---|
+| 조건에 따라 실행 | if, if ~ else, else if, switch |
+| 같은 작업 반복 | for, while, do ~ while |
+| 반복 중단 / 건너뛰기 | break, continue |
+
+- 조건식에는 true / false가 나오는 비교, 논리, 부정 연산자만 쓴다.
+- 중괄호가 없으면 바로 아래 한 문장만 제어한다. 문장이 둘 이상이면 중괄호를 쓴다.
+- `if (조건);` 처럼 세미콜론을 붙이면 뒤의 블록은 조건과 상관없이 항상 실행된다. (제어문요약.java 주석)
+- 반복문은 메뉴 반복(`while`)과 별 찍기(`for`) 코드에 나왔지만 아직 따로 정리하지 않았다.
+
+</details>
+
+<details>
+<summary><b>if와 if ~ else</b></summary>
+
+<br>
+
+짝수 / 홀수 판별을 if 두 개로 쓴 코드(제어문종류.java)와 if ~ else로 쓴 코드(선택조건문_1.java)가 있다.
+
+```java
+// 제어문종류.java
+if (num % 2 == 0) { ... }   // 짝수
+if (num % 2 != 0) { ... }   // 홀수
+
+// 선택조건문_1.java
+if (a % 2 == 0) { ... }     // 짝수
+else { ... }                // 홀수
+```
+
+- if 두 개는 서로 독립이라, 첫 번째가 true여도 두 번째 조건을 다시 검사한다.
+- else는 앞 조건이 false일 때만 들어가서 검사가 한 번이다.
+- else만 단독으로는 쓸 수 없다.
+- true / false로 나누는 경우가 웹에서 많다. 로그인 성공이면 메인으로, 실패면 재로그인.
+
+</details>
+
+<details>
+<summary><b>else if (다중 조건문)</b></summary>
+
+<br>
+
+```java
+// 다중조건문_1.java (일부)
+char op = scan.next().charAt(0);
+
+if (op == '+')
+{
+    System.out.println(num1 + "+" + num2 + "=" + (num1 + num2));
+}
+else if (op == '-')
+{
+    System.out.println(num1 + "-" + num2 + "=" + (num1 - num2));
+}
+else
+{
+    System.err.println("연산자가 아닙니다!");
+}
+```
+
+- 위에서부터 차례로 검사하고, 처음 true인 블록 하나만 실행한 뒤 나머지는 건너뛴다.
+- 독립 if는 true인 블록이 여러 개 실행될 수 있지만 else if는 하나뿐이다.
+- 메뉴 처리에 쓴다. 다중조건문_2.java는 `while (true)` 안에서 메뉴 번호 1~7을 else if로 나누고, 7이면 `System.exit(0)`으로 끝낸다. 없는 번호는 마지막 else에서 다시 입력받는다.
+
+</details>
+
+<details>
+<summary><b>switch (선택문)</b></summary>
+
+<br>
+
+```java
+// 선택문_1.java
+switch (month)
+{
+case 12, 1, 2 -> System.out.println(month + "는(은) 겨울입니다");
+case 3, 4, 5  -> System.out.println(month + "는(은) 봄입니다");
+case 6, 7, 8  -> System.out.println(month + "는(은) 여름입니다");
+case 9, 10, 11 -> System.out.println(month + "는(은) 가을입니다");
+default -> System.out.println("없는 달입니다");
+}
+```
+
+| 구분 | 기존 문법 | 화살표 문법 (JDK 14 이상) |
+|---|---|---|
+| break | 직접 써야 함 | 필요 없음 |
+| 여러 값 묶기 | `case 3: case 4: case 5:` | `case 3, 4, 5 ->` |
+
+- 값 하나로 고를 때 쓴다. 범위 비교는 if가 맞다.
+- 정수, 문자, 문자열을 받을 수 있다. 선택문_2.java는 `switch (scan.next())`로 연산자 문자열을 받는다.
+- 나눗셈 case 안에서 switch를 한 번 더 써서 `num2`가 0인 경우를 따로 처리했다.
+- case 값은 중복되면 안 되고, 없는 값은 default로 처리한다.
+
+| 구분 | 독립 if | if ~ else if | switch |
+|---|---|---|---|
+| 비교 방식 | 조건마다 따로 | 위에서부터 순서대로 | 값 하나와 case 비교 |
+| 실행되는 블록 | 여러 개 가능 | 1개 | 1개 (화살표 문법 기준) |
+| 어울리는 경우 | 서로 관계없는 검사 | 범위 | 메뉴, 계절 |
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 파일 | 한 일 |
+|---|---|
+| [단일조건문.java](./Chapter04-제어문/src/단일조건문.java) | 가위바위보. 경우 9개를 나열한 조건(주석 처리)을 `com - user` 값 하나로 if 3개로 줄임 |
+| [단일조건문_1.java](./Chapter04-제어문/src/단일조건문_1.java) | 난수 3개(1~100)의 최대값, 최소값. `max = a`로 시작해 if 2개로 비교 |
+| [단일조건문_3.java](./Chapter04-제어문/src/단일조건문_3.java) | 사칙연산. 나눗셈은 `num2 == 0`이면 메시지만 출력 |
+| [단일조건문_4.java](./Chapter04-제어문/src/단일조건문_4.java) | 입력 문자를 대문자 / 소문자 / 숫자 / 기타로 구분 |
+| [선택조건문_2.java](./Chapter04-제어문/src/선택조건문_2.java) | 3과목 총점, 평균, 평균 60 이상이면 합격 |
+| [선택조건문_3.java](./Chapter04-제어문/src/선택조건문_3.java) | 난수로 알파벳을 만들고 대문자 / 소문자 구분 |
+| [다중조건문_2.java](./Chapter04-제어문/src/다중조건문_2.java) | 사원 관리 메뉴 7개, 종료 선택 전까지 반복 |
+| [선택문_1.java](./Chapter04-제어문/src/선택문_1.java) | 월을 입력하지 않고 난수로 뽑아 계절 판별 (else if를 switch로 교체) |
+| [선택문_2.java](./Chapter04-제어문/src/선택문_2.java) | 문자열 switch로 계산기 |
+| [기타.java](./Chapter04-제어문/src/기타.java) | `5 / 0.0`과 `5 % 0.0` 결과 확인 (Infinity, NaN) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- 기존 switch에서 break를 빼면 어떻게 동작하는가? (선택문_1.java의 주석 처리한 코드로 확인)
+- 정수를 0으로 나누면 오류인데, `5 / 0.0`은 왜 오류 없이 Infinity가 나오는가?
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+조건이 범위면 else if, 값이 딱 떨어지면 switch를 쓴다. 독립 if는 서로 영향이 없어서, 하나만 실행되게 하려면 else로 묶어야 한다.
+
+</details>
