@@ -11,6 +11,7 @@
 | 5일차 | 2026.10.16 (금) | Chapter 04. 제어문 | if ~ else, else if, switch | [Chapter04-제어문](./Chapter04-제어문) |
 | 6일차 | 2026.10.19 (월) | Chapter 04. 제어문 (반복문) | for, while, 누적변수, 무한루프, break, continue | [Chapter04-제어문(반복문)(6일차)](./Chapter04-제어문%28반복문%29%286일차%29) |
 | 7일차 | 2026.10.20 (화) | 반복 제어문, Chapter 05. 참조타입 (문자열) | break, continue, 입력값 검사, String 메모리, replace, substring | [chatper04-제어문(반복제어)(7일차)](./chatper04-제어문%28반복제어%29%287일차%29), [chapter05-참조타입(문자열)(7일차)](./chapter05-참조타입%28문자열%29%287일차%29) |
+| 8일차 | 2026.10.21 (수) | Chapter 05. 참조타입 (문자열 메소드 정리, 배열) | 메소드 읽는 법, trim, valueOf, join, format, 배열, for-each, 최대 / 최소 | [문자열_5 ~ 정리](./chapter05-참조타입%28문자열%29%287일차%29/src), [chapter05-참조타입(배열)(8일차)](./chapter05-참조타입%28배열%29%288일차%29) |
 
 ---
 
@@ -1059,7 +1060,6 @@ while (rs.next())                 // 다음 행이 있으면 true
 
 <br>
 
-- 로또 번호를 중복 없이 뽑으려면 어떻게 해야 하는가? (배열을 배운 뒤에 다시 풀어 볼 것)
 - `while (true)`와 `for (;;)`는 같은 무한루프인데, 어느 쪽이 더 많이 쓰이는가?
 
 </details>
@@ -1323,5 +1323,320 @@ path.substring(path.lastIndexOf("\\") + 1);   // MainClass.java  (파일명)
 <br>
 
 while류에서 continue를 쓰면 증감식이 건너뛰어질 수 있어서 증감 위치를 먼저 봐야 한다. 문자열은 한 번 만들면 바뀌지 않아서 replace, substring 같은 메소드는 새 문자열을 돌려주고, 그 값을 변수에 다시 받아야 쓸 수 있다. 문자열 비교는 주소가 아니라 값을 봐야 해서 equals()를 쓴다.
+
+</details>
+
+---
+
+## 8일차 | 2026.10.21 (수) | Chapter 05. 참조타입 (문자열 메소드 정리, 배열)
+
+- 범위: 메소드 읽는 법, 문자열 메소드(trim, valueOf, join, format) 및 전체 정리, 배열(선언, 초기화, 출력, 최대 / 최소, 중복 없는 난수)
+- 코드: [문자열_5 ~ 문자열_정리](./chapter05-참조타입%28문자열%29%287일차%29/src) (`chapter05-참조타입(문자열)(7일차)` 폴더 안), [chapter05-참조타입(배열)(8일차)/src](./chapter05-참조타입%28배열%29%288일차%29/src) (소스 4개)
+
+<details>
+<summary><b>메소드 읽는 법과 오버로딩</b></summary>
+
+<br>
+
+```
+리턴형 메소드명(매개변수...)
+{
+    기능 수행
+    return 값;          // 리턴형과 같은 데이터형
+}
+
+int add(int a, int b)   // 원형
+{
+    return a + b;
+}
+int c = add(10, 20);    // 호출할 때는 리턴형을 쓰지 않는다
+```
+
+- 메소드는 특정 기능을 수행하는 명령문의 집합이다. 라이브러리 클래스에 들어 있는 메소드는 원형만 보고 쓴다.
+- 처음 보는 메소드는 순서대로 확인한다: 어느 클래스인지, 어떤 기능인지, 매개변수가 무엇인지, 리턴형이 무엇인지, 어떻게 호출하는지.
+- 결과값이 없으면 리턴형이 `void`다.
+- 같은 이름의 메소드가 매개변수만 다르게 여러 개 있는 것이 오버로딩이다. `String.valueOf(int)`, `valueOf(long)`, `valueOf(boolean)`, `valueOf(char[])`가 그 예다.
+- `String.valueOf(a)`, `String.join(...)`처럼 객체를 만들지 않고 클래스 이름으로 부르는 메소드는 static(공유 메소드)이다.
+
+</details>
+
+<details>
+<summary><b>문자열 메소드 - trim, valueOf, join, format</b></summary>
+
+<br>
+
+| 메소드 | 설명 | 원형 / 결과 |
+|---|---|---|
+| `trim()` | 좌우 공백 제거 | `String trim()` |
+| `valueOf()` | 모든 데이터형을 문자열로 변환 | `10` → `"10"`, `10.5` → `"10.5"`, `true` → `"true"` |
+| `split()` | 구분 문자로 잘라서 배열에 저장 | 설명만 들음 (코드 없음) |
+| `join()` | 여러 문자열을 구분자로 묶어서 하나로 | 가변형 매개변수 |
+| `format()` | 형식에 맞춰 문자열 생성 | `printf()`와 같은 서식 |
+
+```java
+// 문자열_5.java
+String msg = " Hello Java ";
+msg.length();                        // 12
+msg = msg.trim();
+msg.length();                        // 10
+
+int a = 100, b = 200;
+System.out.println(a + b);                    // 300
+System.out.println(String.valueOf(a) + b);    // 100200  ("100" + 200)
+
+String.join("/", "2026", "10", "21");         // 2026/10/21
+String.format("%d %d %d %d %.2f", 90, 90, 80, 260, 260 / 3.0);   // 90 90 80 260 86.67
+```
+
+- `trim()`은 공백 문자 하나하나가 글자 수에 포함되어서 길이가 12에서 10으로 줄어드는 것으로 확인했다. 검색어, ID, 비밀번호처럼 사용자가 입력하는 값에 쓴다.
+- `valueOf(a) + b`는 앞이 문자열이 되어서 4일차에 정리한 문자열 결합으로 처리된다.
+- `format()`은 화면에 출력하지 않고 문자열로 돌려주는 점이 `printf()`와 다르다.
+- 문자열_6.java는 `JFrame`에 `JTextField`를 붙이고 `tf.setText(String.valueOf(100))`로 숫자를 넣는다. `setText()`는 문자열만 받아서 int를 `valueOf()`로 바꿔야 한다. `extends JFrame`은 상속이라 아직 배우지 않았고, 따라 쳐서 동작만 확인했다.
+
+</details>
+
+<details>
+<summary><b>문자열 메소드 전체 정리</b></summary>
+
+<br>
+
+| 분류 | 메소드 | 설명 |
+|---|---|---|
+| 비교 | `equals()` | 문자열 자체 비교, 대소문자 구분 |
+| 길이 | `length()` | 문자 개수 |
+| 찾기 | `indexOf()`, `lastIndexOf()` | 앞 / 뒤에서부터 위치 찾기, 없으면 -1 |
+| 공백 | `trim()`, `strip()` | 좌우 공백 제거. `strip()`은 JDK 11부터, 유니코드 공백까지 더 넓게 지원 |
+| 대소문자 | `toUpperCase()`, `toLowerCase()` | 대문자 / 소문자 변환 |
+| 변경 | `replace()` | 문자 / 문자열 변경 |
+| 결합 | `concat()` | 문자열 결합, `+`를 쓰기 때문에 거의 쓰지 않음 |
+| 검사 | `startsWith()`, `endsWith()`, `contains()` | 앞 / 뒤가 같은지, 포함하는지 |
+| 변환 | `valueOf()`, `format()` | 다른 데이터형을 문자열로 / 형식에 맞춰 변환 |
+| 자르기 | `split()`, `substring()` | 구분 문자로 잘라 배열에 저장 / 인덱스로 자르기 |
+
+```java
+// 문자열_정리.java
+String s = "Hello bJava";
+int aa = s.indexOf("b");      // 6
+if (aa == -1)
+{
+    System.out.println("찾는 문자열이 없습니다");
+}
+```
+- `indexOf()`는 찾는 문자가 없을 때 -1이라서 이 값으로 존재 여부를 판단한다. 위 코드는 `b`가 인덱스 6에 있어서 아무것도 출력되지 않는다.
+- 7일차에 배운 검색, 변환, 자르기 메소드가 이 표에 모두 들어 있다. 다음에 필요할 때 이 표에서 먼저 찾는다.
+
+</details>
+
+<details>
+<summary><b>배열의 개념과 특징</b></summary>
+
+<br>
+
+- 같은 유형의 데이터를 여러 개 모아서 관리하는 참조형이다. 다른 유형을 모을 때는 클래스를 쓴다.
+- 크기가 고정이다. 크기를 바꿔야 하면 더 큰 배열을 만들어서 복사해야 하고, 가변 크기가 필요하면 컬렉션(ArrayList 등)을 쓴다. 컬렉션은 다음 과정에서 배운다.
+
+| 구분 | 내용 |
+|---|---|
+| 특징 | 연속된 메모리, 인덱스로 접근, 고정 크기, 같은 데이터형만 저장 |
+| 장점 | 인덱스로 접근해서 빠르다 / 구조가 단순하다 / 크기가 고정이라 메모리 사용량을 예측하기 쉽다 |
+| 단점 | 추가, 삭제가 어렵다 / 크게 만들면 안 쓰는 메모리가 낭비된다 / 같은 데이터형만 저장해서 유연하지 않다 |
+
+**배열이 필요한 이유** ([배열_1.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_1.java))
+- 학생 3명의 국어, 영어, 수학, 총점, 평균, 학점을 변수로 만들면 `kor1, kor2, kor3`, `eng1, ...`처럼 18개를 일일이 선언하고, 입력과 계산도 학생마다 같은 코드를 세 번 써야 한다. 관련된 데이터끼리 배열로 묶으면 for 하나로 처리된다.
+
+</details>
+
+<details>
+<summary><b>배열 선언, 초기화, 출력, 메모리 구조</b></summary>
+
+<br>
+
+**선언**
+```java
+int[] arr;        // 권장
+int arr[];        // C언어 방식
+```
+
+**초기화 세 가지**
+```java
+int[] arr = {10, 20, 30, 40, 50};          // 선언과 동시에 값 지정 (파일, DB에서 읽은 값)
+int[] arr = new int[5];                    // 개수만 지정, 기본값으로 채워짐 (가장 많이 사용)
+int[] arr; arr = new int[]{10, 20, 30};    // 선언 후 나중에 초기화
+```
+
+**new로 만들었을 때 기본값**
+| 데이터형 | 기본값 |
+|---|---|
+| int | 0 |
+| long | 0L |
+| double | 0.0 |
+| char | `'\0'` |
+| boolean | false |
+| String (참조형) | null |
+
+- `String` 배열의 기본값 null은 주소가 없다는 뜻이다. 이 상태에서 메소드를 호출하면 `NullPointerException`이 난다.
+
+**출력 방법 두 가지**
+```java
+for (int i = 0; i < arr.length; i++) { System.out.println(arr[i]); }   // 일반 for: 인덱스로 접근
+for (int a : arr) { System.out.println(a); }                          // for-each: 값을 꺼냄
+System.out.println(Arrays.toString(arr));                             // [10, 20, 30, ...]
+```
+- 일반 for는 인덱스를 이용해서 값을 읽고 쓴다. for-each는 값만 꺼내므로 출력용이다. 배열 값을 바꿀 때는 일반 for를 쓴다.
+- for-each는 배열과 컬렉션에서만 쓸 수 있고, 웹에서 목록을 출력할 때 주로 쓴다.
+- `Arrays.toString()`은 배열 내용을 한 번에 출력한다. 배열_2.java 주석에 적어 둔 `[I@31befd9f` 같은 값은 참조형 변수를 그대로 출력했을 때 나오는 형태다.
+
+**메모리 구조**
+```
+int[] arr = {10, 20, 30};
+
+Stack                 Heap (연속 배치, 간격 일정)
+arr [ 0x100 ]  ───▶   [10]  [20]  [30]
+                      arr[0] arr[1] arr[2]     arr.length = 3
+```
+- 변수 `arr`는 Stack에 있고, 실제 값은 Heap에 순서대로 연속해서 만들어진다.
+- int는 4byte라서 칸마다 주소가 4씩 늘어난다. 그래서 `arr[i]`의 위치는 시작 주소 + (i × 4)로 바로 계산되고, 이것이 인덱스 접근이 빠른 이유다.
+- `arr[0] = 100`은 메모리에 쓰기(저장), `arr[0]`을 읽는 것은 메모리 읽기다.
+
+</details>
+
+<details>
+<summary><b>배열 활용 - 성적 처리, 최대 / 최소와 위치</b></summary>
+
+<br>
+
+**학생 3명 성적 처리** ([배열_1.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_1.java))
+```java
+int[] kor = new int[3];       // int kor1, kor2, kor3 를 대체
+int[] eng = new int[3];
+int[] math = new int[3];
+int[] total = new int[3];
+double[] avg = new double[3];
+char[] score = new char[3];
+
+for (int i = 0; i < 3; i++)
+{
+    System.out.print((i + 1) + "번째 국어입력:");
+    kor[i] = scan.nextInt();
+    // eng[i], math[i]도 같은 방식으로 입력
+    total[i] = kor[i] + eng[i] + math[i];
+    avg[i] = total[i] / 3.0;
+    switch (total[i] / 30)
+    {
+    case 10, 9 -> score[i] = 'A';
+    case 8 -> score[i] = 'B';
+    case 7 -> score[i] = 'C';
+    case 6 -> score[i] = 'D';
+    default -> score[i] = 'F';
+    }
+}
+```
+- 학생이 몇 명이든 인덱스 `i`와 반복 횟수만 바꾸면 된다. 변수를 번호로 구분하던 코드(파일에 주석으로 남겨 둠)가 배열 6개와 for 하나로 줄었다.
+- 학점은 평균 / 10이 기준인데 평균이 총점 / 3이라서 `총점 / 30`으로 바로 나눈다.
+- 7일차 `반복제어문_2`와 달리 `default -> 'F'`가 있어서 60점 미만도 학점이 나온다.
+- 결과는 `printf("국어:%-5d영어:%-5d ...평균:%-7.2f학점:%5c\n", ...)`로 출력한다. `%-5d`의 `-`는 왼쪽 정렬이고, 숫자는 칸 폭이다.
+
+**최대 / 최소와 위치** ([배열_2.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_2.java))
+```java
+int[] arr = new int[10];
+for (int i = 0; i < arr.length; i++)
+    arr[i] = (int)(Math.random() * 100) + 1;     // 1 ~ 100
+
+int max = arr[0];                                // 첫 값으로 시작
+int min = arr[0];
+for (int i : arr)
+{
+    if (i > max) max = i;
+    if (i < min) min = i;
+}
+
+int index = 0;
+for (int i = 0; i < arr.length; i++)
+{
+    if (max == arr[i]) { index = i; break; }     // 처음 찾으면 종료
+}
+System.out.println("max의 위치:" + (index + 1));
+```
+- 시작값을 `arr[0]`으로 두면 배열의 값 범위와 상관없이 비교할 수 있다. 6일차 `단일조건문_1`에서 `max = a`로 시작한 것과 같은 방식이다.
+- 인덱스는 0부터라서 몇 번째인지 출력할 때는 `index + 1`로 출력한다.
+- 위치 찾기에 7일차에 배운 `break`를 썼다. 같은 값이 여러 개 있어도 첫 번째 위치만 나온다.
+
+</details>
+
+<details>
+<summary><b>배열 활용 - 중복 없는 로또, 랜덤 알파벳</b></summary>
+
+<br>
+
+**중복 없는 로또** ([배열_3.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_3.java))
+```java
+int[] lotto = new int[6];
+for (int i = 0; i < lotto.length; i++)
+{
+    lotto[i] = (int)(Math.random() * 45) + 1;
+    for (int j = 0; j < i; j++)          // 앞에서 뽑은 번호와 비교
+    {
+        if (lotto[i] == lotto[j])
+        {
+            i--;                         // 같은 칸을 다시 뽑는다
+            break;
+        }
+    }
+}
+Arrays.sort(lotto);                      // 오름차순 정렬
+for (int i : lotto) System.out.print(i + " ");
+```
+- 6일차 `반복문_6`은 중복이 나올 수 있었는데, 배열에 저장하고 앞 칸들과 비교해서 중복을 없앴다.
+- 같은 값이 있으면 `i--`로 인덱스를 되돌려서 이번 칸에 다시 뽑는다. 이때 `break`는 안쪽 for(j)만 끝낸다. 7일차에 정리한 "자기 반복문만 제어한다"가 여기서 쓰였다.
+- `Arrays.sort()`로 정렬한 뒤 출력한다.
+
+**랜덤 알파벳 10개** ([배열_4.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_4.java))
+```java
+char[] alpha = new char[10];
+for (int i = 0; i < alpha.length; i++)
+{
+    alpha[i] = (char)((Math.random() * 26) + 65);    // 65 = 'A'
+}
+for (char c : alpha) System.out.print(c + " ");
+```
+- 알파벳이 26개라서 0 ~ 25에 65를 더하면 `'A'` ~ `'Z'`의 유니코드 값이 되고, `(char)`로 변환하면 문자가 된다. 3일차 형변환에서 배운 char와 숫자의 관계가 그대로 쓰인다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 파일 | 한 일 |
+|---|---|
+| [문자열_5.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_5.java) | `trim`, `valueOf`, `join`, `format` 실행, 메소드 읽는 법 정리 |
+| [문자열_6.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_6.java) | `JTextField`에 `String.valueOf(100)` 넣기 |
+| [문자열_정리.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_정리.java) | 문자열 메소드 전체 정리, `indexOf`의 -1 확인 |
+| [배열_1.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_1.java) | 배열 개념, 선언, 초기화, 메모리 구조 정리. 학생 3명 성적 처리를 변수 방식(주석)에서 배열 방식으로 변경 |
+| [배열_2.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_2.java) | 난수 10개에서 최대 / 최소와 위치, 일반 for / for-each / `Arrays.toString` 출력 |
+| [배열_3.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_3.java) | 중복 없는 로또 번호 6개, 정렬 |
+| [배열_4.java](./chapter05-참조타입%28배열%29%288일차%29/src/배열_4.java) | 랜덤 알파벳 10개 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `split()`은 문자열_5 주석에만 있고 코드로 실행해 보지 않았다. 직접 짜서 확인할 것.
+- 배열_1의 점수 입력에는 7일차에 배운 범위 검사(0 ~ 100)를 붙이지 않았다. 음수나 100 초과 값도 그대로 계산된다.
+- 배열_2의 최대 / 최소가 같은 값이 여러 개일 때 모든 위치를 찾으려면 어떻게 해야 하는가?
+- 배열은 크기를 바꿀 수 없다. 주석에 나온 ArrayList 같은 컬렉션이 어떻게 크기를 늘리는지 다음 과정에서 확인할 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+배열은 같은 형의 데이터를 인덱스로 묶어서 관리하고, 크기는 만들 때 정해진다. 일반 for는 값을 읽고 바꿀 수 있고 for-each는 읽기만 된다. 최대, 최소는 첫 값에서 시작해 하나씩 비교하고, 중복 제거는 앞 칸들과 비교하는 반복문을 하나 더 쓴다. 처음 보는 메소드는 리턴형, 이름, 매개변수를 먼저 읽는다.
 
 </details>
