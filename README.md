@@ -10,6 +10,7 @@
 | 4일차 | 2026.10.15 (목) | Chapter 03. 연산자 | 증감, 산술, 논리(단락 평가), 삼항, 비트 | [Chapter03-연산자](./Chapter03-연산자) |
 | 5일차 | 2026.10.16 (금) | Chapter 04. 제어문 | if ~ else, else if, switch | [Chapter04-제어문](./Chapter04-제어문) |
 | 6일차 | 2026.10.19 (월) | Chapter 04. 제어문 (반복문) | for, while, 누적변수, 무한루프, break, continue | [Chapter04-제어문(반복문)(6일차)](./Chapter04-제어문%28반복문%29%286일차%29) |
+| 7일차 | 2026.10.20 (화) | 반복 제어문, Chapter 05. 참조타입 (문자열) | break, continue, 입력값 검사, String 메모리, replace, substring | [chatper04-제어문(반복제어)(7일차)](./chatper04-제어문%28반복제어%29%287일차%29), [chapter05-참조타입(문자열)(7일차)](./chapter05-참조타입%28문자열%29%287일차%29) |
 
 ---
 
@@ -842,7 +843,7 @@ default -> System.out.println("없는 달입니다");
 
 ## 6일차 | 2026.10.19 (월) | Chapter 04. 제어문 (반복문)
 
-- 범위: for, while, 무한루프, break, continue (do ~ while은 설명만 듣고 코드는 짜지 않았다)
+- 범위: for, while, 무한루프, break, continue (do ~ while은 7일차에 코드로 확인)
 - 코드: [Chapter04-제어문(반복문)(6일차)/src](./Chapter04-제어문%28반복문%29%286일차%29/src) (소스 18개)
 
 <details>
@@ -1058,7 +1059,6 @@ while (rs.next())                 // 다음 행이 있으면 true
 
 <br>
 
-- do ~ while은 한 번도 코드로 짜 보지 않았다. 사용 빈도는 낮다고 했지만 while과 어떻게 다른지 직접 확인할 것.
 - 로또 번호를 중복 없이 뽑으려면 어떻게 해야 하는가? (배열을 배운 뒤에 다시 풀어 볼 것)
 - `while (true)`와 `for (;;)`는 같은 무한루프인데, 어느 쪽이 더 많이 쓰이는가?
 
@@ -1070,5 +1070,258 @@ while (rs.next())                 // 다음 행이 있으면 true
 <br>
 
 횟수를 알면 for, 모르면 while을 쓴다. 합계처럼 값을 모으는 변수는 반복문 밖에 선언하고, 중간에 빠져나올 때는 break, 이번 회차만 넘길 때는 continue를 쓴다. 파일 읽기와 DB 조회처럼 끝이 정해지지 않은 작업은 while로 처리한다.
+
+</details>
+
+---
+
+## 7일차 | 2026.10.20 (화) | 반복 제어문, Chapter 05. 참조타입 (문자열)
+
+- 범위: break, continue, 입력값 검사 패턴, 참조형과 String 메모리, 문자열 메소드(검색, 변환, 자르기)
+- 코드: [chatper04-제어문(반복제어)(7일차)/src](./chatper04-제어문%28반복제어%29%287일차%29/src) (소스 3개), [chapter05-참조타입(문자열)(7일차)/src](./chapter05-참조타입%28문자열%29%287일차%29/src) (이 날은 문자열_1 ~ 4)
+
+<details>
+<summary><b>반복 제어문 - break와 continue</b></summary>
+
+<br>
+
+| 구분 | 동작 |
+|---|---|
+| break | 반복문을 중단한다. switch에서도 쓴다 |
+| continue | 이번 회차의 나머지를 건너뛰고 다음 회차로 넘어간다 |
+
+```java
+// 반복제어문_1.java
+for (int i = 1; i <= 10; i++)
+{
+    if (i == 5) break;       // 1 2 3 4 출력 후 종료
+    System.out.println(i);
+}
+
+for (int i = 1; i <= 10; i++)
+{
+    if (i == 5) continue;    // 5만 빼고 1 ~ 10 출력
+    System.out.println(i);
+}
+```
+
+- break와 continue 바로 아래에는 코드를 쓸 수 없다. 실행될 일이 없는 문장이라 오류가 난다.
+- 자기가 속한 반복문 하나만 제어한다. for 안의 for에서 안쪽 break는 안쪽 반복문만 끝낸다.
+- continue가 이동하는 위치가 반복문마다 다르다. for는 증감식으로, while과 do ~ while은 조건식으로 이동한다.
+
+**continue를 쓸 때 증감식 위치**
+```java
+int i = 1;
+do
+{
+    System.out.println(i);
+    if (i == 5) continue;    // i++를 건너뛴다
+    System.out.println(i);
+    i++;
+} while (i <= 10);
+```
+- 문제: `i`가 5가 되면 계속 5만 출력되고 끝나지 않는다.
+- 원인: continue가 `i++`를 건너뛰고 바로 조건식으로 가는데, `i`가 5 그대로라서 `i <= 10`이 계속 true다. for는 continue를 만나도 증감식이 실행되지만 while류는 증감식이 본문 안에 있어서 건너뛰어진다.
+- 해결: while / do ~ while에서 continue를 쓸 때는 `i++`를 continue보다 앞에 두거나, 건너뛰기 전에 증감을 처리해야 한다.
+- do ~ while은 `do { } while (조건식);` 형태로, 조건과 상관없이 한 번은 먼저 실행한다.
+
+</details>
+
+<details>
+<summary><b>입력값 검사 - while(true) + continue + break 패턴</b></summary>
+
+<br>
+
+```java
+// 반복제어문_2.java (국어 부분)
+while (true)
+{
+    System.out.print("국어입력:");
+    kor = scan.nextInt();
+    if (kor < 0 || kor > 100)
+    {
+        System.out.println("잘못된 입력입니다!");
+        continue;      // 처음부터 다시 입력
+    }
+    break;             // 정상 입력이면 while 종료
+}
+```
+
+- 범위를 벗어나면 continue로 다시 입력받고, 정상이면 break로 빠져나온다. 입력 횟수를 알 수 없어서 무한루프로 만든다.
+- 범위 밖 조건에 4일차의 `||`를 썼다. 0 미만이거나 100 초과인 경우다.
+- 국어, 영어, 수학에 같은 while을 세 번 썼다. 중복이 많아서 메소드를 배우면 하나로 줄일 수 있다.
+- 입력 뒤에는 총점, 평균(`%.2f`), 학점을 출력한다. 학점은 `switch (avg / 10)`에서 `case 10, 9 -> 'A'`, 8은 B, 7은 C, 6은 D, 5는 F로 나눈다.
+
+**UP - DOWN 게임 다시 작성** ([반복제어문_3.java](./chatper04-제어문%28반복제어%29%287일차%29/src/반복제어문_3.java))
+- 6일차 `반복문_4`와 같은 게임이다. `for (;;)` 무한루프, 범위 밖이면 continue, 맞히면 break 구조도 같다.
+- 주석에 `while (true)`와 `do`로도 만들 수 있다고 적어 두었다. 무한루프는 세 반복문 모두로 만들 수 있다.
+
+</details>
+
+<details>
+<summary><b>참조형과 자바 메모리 구조 (String 저장 방식)</b></summary>
+
+<br>
+
+**데이터형 복습**
+```
+데이터형 ─┬─ 기본형 (byte, int, long, double, boolean, char)
+          └─ 참조형 (메모리 주소를 저장) ─┬─ 배열
+                                          └─ 클래스 ─┬─ 라이브러리 (String 등)
+                                                     └─ 사용자 정의 클래스
+```
+- 문자는 char 대신 String을 주로 쓴다.
+- 참조형은 여러 개의 데이터를 한 메모리에 저장해서 사용한다.
+
+**자바 메모리 구조**
+| 영역 | 저장 내용 | 관리 |
+|---|---|---|
+| Method Area | 메소드, static | |
+| Stack | 지역변수 | 자동으로 관리 |
+| Heap | 참조형 변수가 가리키는 실제 데이터 | new로 생성, 해제는 가비지 컬렉션(GC)이 처리 |
+
+**String 저장 방법 두 가지**
+```java
+String s  = "Java";
+String s1 = "Java";                 // 같은 문자열은 같은 메모리를 가리킨다 → s == s1 은 true
+String s2 = new String("Java");     // 새 메모리를 만들어서 저장 → s == s2 는 false
+```
+- `new`로 만드는 방식은 쓰지 않는다. 일반 변수처럼 `""`로 쓰는 게 표준이다.
+- String은 `char[]`을 다루는 클래스이고, 한 번 만든 문자열은 변경할 수 없다(final). 메소드가 제공하는 기능만 쓴다.
+- 문자열은 `""`, 문자 하나는 `''`다.
+- 4일차에 정리한 "문자열 비교는 `==`가 아니라 `equals()`"가 이 구조 때문이다. `==`는 주소를 비교하고 `equals()`는 값을 비교한다.
+
+</details>
+
+<details>
+<summary><b>문자열 검색 - startsWith, contains, endsWith (Jsoup 응용)</b></summary>
+
+<br>
+
+| 메소드 | 의미 |
+|---|---|
+| `startsWith(검색어)` | 앞부분이 같은 경우 |
+| `endsWith(검색어)` | 뒷부분이 같은 경우 |
+| `contains(검색어)` | 어디든 포함된 경우 |
+
+```java
+// 문자열_2.java (일부)
+String fd = JOptionPane.showInputDialog("검색어 입력: ");
+for (int i = 1; i <= 4; i++)                       // 지니 차트 1 ~ 4페이지
+{
+    Document doc = Jsoup.connect("https://www.genie.co.kr/chart/top200?...&pg=" + i).get();
+    Elements title  = doc.select("table.list-wrap a.title");
+    Elements singer = doc.select("table.list-wrap a.artist");
+    for (int j = 0; j < title.size(); j++)
+    {
+        if (title.get(j).text().contains(fd))      // 제목에 검색어가 포함되면
+            System.out.println(title.get(j).text() + "(" + singer.get(j).text() + ")");
+    }
+}
+```
+
+- 4일차에 맛보기로 했던 Jsoup 크롤링을 이번에는 `JOptionPane`으로 검색어를 입력받고 4페이지를 돌려 검색하는 형태로 만들었다.
+- 제목 목록과 가수 목록의 순서가 같아서 같은 인덱스 `j`로 짝을 맞춘다.
+- 호출 방향이 중요하다. 제목 안에 검색어가 있는지 보려면 `title.contains(fd)`이고, `fd.contains(제목)`은 의미가 반대라서 틀린다.
+- 파일에는 `startsWith`, `contains`가 주석으로 있고 `endsWith`가 켜져 있다. 위 코드는 `contains` 기준으로 정리했고, 세 메소드는 주석을 바꿔서 결과를 비교할 수 있다.
+- `java.lang` 패키지는 import를 생략해도 컴파일할 때 자동으로 붙는다. Jsoup, `javax.swing`은 직접 import해야 한다.
+
+</details>
+
+<details>
+<summary><b>문자열 변환 - replace, replaceAll, 대소문자</b></summary>
+
+<br>
+
+| 메소드 | 설명 |
+|---|---|
+| `toUpperCase()` / `toLowerCase()` | 대문자 / 소문자 변환 |
+| `replace(a, b)` | 일반 문자 / 문자열 변경 |
+| `replaceAll(정규식, b)` | 정규식으로 변경 |
+
+- 정규식 예: `[가-힣]` 한글 전체, `[A-Za-z]` 알파벳 전체, `[0-9]` 숫자 전체, `[^가-힣]` 한글이 아닌 것 전체
+
+```java
+String msg = "Hello Java!!";
+System.out.println(msg = msg.replace('a', 'b'));        // Hello Jbvb!!
+System.out.println(msg = msg.replace("Java", "Oracle")); // Hello Jbvb!!  (바뀌지 않음)
+
+final String s = "ABCD가나다라12345";
+s.replaceAll("[가-힣]", "0");     // ABCD000012345
+s.replaceAll("[A-Z]", " ");       // "    가나다라12345"
+s.replaceAll("[0-9]", " ");       // "ABCD가나다라     "
+s.replaceAll("[^가-힣]", " ");    // "    가나다라     "
+```
+
+- `replace`는 원본을 바꾸지 않고 바뀐 새 문자열을 돌려준다. 그래서 `msg = msg.replace(...)`처럼 다시 대입해야 변수에 반영된다.
+- 두 번째 줄이 바뀌지 않은 이유: 앞에서 `a`를 `b`로 바꿔서 `Java`가 이미 `Jbvb`가 되어 찾을 문자열이 없다. 실행 순서가 결과에 영향을 준다.
+- 입력은 `nextLine()`이 공백을 포함한 한 줄 전체이고, `next()`는 공백 앞까지다. (문자열_3.java 주석 처리된 코드)
+
+</details>
+
+<details>
+<summary><b>문자열 자르기 - substring, indexOf, lastIndexOf</b></summary>
+
+<br>
+
+| 메소드 | 설명 |
+|---|---|
+| `substring(start)` | start 인덱스부터 끝까지 |
+| `substring(start, end)` | start부터 end - 1까지 |
+| `indexOf(문자)` | 앞에서부터 찾은 위치 |
+| `lastIndexOf(문자)` | 뒤에서부터 찾은 위치 |
+
+```java
+String msg = "Hello Java!!";          // 인덱스는 0부터
+msg.substring(6);                     // Java!!
+msg.substring(0, 5);                  // Hello  (end - 1까지)
+
+String s = "자바.java";
+s.substring(s.indexOf(".") + 1);      // java  (확장자)
+
+String path = "C:\\Users\\...\\src\\MainClass.java";
+path.substring(path.lastIndexOf("\\") + 1);   // MainClass.java  (파일명)
+```
+
+- 점이나 역슬래시 위치를 `indexOf`로 찾고, 거기서 1을 더한 인덱스부터 자르면 그 문자 뒤쪽만 남는다.
+- 파일명처럼 앞에 같은 문자가 여러 번 나오는 경우는 `lastIndexOf`로 마지막 위치를 찾는다. `\`는 4일차에 배운 이스케이프다.
+- 찾는 문자가 없으면 `indexOf`, `lastIndexOf`는 -1을 돌려준다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 파일 | 한 일 |
+|---|---|
+| [반복제어문_1.java](./chatper04-제어문%28반복제어%29%287일차%29/src/반복제어문_1.java) | break, continue 동작 확인. do ~ while에서 continue 위치에 따른 무한루프 |
+| [반복제어문_2.java](./chatper04-제어문%28반복제어%29%287일차%29/src/반복제어문_2.java) | 세 과목 점수 입력값 검사(0 ~ 100), 총점, 평균, 학점 |
+| [반복제어문_3.java](./chatper04-제어문%28반복제어%29%287일차%29/src/반복제어문_3.java) | UP - DOWN 게임을 `for (;;)`로 다시 작성 |
+| [문자열_1.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_1.java) | 참조형, 메모리 구조, String 저장 방식 정리 (주석만 있고 실행 코드는 없음) |
+| [문자열_2.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_2.java) | Jsoup으로 지니 차트 4페이지에서 검색어가 들어간 곡 찾기 |
+| [문자열_3.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_3.java) | `replace`, `replaceAll`로 문자, 한글, 숫자 바꾸기 |
+| [문자열_4.java](./chapter05-참조타입%28문자열%29%287일차%29/src/문자열_4.java) | `substring`, `indexOf`, `lastIndexOf`로 확장자와 파일명 추출 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- 반복제어문_2의 학점 switch에는 default가 없다. 평균이 50 미만이면 어느 case에도 걸리지 않아서 처음에 넣어 둔 `'A'`가 그대로 학점으로 출력된다. default를 추가해야 한다.
+- 반복제어문_3은 `(int)(Math.random() * 100)`이라 정답이 0 ~ 99다. 그런데 입력은 1 ~ 100만 받아서 정답이 0이면 맞힐 수 없다. 6일차처럼 `+ 1`을 붙여야 한다.
+- `s == s1`, `s == s2`, `equals()`의 결과는 문자열_1.java에서 코드로 직접 출력해 보지 않았다. 직접 실행해서 확인할 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+while류에서 continue를 쓰면 증감식이 건너뛰어질 수 있어서 증감 위치를 먼저 봐야 한다. 문자열은 한 번 만들면 바뀌지 않아서 replace, substring 같은 메소드는 새 문자열을 돌려주고, 그 값을 변수에 다시 받아야 쓸 수 있다. 문자열 비교는 주소가 아니라 값을 봐야 해서 equals()를 쓴다.
 
 </details>
