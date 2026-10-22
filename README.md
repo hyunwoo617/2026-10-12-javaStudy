@@ -1612,366 +1612,274 @@ for (char c : alpha) System.out.print(c + " ");
 
 ---
 
-## 9일차 | 2026.10.22 (목) | Chapter 05. 참조타입 (배열 복사, 달력), 이중 for문
+## 9일차 | 2026.10.22 (목) | Chapter 05. 참조타입 (일차원 배열 총정리)
 
 <details>
-<summary><b>배열 복사 - 참조 복사와 clone()</b></summary>
+<summary><b>배열의 개념과 사용처</b></summary>
 
 <br>
 
-```java
-int[] a = {10, 20, 30, 40, 50};
-int[] b = a;                  // 주소를 대입 (같은 배열을 가리킨다)
-b[0] = 100;
-System.out.println(a[0]);     // 100
+- 배열은 **같은 자료형의 데이터를 여러 개 저장할 수 있는 자료구조**다.
 
-int[] c = a.clone();          // 값까지 복사해서 새 배열을 만든다
-c[0] = 200;
-System.out.println(Arrays.toString(a));   // [100, 20, 30, 40, 50]
-System.out.println(Arrays.toString(c));   // [200, 20, 30, 40, 50]
+**일반 변수로 저장 (비효율적)**
+```java
+int score1 = 85;
+int score2 = 90;
+int score3 = 75;
+int score4 = 100;
+int score5 = 80;
+```
+- 변수가 5개 필요하고 관리가 번거롭다.
+
+**배열로 저장 (효율적)**
+```java
+int[] scores = {85, 90, 75, 100, 80};
 ```
 
-- 배열 변수를 그대로 출력하면 `[I@17c1bced` 같은 값이 나온다. `a`와 `b`는 같은 값이고 `c`는 다르다. 이 값은 실행할 때마다 달라진다.
-- `b = a`는 복사가 아니라 주소를 넘기는 것이다. 한쪽에서 값을 바꾸면 다른 쪽도 바뀐다. (Call By Reference)
-- `clone()`은 데이터까지 새 메모리에 복사해서 원본과 따로 움직인다.
-- 8일차에 정리한 "변수는 Stack, 실제 값은 Heap" 구조 때문에 이런 차이가 생긴다. `b = a`는 Stack의 주소만 복사한다.
+| 인덱스 | 0 | 1 | 2 | 3 | 4 |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| 값 | 85 | 90 | 75 | 100 | 80 |
 
-</details>
+- `int[]` : 정수형 배열 타입
+- `scores` : 배열을 참조하는 변수
+- `{85, 90, 75, 100, 80}` : 배열에 저장되는 값
+- 배열의 크기 : 5 / 인덱스 : 0부터 4까지
 
-<details>
-<summary><b>배열 복사 - Arrays.copyOf()와 System.arraycopy()</b></summary>
-
-<br>
-
-```java
-int[] arr = {100, 200, 300};
-Arrays.copyOf(arr, 5);    // [100, 200, 300, 0, 0]  크기 확대, 남는 칸은 기본값
-Arrays.copyOf(arr, 2);    // [100, 200]             크기 축소
-```
-
-```java
-int[] arr = {10, 20, 30, 40, 50};
-int[] target = new int[5];
-System.arraycopy(arr, 2, target, 0, 3);   // target = [30, 40, 50, 0, 0]
-// arraycopy(원본, 원본 시작 인덱스, 대상 배열, 대상 시작 인덱스, 개수)
-```
-
-| 구분 | `System.arraycopy()` | `Arrays.copyOf()` |
-|---|---|---|
-| 목적 | 기존 배열의 데이터를 다른 배열로 복사 | 새 배열을 만들면서 복사 |
-| 복사 범위 | 시작 위치와 개수를 지정 | 처음부터 지정한 길이만큼 |
-| 배열 크기 | 자동으로 바뀌지 않아서 대상 배열을 미리 만들어야 한다 | 원하는 크기로 늘리거나 줄일 수 있다 |
-| 주로 쓰는 경우 | 부분 복사, 배열 합치기 | 크기 변경, 전체 복사 |
-
-- 배열은 크기를 바꿀 수 없어서, 크기를 바꾸고 싶으면 새 배열을 만들어 내용을 옮겨야 한다. `copyOf()`가 이 과정을 한 번에 해 준다.
-- `copyOf()`와 같은 일을 for로 직접 복사하는 코드(`copy2[i] = arr[i]`)도 같이 짜서 결과를 비교했다.
-- `arraycopy()`는 복사할 개수가 대상 배열의 남은 칸보다 크면 `ArrayIndexOutOfBoundsException`이 난다.
-
-</details>
-
-<details>
-<summary><b>배열 활용 - 10진수를 2진수로 변환</b></summary>
-
-<br>
-
-```java
-int[] binary = new int[16];
-int index = 15;                      // 뒤에서부터 채운다
-
-while (true)
-{
-    binary[index] = input % 2;       // 나머지가 2진수의 한 자리
-    input /= 2;
-    if (input == 0)
-        break;
-    index--;
-}
-
-for (int i = 0; i < binary.length; i++)
-{
-    if (i % 4 == 0 && i != 0)
-        System.out.print(" ");       // 4자리마다 공백
-    System.out.print(binary[i]);
-}
-```
-
-| 입력 | 출력 |
+**배열 사용처**
+| 분야 | 배열 사용 예시 |
 |---|---|
-| 10 | 0000 0000 0000 1010 |
-| 255 | 0000 0000 1111 1111 |
-| 0 | 0000 0000 0000 0000 |
+| 학교 | 학생별 점수, 출석 번호 |
+| 쇼핑몰 | 상품 가격, 장바구니 수량 |
+| 게임 | 플레이어 체력, 캐릭터 능력치 |
+| 데이터 분석 | 일별 매출, 월별 방문자 수 |
+| 서버 개발 | 조회 결과 처리, 임시 데이터 목록 |
+| 알고리즘 | 정렬, 검색, 최댓값 / 최솟값 찾기 |
 
-- 2로 나눈 나머지는 2진수의 맨 뒷자리부터 나오기 때문에 배열도 뒤(15번)에서부터 채운다. 앞쪽 칸은 `new`로 만들 때 0으로 채워져 있어서 그대로 앞자리 0이 된다.
-- 몇 번 나눌지 모르니 6일차에 배운 `while (true)`와 `break`를 썼다.
-- 4일차에 `Integer.toBinaryString()`으로 확인했던 값을 직접 계산해서 만든 것이다.
-
-</details>
-
-<details>
-<summary><b>달력 만들기 - 날짜를 직접 계산</b></summary>
-
-<br>
-
-```java
-int total = (year - 1) * 365 + ...;           // 1년 1월 1일부터 지난 해까지의 날 수
-int[] lastday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0)
-    lastday[1] = 29;                          // 윤년이면 2월은 29일
-else
-    lastday[1] = 28;
-
-for (int i = 0; i < month - 1; i++)
-    total += lastday[i];                      // 지난 달까지의 날 수
-
-total++;                                      // 1일
-int week = total % 7;                         // 0 = 일요일
-```
-
-```java
-// 달력 출력
-for (int i = 1; i <= lastday[month - 1]; i++)
-{
-    if (i == 1)
-        for (int j = 0; j < week; j++)
-            System.out.print("\t");           // 1일 앞의 빈칸
-    if (i == day)
-        System.err.printf("%2d\t", i);        // 입력한 날은 빨간색으로
-    else
-        System.out.printf("%2d\t", i);
-    week++;
-    if (week > 6)
-    {
-        week = 0;
-        System.out.println();                 // 토요일 다음 줄바꿈
-    }
-}
-```
-
-- 날짜의 요일은 "1년 1월 1일부터 그날까지의 총 날 수 % 7"로 구한다. 윤년이 몇 번 있었는지도 총 날 수에 들어간다.
-- 윤년 조건은 4일차에 배운 논리 연산자를 그대로 쓴다. `4로 나누어떨어지고 100으로는 안 나누어떨어지거나, 400으로 나누어떨어지는 해`다.
-- 달마다 마지막 날이 다르기 때문에 배열(`lastday`)에 넣어 두고 인덱스로 꺼낸다. 요일 이름도 `String[] strWeek = {"일", "월", ...}` 배열로 만들어서 `for-each`로 출력했다.
-- 출력할 때 `week`가 현재 칸의 요일이다. 날짜를 하나 찍을 때마다 1씩 늘리고 6을 넘으면 0으로 돌려서 줄을 바꾼다.
-- `System.err`로 출력하면 이클립스 콘솔에서 빨간색으로 나와서 입력한 날짜를 구분할 수 있다.
+- 실무에서는 **데이터 개수가 고정된 경우** 배열이 유용하다.
+- 데이터 개수가 자주 바뀌는 목록은 `ArrayList`, 객체 간 관계는 클래스나 다른 컬렉션을 쓰는 경우가 많다.
 
 </details>
 
 <details>
-<summary><b>달력 만들기 - Calendar 클래스</b></summary>
+<summary><b>배열의 메모리 할당</b></summary>
 
 <br>
 
 ```java
-Calendar cal = Calendar.getInstance();
-cal.set(Calendar.YEAR, year);
-cal.set(Calendar.MONTH, month - 1);
-cal.set(Calendar.DATE, 1);
-
-int week = cal.get(Calendar.DAY_OF_WEEK) - 1;     // 0 = 일요일
-int lastday = cal.getMaximum(Calendar.DATE);
+int[] scores = new int[5];
 ```
 
-- `Calendar.getInstance()`는 현재 날짜와 시간이 들어 있는 객체를 돌려준다. `set(필드, 값)`으로 연도, 월, 일을 바꾸고 `get(필드)`로 읽는다.
-- 월은 0부터 시작해서 1월이 0이다. 입력받은 월에서 1을 빼서 넣는다.
-- 일을 1로 맞춘 이유는 그 달의 1일이 무슨 요일인지 알아야 달력의 빈칸 수를 정할 수 있기 때문이다.
-- `DAY_OF_WEEK`는 일요일이 1이고 토요일이 7이다. 배열 인덱스처럼 0부터 쓰려고 1을 뺀다.
-- 위의 직접 계산 방식에서 윤년 처리, 총 날 수, 요일 계산에 쓴 코드가 `Calendar`로는 `week`와 `lastday` 두 줄이 된다. 달력 출력 부분은 같다.
+```
+Stack                  Heap
+scores  ───────▶   [0] [0] [0] [0] [0]
+(참조 변수)          0   1   2   3   4
+                    배열 객체 (int[5])
+```
+
+- `scores`는 배열 객체를 **참조하는 변수**다.
+- `new int[5]`는 정수 5개를 저장할 수 있는 **배열 객체를 생성**한다.
+- 배열 원소는 **연속된 인덱스**로 접근한다.
+- 배열의 길이는 **생성 후 변경할 수 없다.**
+- 자바의 배열 객체는 일반적으로 **힙**에 생성된다.
 
 </details>
 
 <details>
-<summary><b>이중 for문 - 구조, 별 찍기, 구구단</b></summary>
+<summary><b>선언, 생성, 초기화</b></summary>
 
 <br>
 
+배열을 사용하는 방법은 크게 세 가지다.
+
+**1. 배열 선언** (아직 생성되지 않은 상태)
 ```java
-for (줄 수)
+int[] numbers;
+String[] names;
+double[] prices;
+```
+
+**2. 배열 생성** (기본값으로 초기화됨)
+```java
+int[] numbers = new int[5];
+```
+
+| 자료형 | 기본 초기값 |
+|---|---|
+| `int` | `0` |
+| `double` | `0.0` |
+| `boolean` | `false` |
+| `char` | `'\u0000'` |
+| 참조형 | `null` |
+
+**3. 선언과 초기화**
+```java
+int[] numbers = {10, 20, 30, 40, 50};
+
+String[] fruits = {"사과", "바나나", "포도"};
+```
+- 변수를 먼저 선언한 후 값을 지정할 때는 `new int[]{...}` 형태를 사용한다.
+
+</details>
+
+<details>
+<summary><b>인덱스(Index)</b></summary>
+
+<br>
+
+- 인덱스는 **배열 안에서 데이터의 위치를 나타내는 번호**다.
+
+```java
+int[] numbers = {10, 20, 30, 40, 50};
+```
+
+| 인덱스 | 0 | 1 | 2 | 3 | 4 |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| 값 | 10 | 20 | 30 | 40 | 50 |
+
+- 첫 번째 인덱스 : `0`
+- 마지막 인덱스 : `배열.length - 1`
+- 배열의 길이 : `배열.length`
+
+```java
+System.out.println(numbers[0]);       // 10
+System.out.println(numbers[2]);       // 30
+System.out.println(numbers[4]);       // 50
+System.out.println(numbers.length);   // 5
+```
+
+- 잘못된 인덱스에 접근하면 `ArrayIndexOutOfBoundsException`이 발생한다.
+```java
+System.out.println(numbers[5]);   // 오류
+```
+
+</details>
+
+<details>
+<summary><b>배열 값 변경하기</b></summary>
+
+<br>
+
+- 배열의 **크기는 고정**이지만 각 **원소의 값은 변경**할 수 있다.
+
+```java
+int[] scores = {80, 90, 70};
+
+scores[0] = 100;
+scores[2] = 85;
+
+System.out.println(scores[0]);   // 100
+System.out.println(scores[1]);   // 90
+System.out.println(scores[2]);   // 85
+```
+
+| 인덱스 | 0 | 1 | 2 |
+|---|:---:|:---:|:---:|
+| 변경 전 | 80 | 90 | 70 |
+| 변경 후 | 100 | 90 | 85 |
+
+</details>
+
+<details>
+<summary><b>for문으로 배열 사용하기</b></summary>
+
+<br>
+
+- 배열은 인덱스를 이용하기 때문에 **반복문과 함께 사용하면 편리**하다.
+
+**기본 for문 (인덱스 사용)**
+```java
+int[] scores = {85, 90, 75, 100, 80};
+
+for (int i = 0; i < scores.length; i++)
 {
-    for (한 줄에 출력할 것)
-    {
-    }
-    줄바꿈
+    System.out.println(scores[i]);
 }
 ```
 
-- 바깥 for는 줄 수, 안쪽 for는 한 줄에 찍을 개수를 정한다. 안쪽 for가 끝까지 한 바퀴 돈 뒤에야 바깥 for의 증감식이 실행된다.
-- 줄바꿈 `println()`은 안쪽 for 밖, 바깥 for 안에 둔다.
-
-**별 찍기 규칙** (i = 줄, j = 한 줄의 별 위치)
-```
-*       i=1 → j 1개
-**      i=2 → j 2개
-***     i=3 → j 3개       j가 i까지   (j <= i)
-****    i=4 → j 4개
-
-****    i=1 → j 4개
-***     i=2 → j 3개
-**      i=3 → j 2개       i + j = 5   (j <= 5 - i)
-*       i=4 → j 1개
-```
-- 줄이 늘수록 별이 늘면 `j <= i`, 줄이 늘수록 별이 줄면 더해서 일정한 값(`i + j = 5`)으로 푼다.
-
-**대각선 두 개 그리기**
+**향상된 for문 (인덱스 불필요)**
 ```java
-for (int i = 1; i <= 4; i++)
+for (int score : scores)
 {
-    for (int j = 1; j <= 4; j++)
-    {
-        if (j == 5 - i || i == j)
-            System.out.print("★");
-        else
-            System.out.print("☆");
-    }
-    System.out.println();
+    System.out.println(score);
 }
-// ★☆☆★
-// ☆★★☆
-// ☆★★☆
-// ★☆☆★
 ```
-- `i == j`는 왼쪽 위에서 오른쪽 아래로 가는 대각선이고, `i + j == 5`(`j == 5 - i`)는 반대 방향 대각선이다. `||`로 묶어서 X자가 된다.
 
-**구구단 전체를 가로로**
+**반복문 코드의 의미**
+| 코드 | 의미 |
+|---|---|
+| `int i = 0` | 첫 번째 인덱스부터 시작 |
+| `i < scores.length` | 배열의 길이보다 작은 동안 반복 |
+| `i++` | 인덱스를 1씩 증가 |
+| `scores[i]` | 현재 인덱스의 값 가져오기 |
+
+</details>
+
+<details>
+<summary><b>이중 for문과 배열</b></summary>
+
+<br>
+
+- 이중 for문은 **반복문 안에 반복문이 들어 있는 구조**다.
+
+**예제 1. 별 삼각형 출력**
 ```java
-for (int i = 1; i <= 9; i++)             // 줄: 곱하는 수
+for (int i = 1; i <= 5; i++)
 {
-    for (int j = 2; j <= 9; j++)         // 한 줄: 2단 ~ 9단
+    for (int j = 1; j <= i; j++)
     {
-        System.out.printf("%2d * %2d = %2d\t", j, i, j * i);
+        System.out.print("*");
     }
     System.out.println();
 }
 ```
-- 6일차에는 단 하나를 입력받아 세로로 출력했고, 이번에는 줄을 곱하는 수로 잡아서 2단부터 9단까지 한 줄에 나란히 출력했다.
+```
+*
+**
+***
+****
+*****
+```
 
-</details>
-
-<details>
-<summary><b>이중 for문 - 등수 구하기</b></summary>
-
-<br>
-
+**예제 2. 모든 원소 쌍 비교**
 ```java
-for (int i = 0; i < 3; i++)
+for (int i = 0; i < n; i++)
 {
-    rank[i] = 1;                              // 일단 1등으로 시작
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; j < n; j++)
     {
-        if (total[i] < total[j])              // 나보다 총점이 높은 사람이 있으면
-            rank[i]++;                        // 등수가 한 칸 밀린다
+        System.out.println(numbers[i] + " - " + numbers[j]);
     }
 }
 ```
+- 원소가 3개면 3 x 3 = 9번 비교한다.
 
-| 총점 | 270 | 180 | 270 |
-|---|:-:|:-:|:-:|
-| 등수 | 1 | 3 | 1 |
-
-- 8일차에 만든 3명 성적 처리에 등수를 추가했다. 입력, 총점, 평균, 학점 부분은 같고, 입력이 끝난 뒤에 등수 계산 for를 따로 돌린다.
-- 내 등수는 "나보다 총점이 높은 사람 수 + 1"이다. 모든 사람과 한 번씩 비교해야 해서 이중 for를 쓴다.
-- 자기 자신과 비교할 때는 `total[i] < total[i]`가 false라서 등수에 영향이 없다.
-- 점수가 같으면 같은 등수가 되고, 다음 등수는 건너뛴다. (270점 두 명이 1등이면 180점은 3등)
-- 정렬하지 않고 등수만 구하기 때문에 입력한 순서가 그대로 유지된다.
-
-</details>
-
-<details>
-<summary><b>이중 for문에서 break와 라벨</b></summary>
-
-<br>
-
+**예제 3. 중복 없이 비교**
 ```java
-outer:
-for (int i = 1; i <= 3; i++)
+for (int i = 0; i < n; i++)
 {
-    for (int j = 1; j <= 3; j++)
+    for (int j = i + 1; j < n; j++)
     {
-        if (j == 2)
-            break outer;                       // 바깥 for까지 종료
-        System.out.println("i=" + i + ",j=" + j);
-    }
-}
-// i=1,j=1
-```
-
-| `j == 2`일 때 | 출력 (i, j) |
-|---|---|
-| `break outer;` | 1,1 |
-| `break;` | 1,1  2,1  3,1 |
-| `continue;` | 1,1  1,3  2,1  2,3  3,1  3,3 |
-
-- 7일차에 정리한 대로 `break`와 `continue`는 자기가 속한 반복문 하나만 제어한다. 안쪽 for의 `break`는 안쪽만 끝내고 바깥 for는 계속 돈다.
-- 바깥 반복문까지 한 번에 끝내려면 바깥 for 앞에 `outer:` 같은 라벨을 붙이고 `break outer;`를 쓴다.
-
-</details>
-
-<details>
-<summary><b>숫자 야구 게임 준비</b></summary>
-
-<br>
-
-```
-3자리 정수를 맞추는 게임
-같은 자리에 같은 숫자: S
-다른 자리에 있는 숫자: B
-
-123 → 235 : 0S-2B
-123 → 135 : 1S-1B
-123 → 123 : 3S  (종료)
-```
-
-```java
-int[] com = new int[3];
-for (int i = 0; i < com.length; i++)
-{
-    com[i] = (int)(Math.random() * 9) + 1;    // 1 ~ 9
-    for (int j = 0; j < i; j++)
-    {
-        if (com[j] == com[i])
-        {
-            i--;
-            break;
-        }
+        System.out.println(numbers[i] + "," + numbers[j]);
     }
 }
 ```
-
-- 규칙을 주석으로 먼저 정리하고, 컴퓨터가 중복 없는 3자리 숫자를 만드는 부분까지 작성했다.
-- 중복을 없애는 방식은 8일차 로또와 같다. 앞 칸과 비교해서 같으면 `i--`로 같은 칸을 다시 뽑는다.
-- 사용자 입력과 S / B 판정은 아직 작성하지 않았다.
+- 같은 원소, 중복된 쌍은 제외한다.
 
 </details>
 
 <details>
-<summary><b>실습</b></summary>
+<summary><b>간단한 알고리즘 예제</b></summary>
 
 <br>
 
-| 한 일 |
-|---|
-| 배열 주소 대입(`b = a`)과 `clone()` 비교, 한쪽을 바꿨을 때 다른 쪽에 영향이 있는지 확인 |
-| `Arrays.copyOf()`, for로 직접 복사, `System.arraycopy()`로 배열 복사 비교 |
-| 정수를 입력받아 16자리 2진수로 출력 |
-| 년, 월, 일을 입력받아 달력 출력 (총 날 수를 직접 계산, 입력한 날은 빨간색) |
-| 같은 달력을 `Calendar`로 출력 |
-| 3자리 숫자 야구 게임의 규칙 정리, 컴퓨터 숫자 생성 (진행 중) |
-| 이중 for로 X자 별 찍기 (★ / ☆) |
-| 이중 for로 구구단 2단 ~ 9단 가로 출력 |
-| 3명 성적 처리에 등수 추가 |
-| 라벨 `break outer`로 이중 for 한 번에 종료 |
+일차원 배열을 활용한 대표적인 알고리즘 5가지
 
-</details>
-
-<details>
-<summary><b>더 알아볼 것</b></summary>
-
-<br>
-
-- 달력(직접 계산)의 총 날 수에서 윤년으로 늘어난 날을 `(year - 1) % 4 - (year - 1) % 100 + (year - 1) % 400`으로 구했다. 이 값은 나머지가 아니라 몫(`/ 4 - / 100 + / 400`)이어야 한다. 2026년은 맞게 나오지만 2024년 1월 1일은 월요일인데 목요일로 나오는 등 대부분의 연도에서 요일이 어긋난다. `/`로 고치면 1900 ~ 2100년 전체가 실제 달력과 맞다.
-- `Calendar` 달력에서 `getMaximum(Calendar.DATE)`는 항상 31을 돌려준다. 그래서 2026년 2월에도 29, 30, 31일이 출력된다. 그 달의 실제 마지막 날을 돌려주는 `getActualMaximum(Calendar.DATE)`로 바꿔야 한다.
-- 2진수 변환은 16칸이라 65535까지만 담을 수 있다. 65536부터는 `index`가 -1이 되어 `ArrayIndexOutOfBoundsException`이 난다. 코드 위 주석에는 32767로 적혀 있어서 입력 범위를 정해서 검사해야 한다.
-- 숫자 야구는 사용자 입력과 S / B 판정이 남아 있다. 같은 자리 비교(S)와 다른 자리 포함 여부(B)를 어떻게 나눌지 정해야 한다.
-- 등수 입력 안내 문구가 `(i + 1) + "' 국어입력:"`이라서 화면에 `1' 국어입력:`으로 출력된다. 작은따옴표를 지워야 한다.
+| 번호 | 알고리즘 | 핵심 코드 |
+|:---:|---|---|
+| 1 | 합계와 평균 구하기 | `sum += scores[i]`, `avg = (double) sum / n` |
+| 2 | 최댓값과 최솟값 찾기 | `if (arr[i] > max) max = arr[i];` |
+| 3 | 짝수 개수 세기 | `if (arr[i] % 2 == 0) count++;` |
+| 4 | 특정 값의 위치 찾기 | `if (arr[i] == target) index = i;` |
+| 5 | 정렬하기 (버블 정렬 예시) | `for (int i = 0; i < n - 1; i++) { ... }` |
 
 </details>
 
@@ -1980,6 +1888,10 @@ for (int i = 0; i < com.length; i++)
 
 <br>
 
-배열을 `b = a`로 넘기면 같은 배열을 같이 쓰고, 따로 쓰려면 `clone()`이나 `Arrays.copyOf()`로 복사해야 한다. 이중 for는 바깥이 줄, 안쪽이 한 줄 안의 내용이고, 모든 값과 비교해야 하는 등수 같은 문제에도 쓴다. 날짜 계산은 직접 만들 수도 있고 `Calendar`를 쓸 수도 있는데, 직접 만든 식은 여러 연도로 결과를 확인해야 틀린 곳을 찾을 수 있다.
+- 배열은 같은 타입의 데이터를 여러 개 저장하는 자료구조다.
+- 인덱스는 0부터 시작한다.
+- 배열의 크기는 고정이지만 값은 변경할 수 있다.
+- for문과 함께 사용하면 효율적이다.
+- 실무에서는 상황에 따라 `ArrayList`, 클래스 등을 함께 사용한다.
 
 </details>
