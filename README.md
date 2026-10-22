@@ -1612,24 +1612,374 @@ for (char c : alpha) System.out.print(c + " ");
 
 ---
 
-## 9일차 | 2026.10.22 (목) | Chapter 05. 참조타입 (배열)
-
+## 9일차 | 2026.10.22 (목) | Chapter 05. 참조타입 (배열 복사, 달력), 이중 for문
 
 <details>
-<summary><b>배열(Array)의 개념</b></summary>
+<summary><b>배열 복사 - 참조 복사와 clone()</b></summary>
 
-<br>   
+<br>
 
-배열은 같은 자료형의 데이터를 여러 개 저장할 수 있는 자료구조이다.
+```java
+int[] a = {10, 20, 30, 40, 50};
+int[] b = a;                  // 주소를 대입 (같은 배열을 가리킨다)
+b[0] = 100;
+System.out.println(a[0]);     // 100
 
-**일반 변수로 저장(비효율적)**
+int[] c = a.clone();          // 값까지 복사해서 새 배열을 만든다
+c[0] = 200;
+System.out.println(Arrays.toString(a));   // [100, 20, 30, 40, 50]
+System.out.println(Arrays.toString(c));   // [200, 20, 30, 40, 50]
 ```
-int score1 = 85;
-int socre2 = 90;
-int socre3 = 75;
-int socre4 = 100;
-int socre5 = 80;
+
+- 배열 변수를 그대로 출력하면 `[I@17c1bced` 같은 값이 나온다. `a`와 `b`는 같은 값이고 `c`는 다르다. 이 값은 실행할 때마다 달라진다.
+- `b = a`는 복사가 아니라 주소를 넘기는 것이다. 한쪽에서 값을 바꾸면 다른 쪽도 바뀐다. (Call By Reference)
+- `clone()`은 데이터까지 새 메모리에 복사해서 원본과 따로 움직인다.
+- 8일차에 정리한 "변수는 Stack, 실제 값은 Heap" 구조 때문에 이런 차이가 생긴다. `b = a`는 Stack의 주소만 복사한다.
+
+</details>
+
+<details>
+<summary><b>배열 복사 - Arrays.copyOf()와 System.arraycopy()</b></summary>
+
+<br>
+
+```java
+int[] arr = {100, 200, 300};
+Arrays.copyOf(arr, 5);    // [100, 200, 300, 0, 0]  크기 확대, 남는 칸은 기본값
+Arrays.copyOf(arr, 2);    // [100, 200]             크기 축소
 ```
--> 변수가 5개 필요하고 관리가 번거롭다.
+
+```java
+int[] arr = {10, 20, 30, 40, 50};
+int[] target = new int[5];
+System.arraycopy(arr, 2, target, 0, 3);   // target = [30, 40, 50, 0, 0]
+// arraycopy(원본, 원본 시작 인덱스, 대상 배열, 대상 시작 인덱스, 개수)
+```
+
+| 구분 | `System.arraycopy()` | `Arrays.copyOf()` |
+|---|---|---|
+| 목적 | 기존 배열의 데이터를 다른 배열로 복사 | 새 배열을 만들면서 복사 |
+| 복사 범위 | 시작 위치와 개수를 지정 | 처음부터 지정한 길이만큼 |
+| 배열 크기 | 자동으로 바뀌지 않아서 대상 배열을 미리 만들어야 한다 | 원하는 크기로 늘리거나 줄일 수 있다 |
+| 주로 쓰는 경우 | 부분 복사, 배열 합치기 | 크기 변경, 전체 복사 |
+
+- 배열은 크기를 바꿀 수 없어서, 크기를 바꾸고 싶으면 새 배열을 만들어 내용을 옮겨야 한다. `copyOf()`가 이 과정을 한 번에 해 준다.
+- `copyOf()`와 같은 일을 for로 직접 복사하는 코드(`copy2[i] = arr[i]`)도 같이 짜서 결과를 비교했다.
+- `arraycopy()`는 복사할 개수가 대상 배열의 남은 칸보다 크면 `ArrayIndexOutOfBoundsException`이 난다.
+
+</details>
+
+<details>
+<summary><b>배열 활용 - 10진수를 2진수로 변환</b></summary>
+
+<br>
+
+```java
+int[] binary = new int[16];
+int index = 15;                      // 뒤에서부터 채운다
+
+while (true)
+{
+    binary[index] = input % 2;       // 나머지가 2진수의 한 자리
+    input /= 2;
+    if (input == 0)
+        break;
+    index--;
+}
+
+for (int i = 0; i < binary.length; i++)
+{
+    if (i % 4 == 0 && i != 0)
+        System.out.print(" ");       // 4자리마다 공백
+    System.out.print(binary[i]);
+}
+```
+
+| 입력 | 출력 |
+|---|---|
+| 10 | 0000 0000 0000 1010 |
+| 255 | 0000 0000 1111 1111 |
+| 0 | 0000 0000 0000 0000 |
+
+- 2로 나눈 나머지는 2진수의 맨 뒷자리부터 나오기 때문에 배열도 뒤(15번)에서부터 채운다. 앞쪽 칸은 `new`로 만들 때 0으로 채워져 있어서 그대로 앞자리 0이 된다.
+- 몇 번 나눌지 모르니 6일차에 배운 `while (true)`와 `break`를 썼다.
+- 4일차에 `Integer.toBinaryString()`으로 확인했던 값을 직접 계산해서 만든 것이다.
+
+</details>
+
+<details>
+<summary><b>달력 만들기 - 날짜를 직접 계산</b></summary>
+
+<br>
+
+```java
+int total = (year - 1) * 365 + ...;           // 1년 1월 1일부터 지난 해까지의 날 수
+int[] lastday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0)
+    lastday[1] = 29;                          // 윤년이면 2월은 29일
+else
+    lastday[1] = 28;
+
+for (int i = 0; i < month - 1; i++)
+    total += lastday[i];                      // 지난 달까지의 날 수
+
+total++;                                      // 1일
+int week = total % 7;                         // 0 = 일요일
+```
+
+```java
+// 달력 출력
+for (int i = 1; i <= lastday[month - 1]; i++)
+{
+    if (i == 1)
+        for (int j = 0; j < week; j++)
+            System.out.print("\t");           // 1일 앞의 빈칸
+    if (i == day)
+        System.err.printf("%2d\t", i);        // 입력한 날은 빨간색으로
+    else
+        System.out.printf("%2d\t", i);
+    week++;
+    if (week > 6)
+    {
+        week = 0;
+        System.out.println();                 // 토요일 다음 줄바꿈
+    }
+}
+```
+
+- 날짜의 요일은 "1년 1월 1일부터 그날까지의 총 날 수 % 7"로 구한다. 윤년이 몇 번 있었는지도 총 날 수에 들어간다.
+- 윤년 조건은 4일차에 배운 논리 연산자를 그대로 쓴다. `4로 나누어떨어지고 100으로는 안 나누어떨어지거나, 400으로 나누어떨어지는 해`다.
+- 달마다 마지막 날이 다르기 때문에 배열(`lastday`)에 넣어 두고 인덱스로 꺼낸다. 요일 이름도 `String[] strWeek = {"일", "월", ...}` 배열로 만들어서 `for-each`로 출력했다.
+- 출력할 때 `week`가 현재 칸의 요일이다. 날짜를 하나 찍을 때마다 1씩 늘리고 6을 넘으면 0으로 돌려서 줄을 바꾼다.
+- `System.err`로 출력하면 이클립스 콘솔에서 빨간색으로 나와서 입력한 날짜를 구분할 수 있다.
+
+</details>
+
+<details>
+<summary><b>달력 만들기 - Calendar 클래스</b></summary>
+
+<br>
+
+```java
+Calendar cal = Calendar.getInstance();
+cal.set(Calendar.YEAR, year);
+cal.set(Calendar.MONTH, month - 1);
+cal.set(Calendar.DATE, 1);
+
+int week = cal.get(Calendar.DAY_OF_WEEK) - 1;     // 0 = 일요일
+int lastday = cal.getMaximum(Calendar.DATE);
+```
+
+- `Calendar.getInstance()`는 현재 날짜와 시간이 들어 있는 객체를 돌려준다. `set(필드, 값)`으로 연도, 월, 일을 바꾸고 `get(필드)`로 읽는다.
+- 월은 0부터 시작해서 1월이 0이다. 입력받은 월에서 1을 빼서 넣는다.
+- 일을 1로 맞춘 이유는 그 달의 1일이 무슨 요일인지 알아야 달력의 빈칸 수를 정할 수 있기 때문이다.
+- `DAY_OF_WEEK`는 일요일이 1이고 토요일이 7이다. 배열 인덱스처럼 0부터 쓰려고 1을 뺀다.
+- 위의 직접 계산 방식에서 윤년 처리, 총 날 수, 요일 계산에 쓴 코드가 `Calendar`로는 `week`와 `lastday` 두 줄이 된다. 달력 출력 부분은 같다.
+
+</details>
+
+<details>
+<summary><b>이중 for문 - 구조, 별 찍기, 구구단</b></summary>
+
+<br>
+
+```java
+for (줄 수)
+{
+    for (한 줄에 출력할 것)
+    {
+    }
+    줄바꿈
+}
+```
+
+- 바깥 for는 줄 수, 안쪽 for는 한 줄에 찍을 개수를 정한다. 안쪽 for가 끝까지 한 바퀴 돈 뒤에야 바깥 for의 증감식이 실행된다.
+- 줄바꿈 `println()`은 안쪽 for 밖, 바깥 for 안에 둔다.
+
+**별 찍기 규칙** (i = 줄, j = 한 줄의 별 위치)
+```
+*       i=1 → j 1개
+**      i=2 → j 2개
+***     i=3 → j 3개       j가 i까지   (j <= i)
+****    i=4 → j 4개
+
+****    i=1 → j 4개
+***     i=2 → j 3개
+**      i=3 → j 2개       i + j = 5   (j <= 5 - i)
+*       i=4 → j 1개
+```
+- 줄이 늘수록 별이 늘면 `j <= i`, 줄이 늘수록 별이 줄면 더해서 일정한 값(`i + j = 5`)으로 푼다.
+
+**대각선 두 개 그리기**
+```java
+for (int i = 1; i <= 4; i++)
+{
+    for (int j = 1; j <= 4; j++)
+    {
+        if (j == 5 - i || i == j)
+            System.out.print("★");
+        else
+            System.out.print("☆");
+    }
+    System.out.println();
+}
+// ★☆☆★
+// ☆★★☆
+// ☆★★☆
+// ★☆☆★
+```
+- `i == j`는 왼쪽 위에서 오른쪽 아래로 가는 대각선이고, `i + j == 5`(`j == 5 - i`)는 반대 방향 대각선이다. `||`로 묶어서 X자가 된다.
+
+**구구단 전체를 가로로**
+```java
+for (int i = 1; i <= 9; i++)             // 줄: 곱하는 수
+{
+    for (int j = 2; j <= 9; j++)         // 한 줄: 2단 ~ 9단
+    {
+        System.out.printf("%2d * %2d = %2d\t", j, i, j * i);
+    }
+    System.out.println();
+}
+```
+- 6일차에는 단 하나를 입력받아 세로로 출력했고, 이번에는 줄을 곱하는 수로 잡아서 2단부터 9단까지 한 줄에 나란히 출력했다.
+
+</details>
+
+<details>
+<summary><b>이중 for문 - 등수 구하기</b></summary>
+
+<br>
+
+```java
+for (int i = 0; i < 3; i++)
+{
+    rank[i] = 1;                              // 일단 1등으로 시작
+    for (int j = 0; j < 3; j++)
+    {
+        if (total[i] < total[j])              // 나보다 총점이 높은 사람이 있으면
+            rank[i]++;                        // 등수가 한 칸 밀린다
+    }
+}
+```
+
+| 총점 | 270 | 180 | 270 |
+|---|:-:|:-:|:-:|
+| 등수 | 1 | 3 | 1 |
+
+- 8일차에 만든 3명 성적 처리에 등수를 추가했다. 입력, 총점, 평균, 학점 부분은 같고, 입력이 끝난 뒤에 등수 계산 for를 따로 돌린다.
+- 내 등수는 "나보다 총점이 높은 사람 수 + 1"이다. 모든 사람과 한 번씩 비교해야 해서 이중 for를 쓴다.
+- 자기 자신과 비교할 때는 `total[i] < total[i]`가 false라서 등수에 영향이 없다.
+- 점수가 같으면 같은 등수가 되고, 다음 등수는 건너뛴다. (270점 두 명이 1등이면 180점은 3등)
+- 정렬하지 않고 등수만 구하기 때문에 입력한 순서가 그대로 유지된다.
+
+</details>
+
+<details>
+<summary><b>이중 for문에서 break와 라벨</b></summary>
+
+<br>
+
+```java
+outer:
+for (int i = 1; i <= 3; i++)
+{
+    for (int j = 1; j <= 3; j++)
+    {
+        if (j == 2)
+            break outer;                       // 바깥 for까지 종료
+        System.out.println("i=" + i + ",j=" + j);
+    }
+}
+// i=1,j=1
+```
+
+| `j == 2`일 때 | 출력 (i, j) |
+|---|---|
+| `break outer;` | 1,1 |
+| `break;` | 1,1  2,1  3,1 |
+| `continue;` | 1,1  1,3  2,1  2,3  3,1  3,3 |
+
+- 7일차에 정리한 대로 `break`와 `continue`는 자기가 속한 반복문 하나만 제어한다. 안쪽 for의 `break`는 안쪽만 끝내고 바깥 for는 계속 돈다.
+- 바깥 반복문까지 한 번에 끝내려면 바깥 for 앞에 `outer:` 같은 라벨을 붙이고 `break outer;`를 쓴다.
+
+</details>
+
+<details>
+<summary><b>숫자 야구 게임 준비</b></summary>
+
+<br>
+
+```
+3자리 정수를 맞추는 게임
+같은 자리에 같은 숫자: S
+다른 자리에 있는 숫자: B
+
+123 → 235 : 0S-2B
+123 → 135 : 1S-1B
+123 → 123 : 3S  (종료)
+```
+
+```java
+int[] com = new int[3];
+for (int i = 0; i < com.length; i++)
+{
+    com[i] = (int)(Math.random() * 9) + 1;    // 1 ~ 9
+    for (int j = 0; j < i; j++)
+    {
+        if (com[j] == com[i])
+        {
+            i--;
+            break;
+        }
+    }
+}
+```
+
+- 규칙을 주석으로 먼저 정리하고, 컴퓨터가 중복 없는 3자리 숫자를 만드는 부분까지 작성했다.
+- 중복을 없애는 방식은 8일차 로또와 같다. 앞 칸과 비교해서 같으면 `i--`로 같은 칸을 다시 뽑는다.
+- 사용자 입력과 S / B 판정은 아직 작성하지 않았다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 배열 주소 대입(`b = a`)과 `clone()` 비교, 한쪽을 바꿨을 때 다른 쪽에 영향이 있는지 확인 |
+| `Arrays.copyOf()`, for로 직접 복사, `System.arraycopy()`로 배열 복사 비교 |
+| 정수를 입력받아 16자리 2진수로 출력 |
+| 년, 월, 일을 입력받아 달력 출력 (총 날 수를 직접 계산, 입력한 날은 빨간색) |
+| 같은 달력을 `Calendar`로 출력 |
+| 3자리 숫자 야구 게임의 규칙 정리, 컴퓨터 숫자 생성 (진행 중) |
+| 이중 for로 X자 별 찍기 (★ / ☆) |
+| 이중 for로 구구단 2단 ~ 9단 가로 출력 |
+| 3명 성적 처리에 등수 추가 |
+| 라벨 `break outer`로 이중 for 한 번에 종료 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- 달력(직접 계산)의 총 날 수에서 윤년으로 늘어난 날을 `(year - 1) % 4 - (year - 1) % 100 + (year - 1) % 400`으로 구했다. 이 값은 나머지가 아니라 몫(`/ 4 - / 100 + / 400`)이어야 한다. 2026년은 맞게 나오지만 2024년 1월 1일은 월요일인데 목요일로 나오는 등 대부분의 연도에서 요일이 어긋난다. `/`로 고치면 1900 ~ 2100년 전체가 실제 달력과 맞다.
+- `Calendar` 달력에서 `getMaximum(Calendar.DATE)`는 항상 31을 돌려준다. 그래서 2026년 2월에도 29, 30, 31일이 출력된다. 그 달의 실제 마지막 날을 돌려주는 `getActualMaximum(Calendar.DATE)`로 바꿔야 한다.
+- 2진수 변환은 16칸이라 65535까지만 담을 수 있다. 65536부터는 `index`가 -1이 되어 `ArrayIndexOutOfBoundsException`이 난다. 코드 위 주석에는 32767로 적혀 있어서 입력 범위를 정해서 검사해야 한다.
+- 숫자 야구는 사용자 입력과 S / B 판정이 남아 있다. 같은 자리 비교(S)와 다른 자리 포함 여부(B)를 어떻게 나눌지 정해야 한다.
+- 등수 입력 안내 문구가 `(i + 1) + "' 국어입력:"`이라서 화면에 `1' 국어입력:`으로 출력된다. 작은따옴표를 지워야 한다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+배열을 `b = a`로 넘기면 같은 배열을 같이 쓰고, 따로 쓰려면 `clone()`이나 `Arrays.copyOf()`로 복사해야 한다. 이중 for는 바깥이 줄, 안쪽이 한 줄 안의 내용이고, 모든 값과 비교해야 하는 등수 같은 문제에도 쓴다. 날짜 계산은 직접 만들 수도 있고 `Calendar`를 쓸 수도 있는데, 직접 만든 식은 여러 연도로 결과를 확인해야 틀린 곳을 찾을 수 있다.
 
 </details>
