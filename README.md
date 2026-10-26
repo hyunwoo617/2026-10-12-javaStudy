@@ -1895,3 +1895,640 @@ for (int i = 0; i < n; i++)
 - 실무에서는 상황에 따라 `ArrayList`, 클래스 등을 함께 사용한다.
 
 </details>
+
+---
+
+## 10일차 | 2026.10.23 (금) | Chapter 05. 참조타입 (문자열 배열), 정렬, 열거형
+
+<details>
+<summary><b>문자열 배열과 split()</b></summary>
+
+<br>
+
+```java
+String[] names = {"홍길동", "이순신", "심청이", "박문수", "강감찬"};
+//                 names[0]  [1]    [2]    [3]    [4]
+
+String msg = "홍길동,이순신,심청이,박문수,강감찬";
+String[] s = msg.split(",");        // 구분 문자로 잘라서 배열에 저장
+for (String n : s)
+{
+    System.out.println(n);
+}
+```
+
+- 문자열 여러 개는 `String[]`에 모은다. 인덱스로 접근하고 for-each로 출력한다.
+- `split()`은 구분 문자를 기준으로 문자열을 잘라서 배열로 돌려준다. 7일차에 `substring`과 `indexOf`로 하나씩 자르던 일을 한 번에 한다.
+- `+`, `*`, `|`, `^`, `?`, `.`는 정규식에서 쓰는 기호라서 구분 문자로 쓸 때 앞에 `\\`를 붙여야 한다. 예: `split("\\|")`
+- 배열은 크기가 고정이라 크기를 바꿀 수 있는 `ArrayList<String>`은 컬렉션에서 배운다.
+
+</details>
+
+<details>
+<summary><b>문자열 배열 활용 - 과일명 검색</b></summary>
+
+<br>
+
+과일 50개를 `"Apple-사과"` 형태(영문명-한글명)로 배열에 넣고, `f.substring(0, f.indexOf("-"))`로 영문명만 꺼내서 사용했다.
+
+**가장 긴 이름, 가장 짧은 이름**
+```java
+int max = 0;
+for (String f : 과일명)
+{
+    int len = f.substring(0, f.indexOf("-")).length();
+    if (max < len)
+        max = len;                        // 가장 긴 길이를 먼저 구한다
+}
+for (String f : 과일명)
+{
+    String ss = f.substring(0, f.indexOf("-"));
+    if (ss.length() == max)               // 그 길이와 같은 이름을 모두 출력
+        System.out.println(ss);
+}
+```
+- 결과는 가장 긴 이름이 `Honeydewmelon`(13자), 가장 짧은 이름이 `Fig`(3자)다. 짧은 이름은 `min = 100`에서 시작해 같은 방식으로 구한다.
+- 길이를 먼저 구한 뒤 같은 길이를 모두 찾으면 이름이 여러 개여도 놓치지 않는다.
+
+**검색 세 가지**
+| 방식 | 사용한 메소드 | 입력 | 결과 |
+|---|---|---|---|
+| 포함 검색 | `contains()`, 입력값과 과일명을 둘 다 `toLowerCase()`로 바꿔서 대소문자 구분 없이 | BER | Strawberry, Raspberry, Blueberry, Blackberry ... |
+| 자동 완성 | `startsWith()`, 하나 찾을 때마다 `Thread.sleep(1000)` | pa | Papaya, Passionfruit, Pawpaw |
+| 끝 문자 | `endsWith()`, 하나 찾으면 `break` | 과 | Apple |
+
+- 검색어는 `scan.next()`로 받는다. 공백 앞까지만 읽는다.
+- 7일차에 Jsoup 데이터로 하던 문자열 검색을 이번에는 배열에 넣은 데이터로 했다.
+
+</details>
+
+<details>
+<summary><b>파일 데이터를 배열로 저장 - 영화 검색</b></summary>
+
+<br>
+
+```java
+FileReader fr = new FileReader("c:\\javaDev\\movie.txt");
+StringBuffer sb = new StringBuffer();
+int i = 0;
+while ((i = fr.read()) != -1)              // 6일차에 배운 파일 읽기
+{
+    sb.append((char) i);
+}
+fr.close();
+
+String[] movies = sb.toString().split("\n");     // 영화 한 편 = 한 줄
+String[] rank = new String[1938];
+String[] title = new String[1938];
+String[] genre = new String[1938];
+String[] actor = new String[1938];
+String[] grade = new String[1938];
+String[] director = new String[1938];
+
+i = 0;
+for (String movie : movies)
+{
+    String[] total = movie.split("\\|");         // 한 줄을 항목별로 자른다
+    rank[i] = total[0];
+    title[i] = total[1];
+    genre[i] = total[2];
+    actor[i] = total[4];                         // 3번(포스터 주소)은 쓰지 않는다
+    grade[i] = total[6];                         // 5번(개봉일)은 쓰지 않는다
+    director[i] = total[7];
+    i++;
+}
+```
+
+- 파일의 한 줄은 `순위|제목|장르|포스터 주소|출연진|개봉일|관람 등급|감독` 순서다. 필요 없는 항목은 배열에 저장하지 않는다.
+- 먼저 줄 단위로 `split("\n")`을 하고, 그 줄을 다시 `split("\\|")`로 자른다. `split`을 두 번 쓴다.
+- 데이터를 저장하는 방식은 두 가지다.
+
+| 저장 방식 | 배열 | 사용 방법 |
+|---|---|---|
+| 항목별로 나눠서 저장 | 여러 개 | 같은 인덱스로 묶어서 사용, 일반 for |
+| 한 덩어리로 저장 | 1개 | 문자열 검색, for-each |
+
+**출연진으로 영화 찾기**
+```java
+String ac = scan.next();
+int count = 0;
+for (int j = 0; j < actor.length; j++)
+{
+    if (actor[j].contains(ac))
+    {
+        System.out.println(title[j]);          // 같은 인덱스의 제목
+        count++;
+    }
+}
+System.out.println("총 출연작은 " + count + "편입니다");
+```
+- 출연진 배열에서 찾은 위치(`j`)로 제목 배열을 읽는다. 두 배열의 인덱스가 같은 영화를 가리키기 때문이다.
+- 페이지 나누기 코드(주석 처리)도 만들어 봤다. 총 페이지는 `(int)Math.ceil(title.length / 10.0)`이고, 1938편이면 193.8을 올림해서 194페이지다. 시작 위치는 `page * 10 - 10`이라서 1페이지는 0 ~ 9, 2페이지는 10 ~ 19다.
+- `movie.txt`는 저장소에 올리지 않고 내 PC(`c:\javaDev`)에 두고 실행했다.
+
+</details>
+
+<details>
+<summary><b>정렬 - 선택 정렬</b></summary>
+
+<br>
+
+```java
+// 오름차순: 기준 칸(i)과 뒤의 모든 칸(j)을 비교해서 기준보다 작은 값이 오면 서로 바꾼다
+for (int i = 0; i < arr.length - 1; i++)
+{
+    for (int j = i + 1; j < arr.length; j++)
+    {
+        if (arr[i] > arr[j])
+        {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+}
+```
+
+```
+30 20 50 10 40
+10 30 50 20 40     1라운드 (i=0) : 가장 작은 값이 0번 칸으로
+10 20 50 30 40     2라운드 (i=1)
+10 20 30 50 40     3라운드 (i=2)
+10 20 30 40 50     4라운드 (i=3)
+```
+
+- 한 라운드가 끝나면 기준 칸에 그 자리에 올 값이 정해진다. 바깥 for는 `0 ~ 길이 - 2`, 안쪽 for는 `i + 1 ~ 길이 - 1`이다.
+- 값을 바꿀 때는 4일차에 배운 임시 변수(`temp`)를 쓴다.
+- 파일의 실행 코드는 난수 알파벳 5개(`char[]`)를 `arr[i] < arr[j]`로 비교해서 내림차순으로 정렬한다. 예: `[F, J, O, P, N]` → `[P, O, N, J, F]`. 문자도 유니코드 숫자로 비교된다. 비교 방향(`>` / `<`)만 바꾸면 오름차순과 내림차순이 바뀐다.
+- 라운드 출력(`Round:`)이 안쪽 for 안에 있어서 비교할 때마다 한 줄씩 출력된다.
+
+</details>
+
+<details>
+<summary><b>정렬 - 버블 정렬</b></summary>
+
+<br>
+
+```java
+for (int i = 0; i < arr.length - 1; i++)
+{
+    for (int j = 0; j < arr.length - 1 - i; j++)
+    {
+        if (arr[j] > arr[j + 1])               // 이웃한 두 값을 비교
+        {
+            int temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+        }
+    }
+}
+```
+
+```
+30 20 50 10 40
+20 30 10 40 50     1바퀴 : 가장 큰 값 50이 맨 뒤로
+20 10 30 40 50     2바퀴 : 40이 뒤에서 두 번째로
+10 20 30 40 50     3바퀴
+```
+
+| 구분 | 선택 정렬 | 버블 정렬 |
+|---|---|---|
+| 비교 대상 | 기준 칸과 뒤의 모든 칸 | 이웃한 두 칸 |
+| 한 라운드 결과 | 기준 칸의 값이 정해진다 | 가장 큰 값이 맨 뒤에 정해진다 |
+| 안쪽 for 범위 | `j = i + 1` ~ 끝 | `j = 0` ~ `length - 1 - i` |
+
+- 한 바퀴를 돌 때마다 맨 뒤 칸이 하나씩 고정되기 때문에 안쪽 for의 끝이 `length - 1 - i`로 줄어든다.
+- 파일에는 직접 짠 코드를 주석으로 두고 실행 코드는 `Arrays.sort(arr)`로 정렬했다. 정렬 원리를 이해하려고 직접 짜 본 것이고, 웹 개발에서는 이중 for로 정렬하지 않고 라이브러리를 쓴다.
+
+</details>
+
+<details>
+<summary><b>열거형 (enum)</b></summary>
+
+<br>
+
+```java
+enum 전화국번
+{
+    서울("02"),
+    경기도("031"),
+    인천("032"),
+    // ... 17개
+    제주("064");
+
+    String code;
+    전화국번(String code)
+    {
+        this.code = code;
+    }
+    String getCode()
+    {
+        return code;
+    }
+}
+
+for (전화국번 n : 전화국번.values())
+{
+    if (n.name().contains(loc))
+        System.out.println(loc + "의 국번은 " + n.getCode());
+}
+```
+
+- 열거형은 정해진 값 중 하나를 고를 때 쓰는 상수 모음이다. 요일, 주문 상태, 사용자 권한, 결제 상태, 서버 명령(`LOGIN`, `LOGOUT`, `MAKEROOM`, `ROOMIN`)이 예다.
+- `values()`는 상수 전체를 배열로, `name()`은 상수 이름을 문자열로 돌려준다.
+- 상수는 `==`로 비교한다. `Day today = Day.금요일;`을 출력하면 `금요일`이고, `today == Day.월요일`은 `false`다.
+- 지역명에 "충청"을 입력하면 충청남도(041)와 충청북도(043)가 둘 다 나온다. 이름에 포함되는지로 찾기 때문이다.
+- `System.out.println(032)`는 `32`가 아니라 `26`을 출력한다. 0으로 시작하는 정수는 8진수로 읽히기 때문이다(3일차 리터럴). 국번처럼 앞의 0이 필요한 값을 `int`로 저장하면 안 되고 문자열로 저장해야 하는 이유다.
+
+</details>
+
+<details>
+<summary><b>1 ~ 4장 정리와 변수 선언 위치</b></summary>
+
+<br>
+
+| 단계 | 내용 |
+|---|---|
+| 변수 | 프로그램에 필요한 데이터 저장 |
+| 연산자, 제어문 | 요청에 따라 데이터 처리 |
+| 배열, 클래스 | 필요한 데이터를 묶어서 사용 |
+| 메소드 | 관련된 명령어를 묶어서 사용 |
+| 예외처리 | 비정상 종료와 에러를 미리 방지 |
+| 라이브러리 | 컬렉션, 데이터베이스 연동 등 웹과 관련된 기능 |
+
+- 이후 흐름: 데이터를 영구 저장하는 오라클, 화면을 만드는 HTML / CSS(정적)와 JavaScript(동적), 자바와 오라클을 연결하는 JSP, 형식을 통일하는 Spring과 MyBatis / JPA, 프런트의 JQuery → Vue → React, 배포의 DevOps(CI/CD, AWS).
+- 지역변수는 메소드 안에 선언하고 Stack에 저장되어 자동으로 해제된다. 해제 시점은 선언한 `{}`가 끝날 때다.
+
+**4 x 4 문자 출력 연습**
+```java
+for (int i = 1; i <= 4; i++)
+{
+    for (int j = 1; j <= 4; j++)
+    {
+        char c = 'A';                // 안쪽 for 안에 선언
+        System.out.print(c++);
+    }
+    System.out.println();
+}
+```
+- 목표는 `ABCD`를 네 줄 출력하거나, `ABCD / EFGH / IJKL / MNOP`를 출력하는 것이다.
+- 문제: 현재 코드는 `AAAA`가 네 줄 나온다.
+- 원인: `c`가 안쪽 `{}` 안에 선언되어서 반복할 때마다 새로 만들어지고 `'A'`로 초기화된다. `c++`로 올려도 그 회차가 끝나면 사라진다.
+- 해결: 선언 위치를 옮긴다. 줄마다 `ABCD`가 나오게 하려면 `char c = 'A';`를 안쪽 for 앞(바깥 for 안)에 두고, `EFGH`로 이어지게 하려면 바깥 for 앞에 둔다. 두 경우 모두 실행해서 확인했다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 문자열 배열 출력, `split(",")`로 잘라서 배열 만들기 |
+| 과일명 50개에서 가장 긴 / 짧은 이름 찾기, `contains` / `startsWith` / `endsWith` 검색 |
+| 파일에서 영화 데이터를 읽어 항목별 배열 6개에 저장, 출연진으로 영화 검색 |
+| 난수 알파벳 5개를 선택 정렬(내림차순) |
+| 버블 정렬 원리 정리, `Arrays.sort()`로 정렬 |
+| 전화 국번 열거형, 지역명으로 국번 검색 |
+| 요일 열거형 상수 출력과 비교 |
+| 1 ~ 4장 정리, 4 x 4 문자 출력 연습 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- 과일명 배열에 `Raspberry`와 `Persimmon`이 두 번씩 들어 있어서 검색하면 같은 이름이 두 번 나온다. 데이터를 한 번만 넣어야 한다.
+- 영화 검색의 입력을 `next()`로 받아서 공백 앞까지만 읽는다. "팀 로빈스"를 입력하면 "팀"으로만 검색된다. 공백까지 받으려면 `nextLine()`을 써야 한다.
+- 주석 처리한 영화명 검색은 첫 번째로 맞지 않는 영화를 만나면 "일치하는 영화가 없습니다"를 출력하고 `break`한다. 전부 비교한 뒤에 하나도 없을 때만 출력하도록 고쳐야 한다.
+- 4 x 4 문자 출력은 위에 정리한 대로 `c`의 선언 위치를 옮겨서 두 가지 출력을 모두 코드로 남겨 둘 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 문자열 여러 개는 `String[]`에 모으고, `split()`으로 한 번에 배열로 만든다.
+- 파일에서 읽은 한 줄을 구분 문자로 잘라 항목별 배열에 저장하면 검색과 페이지 나누기에 쓸 수 있다.
+- 선택 정렬은 기준 칸과 뒤의 칸들을, 버블 정렬은 이웃한 칸끼리 비교한다. 실제로는 `Arrays.sort()`를 쓴다.
+- 정해진 값 중 하나를 고르는 상수는 enum으로 묶는다.
+- 지역변수는 선언한 `{}` 안에서만 살아 있다.
+
+</details>
+
+---
+
+## 11일차 | 2026.10.26 (월) | Chapter 05. 메소드
+
+<details>
+<summary><b>메소드의 개념과 구조</b></summary>
+
+<br>
+
+- 메소드는 한 가지 기능을 수행하는 명령문을 묶은 것이다. 클래스 안에 만들고, 메소드 안에 메소드를 만들 수는 없다.
+- 장점: 반복되는 코드를 없애 재사용할 수 있고, 가독성과 유지보수가 좋아지고, 에러를 처리하기 쉽다.
+- 기능을 나눌 때는 "어디까지가 한 가지 기능인지"를 먼저 정한다. main에서는 변수, 연산자, 제어문을 쓰지 않고 메소드를 호출해서 조립한다.
+
+```java
+리턴형 메소드명(매개변수...)       // 선언부
+{
+    요청 처리                      // 구현부
+    return 값;                    // 리턴형과 같은 데이터형
+}
+
+int add(int a, int b)
+{
+    return a + b;
+}
+int c = add(10, 20);             // 호출
+```
+
+| 구분 | 설명 |
+|---|---|
+| 리턴형 | 사용자 요청을 처리한 결과값, 1개만 보낼 수 있다. 여러 개면 배열, 컬렉션, 클래스를 쓴다 |
+| 매개변수 | 사용자가 보내는 요청값, 여러 개 가능 |
+| 메소드명 | 변수 이름과 같은 규칙, 소문자로 시작 |
+| void | 결과값이 없는 메소드. `return;`은 생략할 수 있고 컴파일할 때 자동으로 붙는다 |
+
+**리턴형과 매개변수 유무에 따른 네 가지 유형**
+| 리턴형 | 매개변수 | 예 |
+|:-:|:-:|---|
+| O | O | `String substring(int start)` |
+| O | X | `double random()` |
+| X | O | `void println(String s)` |
+| X | X | `void println()` |
+
+- 리턴형은 돌려줄 값과 같거나 더 큰 데이터형이어야 한다. `static long disp() { return 10; }`은 int 값을 long으로 자동 형변환해서 돌려준다.
+- 메소드는 만들고(제작) 부르는(호출) 두 단계로 쓴다. 호출할 때마다 메소드의 처음부터 다시 시작한다.
+- `static`이 붙은 메소드는 `클래스명.메소드()`로 호출한다. 붙지 않은 메소드(인스턴스 메소드)는 `new`로 객체를 만든 뒤 `객체명.메소드()`로 호출한다.
+
+</details>
+
+<details>
+<summary><b>매개변수가 있고 리턴이 없는 메소드 - 구구단</b></summary>
+
+<br>
+
+```java
+static void gugudan(int dan)
+{
+    for (int i = 1; i <= 9; i++)
+    {
+        System.out.println(dan + "*" + i + "=" + i * dan);
+    }
+}
+static void process()
+{
+    Scanner scan = new Scanner(System.in);
+    System.out.println("2~9까지 사이의 단 입력:");
+    int dan = scan.nextInt();
+    gugudan(dan);
+}
+public static void main(String[] args)
+{
+    process();
+}
+```
+
+- 출력은 `gugudan()`이, 입력과 호출은 `process()`가 맡는다. main은 `process()`만 부른다. 이렇게 입력, 처리, 출력을 나누고 `process()`에서 조립하는 구조를 11일차 내내 썼다.
+- 다른 클래스에서도 `메소드_1.process();`처럼 `클래스명.메소드()`로 호출해서 재사용할 수 있다.
+
+</details>
+
+<details>
+<summary><b>리턴형이 있는 메소드 - 사칙연산, 로그인</b></summary>
+
+<br>
+
+**사칙연산**
+```java
+static int plus(int a, int b)  { return a + b; }
+static int minus(int a, int b) { return a - b; }
+static int gop(int a, int b)   { return a * b; }
+static String div(int a, int b)
+{
+    if (b == 0)
+        return "0으로 나눌 수 없다";
+    else
+        return String.valueOf(a / (double) b);
+}
+```
+- 입력한 연산자는 `switch (scan.next())`로 나눠서 각 메소드를 호출한다. `10`, `4` 입력 시 `+` 14, `-` 6, `*` 40, `/` 2.5이고, 나누는 수가 0이면 "0으로 나눌 수 없다"가 나온다.
+- `div()`만 `String`을 돌려준다. 결과가 숫자일 수도 있고 메시지일 수도 있어서, 숫자를 `String.valueOf()`로 문자열로 바꿔서 한 가지 리턴형으로 맞췄다.
+
+**로그인**
+```java
+static boolean isLogin(String id, String pwd)
+{
+    final String MID = "Hong";
+    final String PWD = "1234";
+    boolean bCheck = false;
+    if (id.equals(MID) && pwd.equals(PWD))
+        bCheck = true;
+    return bCheck;
+}
+
+static void process()
+{
+    // ID, PWD 입력
+    boolean bCheck = isLogin(id, pwd);
+    if (bCheck == true)
+        System.out.println("(로그인 완료) Main Page로 이동!!");
+    else
+    {
+        System.out.println("아이디나 비밀번호가 틀립니다!! 다시 입력 하세요");
+        process();        // 자기 자신을 다시 호출 (재귀호출)
+    }
+}
+```
+- 맞는지 틀린지만 필요해서 리턴형을 `boolean`으로 했다. 문자열 비교는 4일차에 배운 대로 `equals()`를 쓰고, 두 조건은 `&&`로 묶는다.
+- 메소드는 자기 자신을 안에서 다시 호출할 수 있다. 틀렸을 때 `process()`를 다시 불러 처음부터 입력받는다.
+
+</details>
+
+<details>
+<summary><b>메소드 호출 순서와 지역변수</b></summary>
+
+<br>
+
+```java
+static void display()
+{
+    System.out.println("display() 진입...4");
+    System.out.println("사용자 요청 처리...5");
+    System.out.println("사용자 요청에 대한 결과값을 넘겨준다...6");
+}
+static void process()
+{
+    System.out.println("display() 진입...2");
+    System.out.println("사용자 요청 처리...3");
+    display();
+    System.out.println("사용자 요청에 대한 결과값을 넘겨준다...7");
+}
+public static void main(String[] args)
+{
+    System.out.println("main 시작 ...1");
+    process();
+    System.out.println("main 종료 ...8");
+}
+```
+
+| 순서 | 위치 |
+|:-:|---|
+| 1 | main 시작 |
+| 2, 3 | process() 실행 |
+| 4, 5, 6 | process()에서 호출한 display() 실행 |
+| 7 | display()가 끝나고 process()로 돌아와 나머지 실행 |
+| 8 | process()가 끝나고 main으로 돌아와 종료 |
+
+- 메소드는 `{}`가 끝나면 호출한 위치로 돌아온다. 프로그램은 main에서 시작하고 main이 끝나면 종료된다.
+- 지역변수는 메소드를 호출할 때마다 새로 만들어진다. `int a = 10; print(a); a++;`을 하는 메소드를 세 번 호출하면 매번 10이 출력되고, 증가시킨 값은 다음 호출에 남지 않는다.
+
+</details>
+
+<details>
+<summary><b>메소드 연습 - 오버로딩, 배열 주고받기</b></summary>
+
+<br>
+
+```java
+static void print()          { /* 1 ~ 10 출력 */ }
+static void alpha()          { /* A ~ Z 출력 */ }
+static int sum()             { /* 1 ~ 10 합 */ }
+static int sum(int n)        { /* 1 ~ n 합 */ }
+static char change(char c)   { return (char)(c + 32); }
+static void reverse(String msg)
+{
+    for (int i = msg.length() - 1; i >= 0; i--)
+        System.out.print(msg.charAt(i));
+}
+```
+
+- `sum()`과 `sum(int n)`처럼 이름이 같고 매개변수가 다르면 다른 메소드로 인식한다. 이것이 오버로딩이다. `sum()`은 55, `sum(100)`은 5050이다.
+- `change('A')`는 `'a'`를 돌려준다. 대문자와 소문자의 유니코드 차이가 32이기 때문이다(3일차 형변환).
+- `reverse("Hello Java")`는 `avaJ olleH`를 출력한다.
+
+```java
+static int max(int[] arr) { ... }              // 값 여러 개를 보내고 최댓값 하나를 받는다
+static int[] sort(int[] arr)
+{
+    Arrays.sort(arr);
+    return arr;                                // 결과가 여러 개면 배열로 돌려준다
+}
+```
+- 값을 여러 개 보낼 때는 배열을 매개변수로, 결과가 여러 개일 때는 배열을 리턴형으로 쓴다.
+- 배열은 참조형이라 메소드에 주소가 전달된다. 그래서 `sort(arr)`를 호출하면 메소드 안에서 정렬한 결과가 호출한 쪽의 `arr`에도 그대로 반영된다. 9일차 `b = a`와 같은 원리다.
+
+</details>
+
+<details>
+<summary><b>숫자 야구 게임 - 메소드로 나누기</b></summary>
+
+<br>
+
+9일차에 규칙만 정리하고 멈췄던 숫자 야구를 완성했다. 처음에는 main 하나에 모두 작성했고, 이어서 기능별 메소드로 나눴다.
+
+| 단계 | 메소드 | 리턴형 | 하는 일 |
+|---|---|---|---|
+| 1. 난수 발생 | `rand()` | `int[]` | 1 ~ 9 중복 없는 숫자 3개 생성 |
+| 2. 사용자 입력 | `userInput()` | `int[]` | 세 자리 정수를 입력받아 자리별로 배열에 저장 |
+| 3. 비교 | `compare(com, user)` | `int[]` | `{S, B}` 계산 |
+| 4. 힌트 | `hint(com, user)` | `int` | 결과를 출력하고 S 개수 반환 |
+| 5. 종료 여부 | `exit(s)` | `boolean` | S가 3이면 true |
+| 조립 | `process()` | `void` | 위 메소드를 순서대로 호출 |
+
+```java
+static int[] compare(int[] com, int[] user)
+{
+    int s = 0, b = 0;
+    for (int i = 0; i < com.length; i++)
+    {
+        for (int j = 0; j < user.length; j++)
+        {
+            if (com[i] == user[j])
+            {
+                if (i == j) s++;       // 같은 수, 같은 자리
+                else        b++;       // 같은 수, 다른 자리
+            }
+        }
+    }
+    return new int[]{s, b};            // 값 두 개를 배열로 돌려준다
+}
+```
+
+| 정답 | 입력 | 결과 |
+|---|---|---|
+| 1 2 3 | 2 3 5 | 0S-2B |
+| 1 2 3 | 1 3 5 | 1S-1B |
+| 1 2 3 | 3 2 1 | 1S-2B |
+| 1 2 3 | 1 2 3 | 3S (종료) |
+
+- 입력은 `while (true)`로 받고, 100 ~ 999가 아니거나 0이 들어 있거나 같은 수가 있으면 `continue`로 다시 입력받는다(7일차). 자리 분리는 4일차의 `/`와 `%`를 썼다.
+- 난수는 8일차 로또처럼 같은 수가 나오면 `i--`로 다시 뽑는다.
+- `compare()`는 S와 B 두 값을 돌려줘야 해서 `int[]`로 만들었다. 메소드는 리턴을 한 개만 할 수 있어서 배열로 묶는다.
+- 정답을 맞히면 다시 할지 묻고, `y`면 `process()`를 다시 호출해 새 게임을 시작하고 아니면 `System.exit(0)`으로 프로그램을 끝낸다.
+- 입력을 받는 `Scanner`는 메소드마다 만들지 않고 `static Scanner scan`으로 한 번만 만들어 모든 메소드가 같이 쓴다.
+
+</details>
+
+<details>
+<summary><b>앞으로 배울 내용 (12일차부터)</b></summary>
+
+<br>
+
+- 객체 지향: SOLID, 특성, 객체와 객체의 연결
+- 예외 처리
+- 컬렉션, IO, 람다식
+- 어노테이션, 리플렉션, JSON
+- JUnit
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 단을 입력받아 구구단 출력 (매개변수만 있는 메소드), 다른 클래스에서 호출 |
+| 정수 두 개와 연산자를 입력받아 사칙연산 (메소드 4개) |
+| 메소드 호출 순서 확인 (main → process → display) |
+| ID, 비밀번호 확인 로그인 (boolean 리턴, 재귀호출) |
+| 숫자 야구 게임 (main 하나로 작성) |
+| 메소드 리턴형과 지역변수 생명주기 주석 정리 |
+| 1 ~ 10 출력, A ~ Z 출력, 합계, 오버로딩, 대문자를 소문자로, 문자열 거꾸로 출력 |
+| 배열을 보내고 최댓값 받기, 정렬해서 받기 |
+| 숫자 야구 게임을 기능별 메소드로 분리 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `max(int[] arr)`는 `m = 0`에서 시작해서 음수만 들어 있는 배열이면 0을 돌려준다. 8일차처럼 `arr[0]`에서 시작해야 한다.
+- 사칙연산에서 `+ - * /`가 아닌 연산자를 입력하면 `default`가 없어서 아무것도 출력되지 않는다.
+- 숫자 야구의 힌트 출력 서식이 `%ds-%dB`라서 `1s-1B`처럼 S가 소문자로 나온다. `%dS`로 바꿔야 한다.
+- 로그인과 숫자 야구의 "다시 하기"는 `process()`를 다시 호출하는 구조라 틀리거나 다시 할 때마다 호출이 쌓인다. 반복문으로 바꾸면 어떻게 달라지는가?
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 메소드는 선언부(리턴형, 메소드명, 매개변수)와 구현부로 만들고, 호출하면 끝난 뒤 호출한 위치로 돌아온다.
+- 결과값은 리턴형으로 한 개만 보낸다. 여러 개를 보내야 하면 배열로 묶는다.
+- 이름이 같아도 매개변수가 다르면 다른 메소드(오버로딩)다.
+- 배열을 매개변수로 보내면 주소가 전달되어 메소드 안의 변경이 원본에 반영된다.
+- 입력, 처리, 출력을 메소드로 나누고 `process()`에서 조립하면 main이 간단해진다.
+
+</details>
