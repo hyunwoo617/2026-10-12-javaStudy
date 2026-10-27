@@ -2532,3 +2532,346 @@ static int[] compare(int[] com, int[] user)
 - 입력, 처리, 출력을 메소드로 나누고 `process()`에서 조립하면 main이 간단해진다.
 
 </details>
+
+---
+
+## 12일차 | 2026.10.27 (화) | Chapter 05. 메소드 (배열 주고받기), 객체지향 (클래스)
+
+<details>
+<summary><b>배열을 매개변수로 받는 메소드</b></summary>
+
+<br>
+
+정수 10개가 든 배열을 보내서 기능별로 결과를 돌려받는다. 메소드 하나가 기능 하나를 맡는다.
+
+| 메소드 | 매개변수 | 리턴형 | 하는 일 |
+|---|---|---|---|
+| `hap(int[] arr)` | `int[]` | `int` | 합계 |
+| `max(int[] arr)` | `int[]` | `int` | 최댓값 |
+| `min(int[] arr)` | `int[]` | `int` | 최솟값 |
+| `avg(int[] arr)` | `int[]` | `double` | 평균 |
+| `even(int[] arr)` | `int[]` | `int` | 짝수 개수 |
+| `odd(int[] arr)` | `int[]` | `int` | 홀수 개수 |
+
+```java
+static int hap(int[] arr)
+{
+    int sum = 0;
+    for (int i : arr)
+    {
+        sum += i;
+    }
+    return sum;
+}
+
+static int max(int[] arr)
+{
+    int max = 0;               // 가장 작은 값에서 시작
+    for (int i : arr)
+    {
+        if (i > max)
+            max = i;
+    }
+    return max;
+}
+```
+
+```java
+// main
+int[] arr = new int[10];
+for (int i = 0; i < arr.length; i++)
+    arr[i] = (int)(Math.random() * 100) + 1;      // 1 ~ 100
+
+int sum = hap(arr);
+System.out.printf("평균:%.2f\n", avg(arr));
+```
+
+```
+[82, 35, 88, 83, 35, 26, 3, 71, 42, 94]     실행 예
+합:559  최댓값:94  최솟값:3  평균:55.90  짝수의 개수:5  홀수의 개수:5
+```
+
+- 11일차에 배운 "값 여러 개는 배열로 보낸다"를 그대로 적용했다. 합계, 개수는 `int`, 평균은 소수점이 필요해서 `double`로 돌려준다.
+- `even(arr)`는 `even`이라는 이름의 메소드에 배열 `arr`를 보낸다는 뜻이다. 호출 결과는 변수에 담아도 되고 출력문 안에서 바로 써도 된다.
+- 최댓값은 가장 작은 값에서, 최솟값은 가장 큰 값에서 시작한다. 난수가 1 ~ 100이라서 `max`는 0, `min`은 100으로 시작했다.
+- `printf`는 서식 문자열과 값을 쉼표로 구분한다. `printf("평균:%.2f\n" + avg)`처럼 `+`로 이으면 값이 없는 서식이 되어 `MissingFormatArgumentException`이 난다.
+
+</details>
+
+<details>
+<summary><b>배열을 돌려주는 메소드 - 이름 검색</b></summary>
+
+<br>
+
+```java
+static String[] nameFind(String name)
+{
+    String[] names = {"홍길동", "이순신", "강감찬", "심청이", "춘향이"};
+    int count = 0;
+    for (String n : names)
+    {
+        if (n.contains(name))
+            count++;                       // 1) 일치하는 개수를 먼저 센다
+    }
+    String[] nn = new String[count];       // 2) 그 크기로 배열을 만든다
+    int i = 0;
+    for (String n : names)
+    {
+        if (n.contains(name))
+        {
+            nn[i] = n;                     // 3) 다시 돌면서 채운다
+            i++;
+        }
+    }
+    return nn;
+}
+```
+
+| 호출 | 결과 |
+|---|---|
+| `nameFind("홍길동")` | `[홍길동]` |
+| `nameFind("이")` | `[이순신, 심청이, 춘향이]` |
+
+- 검색 결과가 몇 개일지 모르는데 배열은 크기가 고정이다. 그래서 개수를 먼저 세고, 그 크기로 배열을 만든 뒤 한 번 더 돌면서 채운다.
+- 결과가 여러 개이므로 리턴형을 `String[]`로 했다. 11일차에 정리한 "리턴은 한 개, 여러 개면 배열"이다.
+- 이 방식은 반복문을 두 번 돈다. 크기가 바뀌는 데이터를 다루는 컬렉션(`ArrayList`)을 배우면 한 번에 처리할 수 있다.
+
+</details>
+
+<details>
+<summary><b>리턴형을 정하는 기준과 boolean</b></summary>
+
+<br>
+
+```java
+static boolean isLogin(String id, String pwd)
+{
+    if (id.equals("admin") && pwd.equals("1234"))
+        return true;                       // 메소드 종료
+    else
+        return false;                      // 메소드 종료
+}
+```
+
+| 결과의 종류 | 리턴형 | 예 |
+|---|---|---|
+| 두 가지 경우 | `boolean` | 로그인 여부 |
+| 여러 가지 경우 | `String` | 결과 메시지 |
+| 목록 | 배열, 컬렉션 | 검색 결과 목록 |
+| 상세 보기 | 클래스 | 글 하나, 회원 한 명의 정보 |
+| 그 밖의 값 | 기본형 | 페이지 번호는 `int` |
+| 글쓰기, 회원가입 | 클래스 | 입력할 항목이 여러 개라 한 번에 묶어서 보낸다 |
+
+- 메소드는 `return`을 만나는 곳에서 끝난다. `if`와 `else` 양쪽에 `return`이 있어서 어느 쪽으로 가도 메소드가 종료된다.
+- 11일차에는 `bCheck` 변수에 true를 담았다가 마지막에 리턴했다. 이번에는 조건에서 바로 리턴해서 변수가 필요 없다.
+- `admin`, `1234`를 입력하면 "로그인 되었습니다", 하나라도 틀리면 "로그인 실패하였습니다"가 나온다.
+
+</details>
+
+<details>
+<summary><b>클래스의 개념과 구성</b></summary>
+
+<br>
+
+- 클래스는 객체를 만들기 위한 설계도다. 설계도대로 만든 것이 객체이고, 클래스는 사용자가 만드는 데이터형이다.
+- `Scanner scan = new Scanner(System.in);`에서 `Scanner`가 클래스, `scan`이 클래스 변수, `new Scanner(...)`가 생성자다.
+
+**클래스의 종류**
+| 종류 | 가지고 있는 것 | 이름 붙이는 관례 |
+|---|---|---|
+| 데이터 클래스 | 데이터(변수)만 | `~VO`, `~DTO` |
+| 액션 클래스 | 메소드만 | `~DAO`, `~Service`, `~Manager` |
+| 혼합 | 데이터 + 메소드 | |
+
+**클래스의 구성**
+```java
+class ClassName
+{
+    변수       // 인스턴스 변수, 정적(static) 변수
+    생성자     // 변수 초기화
+    메소드
+}
+```
+
+**클래스 안에 선언한 변수의 기본값** (지역변수와 달리 자동으로 초기화된다)
+| 데이터형 | 기본값 |
+|---|---|
+| int | 0 |
+| long | 0L |
+| double | 0.0 |
+| float | 0.0F |
+| boolean | false |
+| String | null |
+
+- 데이터를 모아서 관리하는 클래스가 "사용자 정의 데이터형"이다. 4일차에 정리한 "한 개는 변수, 같은 타입 여러 개는 배열, 다른 타입 여러 개는 클래스"가 이것이다.
+- 생성자는 변수를 초기화하는 곳이다. 고정된 값을 넣을 때보다 파일이나 데이터베이스 같은 외부 데이터를 읽어서 초기화할 때 쓴다.
+
+</details>
+
+<details>
+<summary><b>객체 생성과 메모리 구조</b></summary>
+
+<br>
+
+```java
+class Student
+{
+    String name = "홍길동";
+    int hakbun = 1;
+    String sex = "남자";
+    Student(String n, int h, String s)
+    {
+        name = n;
+        hakbun = h;
+        sex = s;
+    }
+}
+
+Student hong = new Student("홍길동", 1, "남자");
+Student shim = new Student("심청이", 2, "여자");
+Student park = new Student("박문수", 1, "남자");
+
+System.out.println(hong.name);      // 홍길동
+System.out.println(hong);           // Student@... (주소)
+```
+
+```
+stack                    heap
+hong [ Student@2ff4acd0 ] ───▶ name    "홍길동"   ← hong.name
+                                hakbun  1
+                                sex     "남자"
+shim [ Student@...      ] ───▶ name    "심청이"
+                                ...
+```
+
+- `new`로 만들 때마다 Heap에 새 메모리가 생기고, 변수(`hong`)에는 그 주소가 저장된다. 객체 세 개가 각자 따로 `name`, `hakbun`, `sex`를 가진다.
+- 객체 안의 변수는 `객체명.변수`로 접근한다. `.`은 주소를 따라가서 접근하는 연산자다.
+- 객체를 그대로 출력하면 `Student@2ff4acd0`처럼 클래스 이름과 주소 값이 나온다. 8일차 배열을 그대로 출력했을 때 `[I@...`가 나온 것과 같은 참조형의 특징이다. 이 값은 실행할 때마다 달라진다.
+- 변수에 `"홍길동"`, `1`, `"남자"`를 먼저 넣어 두었지만 생성자가 실행되면서 넘겨 준 값으로 바뀐다.
+
+</details>
+
+<details>
+<summary><b>인스턴스 변수와 정적 변수</b></summary>
+
+<br>
+
+```java
+class Card
+{
+    int no;
+    String type;
+    static int width;       // 정적 변수 : 메모리 1개를 모든 객체가 공유
+    static int height;
+}
+
+Card a = new Card();  a.no = 2;  a.type = "♥";  a.width = 200;  a.height = 300;
+Card b = new Card();  b.no = 3;  b.type = "◆";  b.width = 250;  b.height = 350;
+Card c = new Card();  c.no = 4;  c.type = "♣";  c.width = 500;  c.height = 700;
+
+Card.width = 1000;
+Card.height = 2000;
+
+System.out.println(a.width);     // 1000
+System.out.println(a.height);    // 2000
+System.out.println(a.type);      // ♥
+```
+
+| 구분 | 인스턴스 변수 | 정적 변수 (`static`) |
+|---|---|---|
+| 메모리 | 객체마다 따로 | 1개만 만들어서 공유 |
+| 접근 | `객체명.변수` | `클래스명.변수` (객체명으로도 가능) |
+| 유지 | 객체가 있는 동안 | 프로그램이 끝날 때까지 |
+| 예 | `no`, `type` (카드마다 다름) | `width`, `height` (모든 카드가 같음) |
+
+- `a`, `b`, `c`에 각각 다른 `width`를 넣었는데 `a.width`가 1000으로 나온 이유는 `width`가 한 개뿐이라서 마지막에 넣은 `Card.width = 1000`이 모든 객체에 적용되기 때문이다.
+- `no`와 `type`은 객체마다 따로라서 `a.type`은 `♥` 그대로다.
+- 정적 변수는 객체를 만들지 않아도 `Card.width`로 쓸 수 있다. 객체명으로 접근할 수도 있지만 공유 값이라는 것을 드러내려고 클래스명으로 쓴다.
+- 11일차의 `static` 메소드도 같은 원리다. 객체 없이 `클래스명.메소드()`로 호출한다.
+
+</details>
+
+<details>
+<summary><b>데이터 클래스 만들기 - Movie, food</b></summary>
+
+<br>
+
+```java
+public class Movie
+{
+    int mno;
+    String title;
+    String genre;
+    String poster;
+    String actor;
+    String regdate;
+    String grade;
+    String director;
+}
+```
+
+- 10일차에 영화 데이터를 `rank`, `title`, `genre`, `actor`, `grade`, `director` 배열 6개로 나눠 저장했다. 이번에는 영화 한 편의 항목을 클래스 하나(`Movie`)로 묶었다. 영화 파일의 한 줄 항목 8개(번호, 제목, 장르, 포스터, 출연진, 개봉일, 등급, 감독)가 변수 8개와 대응한다.
+- 배열 여러 개를 같은 인덱스로 맞추던 방식에서, 객체 하나가 영화 한 편을 통째로 가지는 방식으로 바뀐다. 이런 데이터 클래스가 `~VO`다.
+- `food.java`도 같은 방식으로 맛집 정보(번호, 포스터, 이름, 종류, 전화번호, 주소, 평점, 영업시간, 휴무일, 좌석, 주류 판매, 흡연, 예약, 배달 등 20개 항목)와 레시피 정보(번호, 작성자, 제목, 재료, 조리 방법 등 8개 항목)를 변수로 선언했다. 재료와 순서처럼 여러 개인 항목은 `String[]`로 했다.
+
+```java
+public class MovieSystem
+{
+    static Movie[] movies = new Movie[1938];
+    static
+    {
+        // 자동 호출 => 변수를 자동으로 메모리에 저장
+        try
+        {
+        }
+        catch (Exception ex) {}
+    }
+}
+```
+- `Movie[]`는 영화 객체를 담는 배열이다. 영화가 1938편이라 칸을 1938개 만들었다.
+- `static { }` 블록은 클래스가 메모리에 올라갈 때 자동으로 실행된다. 목록이나 게시판처럼 프로그램이 시작할 때 미리 불러와야 하는 데이터를 이 블록에서 읽어서 `movies`에 채울 계획이다. 아직 블록 안은 비어 있다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 정수 10개 배열을 보내서 합계, 최댓값, 최솟값, 평균, 짝수 개수, 홀수 개수를 메소드로 구하기 |
+| 이름 목록에서 검색어가 들어간 이름만 찾아서 `String[]`로 돌려받기 |
+| ID, 비밀번호를 확인해서 `boolean`을 돌려주는 로그인 메소드 |
+| `Student` 클래스로 객체 3개를 만들어 변수 접근, 객체 출력 |
+| `Card` 클래스로 인스턴스 변수와 정적 변수의 차이 확인 |
+| 영화 정보를 담는 `Movie` 클래스, 영화 목록을 담는 `MovieSystem` 클래스 (진행 중) |
+| 맛집, 레시피 정보를 담는 `food` 클래스 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `avg()`는 `sum / 10.0`으로 나누어서 배열이 10개일 때만 맞다. `arr.length`로 나누면 개수가 달라져도 쓸 수 있다.
+- `max()`는 0, `min()`은 100에서 시작해서 값이 1 ~ 100일 때만 맞다. 범위를 모르는 배열은 8일차처럼 `arr[0]`에서 시작해야 한다.
+- 정적 변수를 `a.width`처럼 객체명으로 접근하면 이클립스에 경고가 뜬다. `Card.width`로 쓰는 습관을 들일 것.
+- `food` 클래스는 이름이 소문자로 시작하고(`Food`), `adress1`, `adress2`는 `address`, `Rating`은 `rating`이 관례다. 맛집 정보와 레시피 정보를 한 클래스에 같이 두었는데 둘로 나눌지도 정해야 한다.
+- `MovieSystem`의 `static` 블록이 비어 있다. 영화 파일을 읽어서 `Movie` 객체를 만들고 `movies`에 저장하는 코드를 채워야 한다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 값 여러 개는 배열로 보내고, 결과가 여러 개이면 배열을 돌려준다. 크기를 모르면 개수를 먼저 센 뒤 배열을 만든다.
+- 리턴형은 결과의 종류로 정한다. 두 가지는 `boolean`, 목록은 배열, 상세 정보는 클래스다.
+- 클래스는 설계도, 객체는 그 설계도로 `new`해서 Heap에 만든 것이다. 변수에는 주소가 들어 있다.
+- 인스턴스 변수는 객체마다 따로, `static` 변수는 하나를 공유한다.
+- 관련된 데이터를 항목별 배열 여러 개로 나누는 대신 데이터 클래스 하나로 묶어서 관리한다.
+
+</details>
