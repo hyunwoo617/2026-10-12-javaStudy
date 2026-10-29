@@ -51,10 +51,10 @@ public class MainClass {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		/*Student std=new Student();
+		Student std=new Student();
 		System.out.println("std="+std);
 		Student std2=new Student();
-		System.out.println("std2="+std2);*/
+		System.out.println("std2="+std2);
 		Student s1=new Student(1, "홍길동",90, 90, 90);
 		Student s2=new Student(2, "심청이",70, 70, 70);
 		Student s3=new Student(3, "박문수",80, 80, 80);
