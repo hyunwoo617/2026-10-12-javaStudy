@@ -2859,7 +2859,6 @@ public class MovieSystem
 - `max()`는 0, `min()`은 100에서 시작해서 값이 1 ~ 100일 때만 맞다. 범위를 모르는 배열은 8일차처럼 `arr[0]`에서 시작해야 한다.
 - 정적 변수를 `a.width`처럼 객체명으로 접근하면 이클립스에 경고가 뜬다. `Card.width`로 쓰는 습관을 들일 것.
 - `food` 클래스는 이름이 소문자로 시작하고(`Food`), `adress1`, `adress2`는 `address`, `Rating`은 `rating`이 관례다. 맛집 정보와 레시피 정보를 한 클래스에 같이 두었는데 둘로 나눌지도 정해야 한다.
-- `MovieSystem`의 `static` 블록이 비어 있다. 영화 파일을 읽어서 `Movie` 객체를 만들고 `movies`에 저장하는 코드를 채워야 한다.
 
 </details>
 
@@ -2873,5 +2872,569 @@ public class MovieSystem
 - 클래스는 설계도, 객체는 그 설계도로 `new`해서 Heap에 만든 것이다. 변수에는 주소가 들어 있다.
 - 인스턴스 변수는 객체마다 따로, `static` 변수는 하나를 공유한다.
 - 관련된 데이터를 항목별 배열 여러 개로 나누는 대신 데이터 클래스 하나로 묶어서 관리한다.
+
+</details>
+
+---
+
+## 13일차 | 2026.10.28 (수) | Chapter 06. 객체지향 프로그램 (클래스 구성요소, 생성자)
+
+<details>
+<summary><b>클래스의 구성요소와 변수 종류</b></summary>
+
+<br>
+
+```
+클래스 = 설계 : 데이터(변수) / 기능(메소드) / 저장(생성자)
+객체   = 실제 동작 : 어떤 데이터를 쓰는지(변수), 어떻게 움직이는지(메소드)
+```
+
+| 구성요소 | 종류 | 설명 |
+|---|---|---|
+| 변수 | 정적 변수 (`static`) | 공통으로 쓰는 공유 변수 |
+| 변수 | 인스턴스 변수 | 객체마다 따로 쓰는 변수 |
+| 생성자 | | 변수 초기화, 시작과 동시에 처리할 기능 |
+| 메소드 | 정적 메소드 (`static`) | 공유하는 기능 |
+| 메소드 | 인스턴스 메소드 | 객체마다 따라 수행하는 기능 |
+
+**변수 종류 비교**
+| 구분 | 선언 위치 | 사라지는 시점 | 저장 영역 |
+|---|---|---|---|
+| 지역변수 | 메소드 안 | 메소드가 끝나면 | Stack |
+| 정적 변수 | 클래스 안, `static` | 프로그램이 끝날 때 (컴파일할 때 자동 생성) | Method Area |
+| 인스턴스 변수 | 클래스 안 | 객체가 사라질 때 (`new`로 생성) | Heap |
+
+- 변수와 메소드는 선언하는 방법이 같고, 데이터형은 기본형, 클래스(사용자 정의, 라이브러리), 배열, 상수와 열거형을 모두 쓸 수 있다.
+- 메소드는 다른 클래스와 연결할 때 쓴다. 사용은 변수를 활용해서 한다.
+
+</details>
+
+<details>
+<summary><b>객체의 생명 주기와 메모리 구조</b></summary>
+
+<br>
+
+```
+객체 생성          객체 활용        객체 소멸      메모리 해제
+A a = new A();     a.display()      a = null       System.gc()
+```
+
+| 메모리 영역 | 저장 내용 | 관리 |
+|---|---|---|
+| Method Area | 클래스 정보(메소드), static 변수 | |
+| Stack | 지역변수, 매개변수, 객체 변수(주소) | `{}`가 끝나면 자동 회수 |
+| Heap | `new`로 만든 실제 데이터 (배열, 객체) | 가비지 컬렉션(GC)이 관리 |
+
+```java
+class A
+{
+    int a;            // 인스턴스 변수
+    static int b;     // 정적 변수
+    void display() {}
+}
+A aa = new A();
+A bb = new A();
+```
+
+```
+stack            heap
+aa [0x100] ───▶  0x100 : a = 0              aa.a, aa.display()
+bb [0x200] ───▶  0x200 : a = 0              bb.a, bb.display()
+
+Method Area
+b = 0     ◀── aa.b, bb.b, A.b 모두 같은 하나
+```
+
+- `new`를 할 때마다 Heap에 새 공간이 생기고 변수에는 그 주소가 저장된다. 인스턴스 변수 `a`는 객체마다 따로 있고, 정적 변수 `b`는 하나를 공유한다.
+- 12일차에 확인한 `Card`의 `width`, `height`가 이 구조 때문에 모든 객체에서 같은 값이 나온 것이다.
+
+</details>
+
+<details>
+<summary><b>지역변수 우선, this, static 규칙</b></summary>
+
+<br>
+
+```java
+class A
+{
+    static int a = 10;
+    int b = 100;
+
+    static void display()
+    {
+        int a = 20;                        // 지역변수
+        System.out.println(a + A.a);       // 20 + 10 = 30
+    }
+    void aaa()
+    {
+        a = 100;                           // 정적 변수
+        this.b = 200;                      // 이 객체의 인스턴스 변수
+    }
+}
+
+A.display();           // 30
+A.a = 100;
+A aa = new A();        // this = aa
+A bb = new A();        // this = bb
+bb.a = 1000;           // 객체명으로 접근했지만 정적 변수 하나를 바꾼다
+```
+
+- 같은 이름의 지역변수가 있으면 지역변수가 먼저 쓰인다. 정적 변수는 `A.a`처럼 클래스명을 붙여서 구분한다. 실행하면 `30`이 출력된다.
+- `this`는 객체 자신의 주소다. `aa.aaa()`를 호출하면 `this`는 `aa`이고, `bb.aaa()`를 호출하면 `bb`다. 생성자 안에서 `this`를 출력해 보면 `new`로 만든 변수의 주소와 같은 값이 나온다.
+- `static` 메소드와 `static` 블록 안에서는 인스턴스 변수를 쓸 수 없다. 인스턴스 변수는 객체가 있어야 만들어지는데 `static`은 객체 없이 실행되기 때문이다.
+- 인스턴스 변수는 `객체 변수`, 정적 변수는 `클래스 변수`라고도 부른다.
+
+</details>
+
+<details>
+<summary><b>생성자의 역할과 특징</b></summary>
+
+<br>
+
+```java
+class Student
+{
+    int hakbun;                  // 0
+    String name;                 // null
+    int kor, eng, math;
+    static String schoolName;
+
+    Student()                    // 매개변수가 없는 생성자
+    {
+        System.out.println("변수의 초기화 담당");
+        System.out.println("처음 실행시 기능이 필요한 경우...");
+        System.out.println("this=" + this);
+    }
+    Student(int hakbun, String name, int kor, int eng, int math)
+    {
+        this.hakbun = hakbun;    // 매개변수와 변수 이름이 같을 때 this로 구분
+        this.name = name;
+        this.kor = kor;
+        this.eng = eng;
+        this.math = math;
+    }
+}
+
+Student std = new Student();                              // 안내 문구 3줄 출력
+Student s1 = new Student(1, "홍길동", 90, 90, 90);
+Student s2 = new Student(2, "심청이", 70, 70, 70);
+Student s3 = new Student(3, "박문수", 80, 80, 80);
+```
+
+- 생성자는 객체를 만들 때 한 번 호출되는 메소드다. 변수를 초기화하거나 시작과 동시에 처리할 기능(자동 로그인, 서버 연결, 데이터베이스 연결)에 쓴다. 호출할 때는 반드시 `new`와 함께 쓴다.
+- 반드시 존재해야 하는 메소드라서 직접 만들지 않으면 매개변수가 없는 디폴트 생성자를 컴파일러가 자동으로 만든다.
+- `new Student()`를 두 번 하면 안내 문구가 두 번 출력된다. 객체를 만들 때마다 생성자가 실행된다.
+- 매개변수가 있는 생성자는 객체마다 초기값을 다르게 줄 때 쓴다. `s1`, `s2`, `s3`가 각자 다른 학번, 이름, 점수를 가진다.
+- 13일차 `클래스_1.java`에서는 `Student`에 매개변수 없는 생성자와 3개짜리 생성자를 둘 다 만들었고, `sex`에는 초기값을 주지 않아 기본값 `null`이다.
+
+**생성자의 특징**
+| 특징 | 설명 |
+|---|---|
+| 이름 | 클래스명과 같다 (대소문자 구분) |
+| 리턴형 | 없다. `void`도 리턴형이라 `void A()`는 생성자가 아니라 일반 메소드다 |
+| 개수 | 여러 개 가능 (매개변수 개수나 데이터형이 다르면 오버로딩) |
+
+</details>
+
+<details>
+<summary><b>변수의 초기화 방법</b></summary>
+
+<br>
+
+```java
+class A
+{
+    int a = 100;              // 1) 명시적 초기화
+    static int b = 200;
+
+    {                         // 2) 인스턴스 초기화 블록
+        a = 200;
+        b = 300;
+    }
+    static                    // 2) static 초기화 블록
+    {
+        b = 1000;             // a = 500; 은 오류 (인스턴스 변수 사용 불가)
+    }
+    A()                       // 3) 생성자
+    {
+        a = 300;
+        b = 400;
+    }
+}
+```
+
+| 방법 | 형태 |
+|---|---|
+| 명시적 초기화 | `int a = 100;` |
+| 초기화 블록 | `{ }` (인스턴스), `static { }` (정적) |
+| 생성자 | `A() { }` |
+
+- 클래스 영역에는 선언만 할 수 있다. `int a;`를 쓰고 다음 줄에 `a = 100;`을 쓰는 것은 오류이고, 값은 선언할 때 같이 넣거나 블록, 생성자 안에서 넣는다.
+- 클래스 영역에 `for`문 같은 실행문도 쓸 수 없다.
+- `static` 블록에서는 인스턴스 변수를 쓸 수 없다. 인스턴스 변수는 인스턴스 블록이나 생성자에서 초기화한다.
+
+</details>
+
+<details>
+<summary><b>접근지정어, 객체지향 3대 특성 미리보기</b></summary>
+
+<br>
+
+| 구분 | 종류 |
+|---|---|
+| 접근지정어 | `public`, `protected`, `default`, `private` |
+| 제어어 | `static`, `final`, `abstract` |
+
+| 객체지향 3대 특성 | 내용 | 관련 문법 |
+|---|---|---|
+| 캡슐화 | 데이터를 보호한다 | Getter(읽기) / Setter(쓰기), Lombok |
+| 상속 | 부모의 기능을 재사용하고 확장한다 | `extends` |
+| 다형성 | 새로운 기능을 추가하거나 기존 기능을 변경한다 | 오버로딩, 오버라이딩 |
+
+```java
+class A { int a = 200, b, c, d, e, f; }
+class B extends A { }
+
+B b = new B();
+// b 안에는 부모 A의 변수 a ~ f (super 영역)와 B 자신의 영역(this)이 함께 만들어진다
+```
+
+- 상속은 `extends`로 한다. 상속을 내려 주는 클래스는 재사용되고 상속받는 클래스는 기능이 확장된다. 상속 대신 다른 클래스를 변수로 가지는 포함 관계도 있다.
+- 다른 클래스와 연결하는 방법으로 추상 클래스, 인터페이스, 내부 클래스를 배운다.
+- 에러를 미리 막고 비정상 종료를 방지하는 것이 예외처리다. 컴파일 에러는 반드시 예외처리를 해야 하고 실행 중 에러는 상황에 따라 처리한다.
+- 이후에는 `java.lang`(10장), `java.util`(11장), 컬렉션, IO, 데이터베이스, 쓰레드와 네트워크를 배운다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 클래스의 구성요소, 객체 생명 주기, 메모리 영역(Stack, Heap, Method Area) 정리 |
+| 지역변수와 정적 변수 이름이 같을 때 결과 확인 (`20 + 10 = 30`), `this` 정리 |
+| 매개변수 없는 생성자와 5개짜리 생성자로 `Student` 객체 생성, 학생 3명 정보 출력 |
+| `Student` 클래스에 생성자 2개를 만들어 홍길동, 심청이, 박문수 객체 생성, 객체 주소 출력 |
+| `Card` 클래스로 정적 변수 공유 확인 (12일차 코드 재작성) |
+| 영화 정보 `Movie` 클래스, 영화 목록 `MovieSystem` 클래스 (비어 있음) |
+| 12일차 `food` 클래스를 `Food`, `Recipe` 클래스로 분리 (내용은 아직 비어 있음) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `클래스_1.java` 주석에 `int`의 기본값이 `100`으로 적혀 있다. 맞는 값은 `0`이다.
+- 인스턴스 초기화 블록, `static` 블록, 생성자 중 어느 것이 먼저 실행되는지는 주석 예시만 있고 코드로 출력해 확인하지 않았다. 직접 출력해서 순서를 확인할 것.
+- `Food`, `Recipe` 클래스가 비어 있다. 12일차 `food`에 있던 맛집 변수와 레시피 변수를 나눠 옮겨야 한다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 클래스는 변수, 생성자, 메소드로 이루어지고 변수와 메소드는 각각 정적과 인스턴스로 나뉜다.
+- 인스턴스 변수는 `new`할 때마다 Heap에 따로 생기고, 정적 변수는 Method Area에 하나만 있다.
+- 지역변수는 같은 이름의 정적 변수보다 우선하고, `this`는 객체 자신이다.
+- 생성자는 클래스명과 같고 리턴형이 없다. 객체를 만들 때 한 번 실행되어 변수를 초기화한다.
+- 클래스 영역에는 선언과 초기화만 가능하다.
+
+</details>
+
+---
+
+## 14일차 | 2026.10.29 (목) | Chapter 06. 객체지향 프로그램 (생성자 오버로딩, 캡슐화, 영화 시스템)
+
+<details>
+<summary><b>생성자 오버로딩</b></summary>
+
+<br>
+
+```java
+class Sawon
+{
+    private int sabun;
+    private String name;
+    private String dept;
+
+    public Sawon()
+    {
+        sabun = 1;
+        name = "홍길동";
+        dept = "개발부";
+    }
+    public Sawon(int sabun, String name)
+    {
+        this.sabun = sabun;
+        this.name = name;
+    }
+    public Sawon(String name, String dept)
+    {
+        this.name = name;
+        this.dept = dept;
+    }
+    public Sawon(int sabun, String name, String dept)
+    {
+        this(name, dept);          // 같은 클래스의 다른 생성자 호출
+        this.sabun = sabun;
+    }
+    public void display() { /* 사번, 이름, 부서 출력 */ }
+}
+```
+
+| 객체 생성 | 출력 (사번 / 이름 / 부서) |
+|---|---|
+| `new Sawon()` | 1 / 홍길동 / 개발부 |
+| `new Sawon(2, "심청이")` | 2 / 심청이 / null |
+| `new Sawon("박문수", "영업부")` | 0 / 박문수 / 영업부 |
+
+- 생성자는 인스턴스 변수와 static 변수를 초기화하는 메소드다. 객체를 만들 때마다 다른 데이터로 초기화할 때 쓰고, 필요할 때만 만든다. 생성자가 하나도 없으면 매개변수 없는 디폴트 생성자가 자동으로 하나 추가된다.
+- 생성자를 직접 하나라도 만들면 디폴트 생성자는 추가되지 않는다. 매개변수 없는 생성자가 필요하면 직접 만들어야 한다.
+- 생성자 호출은 `new 생성자()`로만 한다. 단독으로 호출할 수 없다.
+- 값을 넣지 않은 변수는 기본값으로 남는다. `new Sawon(2, "심청이")`의 `dept`는 `null`, `new Sawon("박문수", "영업부")`의 `sabun`은 `0`이다.
+- `this(name, dept)`는 같은 클래스의 다른 생성자를 호출한다. 생성자 안에서 쓰고 첫 줄에 둔다.
+
+**오버로딩 조건**
+| 번호 | 조건 |
+|:-:|---|
+| 1 | 메소드 이름이 같다 |
+| 2 | 같은 클래스 안에 만든다 |
+| 3 | 매개변수의 개수나 데이터형이 다르다 |
+| 4 | 리턴형은 관계없다 |
+
+</details>
+
+<details>
+<summary><b>캡슐화와 접근 지정어</b></summary>
+
+<br>
+
+캡슐화는 데이터를 보호할 목적으로 쓴다. 변수는 감추고(`private`), 필요한 만큼만 메소드로 열어 준다.
+
+| 접근 지정어 | 자신의 클래스 | 같은 패키지 | 다른 패키지의 상속 클래스 | 모든 클래스 |
+|---|:-:|:-:|:-:|:-:|
+| `private` | O | | | |
+| `default` | O | O | | |
+| `protected` | O | O | O | |
+| `public` | O | O | O | O |
+
+- 관례: 인스턴스 변수는 `private`, 생성자, 메소드, 클래스는 `public`으로 한다. 윈도우의 `Button`, `TextField`처럼 `public`으로 열어 두고 쓰는 경우도 있다.
+
+| 대상 | 형식 | 제어어 |
+|---|---|---|
+| 변수 | `접근지정어 데이터형 변수명` | `static`(공통), `final`(마지막, 값을 바꿀 수 없음) |
+| 메소드 | `접근지정어 리턴형 메소드명(매개변수)` | `static`, `final`, `abstract`(구현 없이 선언만) |
+| 생성자 | `접근지정어 클래스명()` | |
+| 클래스 | `접근지정어 class ClassName` | `final`, `abstract`, `static` |
+
+```java
+import lombok.*;
+
+@Data
+class Sawon
+{
+    private int sabun;           // 클래스 밖에서 직접 접근 불가
+    private String name;
+    protected String job;
+    String dept;
+    public int pay;
+}
+
+Sawon s = new Sawon();
+s.job = "과장";                   // 같은 패키지라서 직접 접근 가능
+s.dept = "개발부";
+s.pay = 4500;
+s.setSabun(1);                    // private 변수는 Setter로 쓴다
+s.setName("홍길동");
+System.out.println(s.getName());  // Getter로 읽는다
+```
+
+- `private` 변수는 같은 클래스 밖에서 `s.sabun`처럼 접근할 수 없다. 읽기는 Getter(`getSabun()`), 쓰기는 Setter(`setSabun()`)로 한다.
+- Getter, Setter를 변수마다 직접 만들면 코드가 길어져서 Lombok의 `@Data`를 썼다. 변수마다 붙이던 `@Getter`, `@Setter`(주석 처리해 둠)를 클래스에 `@Data` 하나로 대신한다.
+- Lombok은 `lombok-1.18.48.jar`를 프로젝트 라이브러리로 추가해서 쓴다.
+
+</details>
+
+<details>
+<summary><b>영화 시스템 - Movie, MovieSystem, Main</b></summary>
+
+<br>
+
+12일차에 만들기 시작한 영화 목록을 클래스 세 개로 나눠 완성했다.
+
+| 클래스 | 역할 | 종류 |
+|---|---|---|
+| `Movie` | 영화 한 편의 정보 (번호, 제목, 장르, 포스터, 출연진, 개봉일, 등급, 감독) | 데이터 클래스 |
+| `MovieSystem` | 파일 읽기, 목록 / 상세 / 검색 기능 | 액션 클래스 |
+| `Main` | 메뉴 입력과 결과 출력 | 실행 클래스 |
+
+```java
+@Data
+public class Movie
+{
+    private int mno;
+    private String title;
+    private String genre;
+    private String poster;
+    private String actor;
+    private String regdate;
+    private String grade;
+    private String director;
+    // 생성자는 자동 추가
+}
+```
+
+**MovieSystem - 파일 읽기**
+```java
+private static Movie[] movies = new Movie[1938];
+static
+{
+    try
+    {
+        FileReader fr = new FileReader("c:\\javaDev\\movie.txt");
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        while ((i = fr.read()) != -1)
+        {
+            sb.append((char) i);
+        }
+        fr.close();
+
+        String[] movie = sb.toString().split("\n");     // 영화 한 편 = 한 줄
+        i = 0;
+        for (String m : movie)
+        {
+            String[] info = m.split("\\|");
+            movies[i] = new Movie();
+            movies[i].setMno(Integer.parseInt(info[0]));
+            movies[i].setTitle(info[1]);
+            movies[i].setGenre(info[2]);
+            movies[i].setActor(info[4]);
+            movies[i].setRegdate(info[5]);
+            movies[i].setGrade(info[6]);
+            movies[i].setDirector(info[7]);
+            i++;
+        }
+    }
+    catch (Exception ex)
+    {
+        System.out.println(ex.getMessage());
+        ex.printStackTrace();
+    }
+}
+```
+
+- 12일차에 비어 있던 `static` 블록을 채웠다. 10일차에 배열 6개로 나눠 저장하던 데이터를 이번에는 `Movie` 객체 하나에 담아 `Movie[]`에 저장한다.
+- `static` 블록은 클래스가 메모리에 올라갈 때 호출 없이 자동으로 실행된다. static 변수는 여기서 초기화하고, 인스턴스 변수는 생성자에서 초기화한다.
+- 문자열을 `+`로 이으면 결합할 때마다 메모리가 바뀐다. 그래서 글자를 읽을 때마다 `StringBuffer`에 모아 두고 한 번에 처리한다.
+- `info[0]`은 문자열이라서 `Integer.parseInt()`로 정수로 바꿔 `mno`에 저장한다.
+- 파일을 읽을 때는 예외가 날 수 있어서 `try ~ catch`로 감쌌다. 예외 처리 방법은 복구(`try ~ catch`), 회피(`throws`, 메소드 뒤에 붙임), 발생(`throw`) 세 가지다. 여기서는 오류 메시지를 출력하는 복구를 썼다.
+- `movies`는 `private static`이라 밖에서 직접 쓸 수 없고, 아래 `public` 메소드로만 가져간다. 캡슐화를 적용한 것이다.
+
+**MovieSystem - 기능 세 가지**
+| 기능 | 메소드 | 리턴형 | 동작 |
+|---|---|---|---|
+| 목록 | `movieListData()` | `Movie[]` | `movies` 전체를 돌려준다 |
+| 상세 보기 | `movieDetailData(int mno)` | `Movie` | `movies[mno - 1]` (번호는 1부터, 인덱스는 0부터) |
+| 검색 | `movieFindData(String fd)` | `Movie[]` | 제목에 `fd`가 들어간 영화만 |
+
+```java
+public Movie[] movieFindData(String fd)
+{
+    int count = 0;
+    for (Movie m : movies)
+    {
+        if (m.getTitle().contains(fd))
+            count++;                         // 개수를 먼저 센다
+    }
+    Movie[] m = new Movie[count];
+    int i = 0;
+    for (Movie mm : movies)
+    {
+        if (mm.getTitle().contains(fd))
+        {
+            m[i] = mm;
+            i++;
+        }
+    }
+    return m;
+}
+```
+
+- 리턴형은 결과의 종류로 정한다. 영화 한 편이면 `Movie`, 여러 편이면 `Movie[]`다. 12일차 이름 검색과 같이 개수를 먼저 세고 그 크기로 배열을 만든다.
+- 목록과 검색은 여러 개라서 `Movie[]`, 상세 보기는 하나라서 `Movie`다.
+
+**Main - 메뉴**
+```java
+MovieSystem ms = new MovieSystem();
+Scanner scan = new Scanner(System.in);
+while (true)
+{
+    // 1. 영화 전체 목록  2. 영화 상세 보기  3. 영화 검색  4. 종료
+    int menu = scan.nextInt();
+    if (menu == 4) { System.out.println("프로그램 종료"); break; }
+    else if (menu == 1)
+    {
+        Movie[] movie = ms.movieListData();
+        for (Movie m : movie)
+            System.out.println(m.getMno() + "." + m.getTitle());
+    }
+    // 2: ms.movieDetailData(mno), 3: ms.movieFindData(fd)
+}
+```
+
+- `Main`은 입력과 출력만 맡고 데이터 처리는 `MovieSystem`의 메소드를 호출한다. 11일차에 정리한 입력, 처리, 출력을 나누는 구조를 클래스 단위로 확대한 것이다.
+- 메뉴 반복은 6일차 `while (true)`와 `break`, 메뉴 분기는 5일차 `else if`다.
+- 검색을 선택하면 `검색된 영화 개수:` 뒤에 개수가 나오고, 이어서 `번호.제목` 목록이 출력된다.
+- `getMno()`, `getTitle()`처럼 Getter로 읽는다. `Movie`의 변수가 `private`이기 때문이다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 사원 클래스에 생성자 4개를 만들어 `new Sawon()`, `new Sawon(2, "심청이")`, `new Sawon("박문수", "영업부")`로 객체 생성 (생성자 오버로딩) |
+| 접근 지정어별 변수를 가진 `Sawon` 클래스, Lombok `@Data`로 Getter, Setter 사용 |
+| 영화 정보를 담는 `Movie` 클래스 (`@Data`) |
+| 영화 파일을 읽어 `Movie[]`에 저장하고 목록, 상세, 검색 기능을 만든 `MovieSystem` |
+| 메뉴로 영화 목록, 상세 보기, 검색을 실행하는 `Main` |
+| `User` 클래스 (아직 비어 있음) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `생성자_오버로딩.java`의 네 번째 생성자에 `Srting` 오타가 있어서 컴파일 오류가 난다. `String`으로 고쳐야 한다. 이 생성자는 `this(name, dept)`로 값을 넣은 뒤 `this.name`, `this.dept`를 다시 대입해서 중복이고, `main`에서는 한 번도 호출하지 않았다.
+- `Movie`와 `데이터보호_캡슐화`는 Lombok에 의존한다. 프로젝트 `.classpath`에 `C:/javaDev/lombok-1.18.48.jar`라는 내 PC의 절대 경로로 등록되어 있고 저장소에는 jar가 없어서, 다른 PC에서 내려받으면 빌드 오류가 난다.
+- 영화 개수 `1938`이 코드에 고정되어 있다. 파일 줄 수가 모자라면 목록과 검색에서 `NullPointerException`이 난다. 상세 보기도 번호 범위 검사가 없어서 `0`이나 `1939`를 입력하면 `ArrayIndexOutOfBoundsException`이 난다. 7일차에 배운 입력값 검사를 붙이면 된다.
+- `static` 블록 안의 `System.out.println(sb.toString())`이 프로그램을 시작할 때마다 파일 전체를 출력한다. 읽어 온 데이터를 확인하려고 둔 것이라면 지워야 한다.
+- 파일의 네 번째 항목(포스터 주소)을 `setPoster()`로 저장하지 않아서 `getPoster()`는 항상 `null`이다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 생성자는 매개변수의 개수와 데이터형을 다르게 해서 여러 개 만들 수 있고, 객체를 만들 때 넘긴 값에 따라 초기화가 달라진다.
+- 변수는 `private`으로 감추고 Getter, Setter로 접근한다. 반복되는 Getter, Setter는 Lombok `@Data`로 줄인다.
+- 데이터는 `Movie`, 기능은 `MovieSystem`, 입출력은 `Main`으로 클래스를 나누면 역할이 분명해진다.
+- 결과가 한 개이면 클래스, 여러 개이면 클래스 배열을 돌려준다.
+- 파일 읽기처럼 예외가 날 수 있는 코드는 `try ~ catch`로 감싼다.
 
 </details>
