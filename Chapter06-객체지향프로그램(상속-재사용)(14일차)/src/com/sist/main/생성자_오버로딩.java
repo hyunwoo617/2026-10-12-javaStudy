@@ -61,7 +61,7 @@ class Sawon{
 		this.name=name;
 		this.dept=dept;
 	}
-	public Sawon(int sabun,Srting name,String dept) {
+	public Sawon(int sabun,String name,String dept) {
 		this(name,dept);
 		this.sabun=sabun;
 		this.name=name;
