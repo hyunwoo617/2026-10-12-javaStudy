@@ -3438,3 +3438,344 @@ while (true)
 - 파일 읽기처럼 예외가 날 수 있는 코드는 `try ~ catch`로 감싼다.
 
 </details>
+
+---
+
+## 15일차 | 2026.10.30 (금) | Chapter 06. 객체지향 프로그램 (상속, 오버라이딩, 음악 순위 시스템)
+
+<details>
+<summary><b>자바 프로그램의 구조와 객체지향 큰 그림</b></summary>
+
+<br>
+
+| 구성 | 내용 |
+|---|---|
+| package | 폴더 구조. 관련된 클래스를 쉽게 찾으려고 모아 둔다. 다른 패키지에서 쓰려면 접근지정어가 필요하다 |
+| import | 패키지가 다른 클래스를 가져온다. 여러 개 쓸 수 있고, 3개 이상이면 `java.util.*`처럼 묶는다 |
+| 클래스 | 변수 영역(인스턴스 / 정적) → 생성자 → 메소드. 순서는 상관없다 |
+
+- 접근지정어 관례: 클래스, 메소드, 생성자는 모든 패키지에서 쓰도록 `public`, 변수는 감추는 `private`으로 하고 읽기(Getter)와 쓰기(Setter) 메소드만 `public`으로 연다. 객체와 객체는 메소드로 통신한다.
+- 생성자는 여러 개 만들 수 있고, 없으면 디폴트 생성자가 자동으로 만들어진다.
+- 메소드는 변수를 이용해서 처리하는 객체 관련 기능과, 독립적인 기능(`static`)으로 나뉜다.
+- 변수, 메소드, 클래스는 모두 메모리에 저장한 뒤에 쓴다. 참조형은 주소를 저장해서 리모컨처럼 제어한다. `new 생성자()`로 저장하고, `static`은 자동으로 저장된다. 스프링이 클래스 정보를 읽어서 메모리를 할당하는 방식이 리플렉션이다.
+
+| 객체지향에서 해결하려는 것 | 방법 |
+|---|---|
+| 공통으로 쓰는 기능을 모아서 재사용 (반복 제거, 확장, 유지보수, 가독성) | 상속, 포함 |
+| 필요할 때 기능을 변경하거나 추가 | 다형성 (오버라이딩, 오버로딩) |
+| 관련된 클래스를 하나로 묶어서 제어 | 추상화 (인터페이스, 추상 클래스) |
+| 클래스끼리 공통으로 쓰는 변수와 메소드 | 내부 클래스 |
+| 종료되지 않는 프로그램 | 예외처리 |
+
+</details>
+
+<details>
+<summary><b>상속 (extends)</b></summary>
+
+<br>
+
+```java
+class A extends B
+// B : 상속을 내리는 클래스 (부모, super 클래스)
+// A : 상속을 받는 클래스 (자식, sub 클래스, 파생 클래스)
+```
+
+```
+사람            이름, 성별, 나이
+학생 extends 사람     학번, 전공
+회사원 extends 사람   사번, 부서
+```
+
+- 공통으로 쓰는 변수와 메소드를 부모에 모아 두고 자식은 필요한 것만 추가한다. 학생, 회사원에 이름, 성별, 나이를 각각 만들지 않아도 되고, 수정할 때 부모 한 곳만 고친다.
+- 게시판도 같다. 답변형 게시판은 게시판의 목록, 글쓰기, 상세보기, 수정, 삭제, 검색을 그대로 쓰고 `답변하기()`만 추가한다. 댓글 게시판은 `댓글` 기능만 추가한다. 소스가 간결해지고 분석과 가독성이 좋아진다.
+- 자바는 **단일 상속**만 가능하다. 부모를 하나만 가질 수 있다.
+- 생성자와 초기화 블록은 자식에게 상속되지 않는다. `static`은 객체마다 따로 만들어지는 것이 아니라 공통으로 쓰는 것이라서, 자식 클래스에서도 부모의 `static` 변수를 이름으로 바로 쓸 수 있다. (아래 음악 시스템에서 `MelonMusic`이 `Music`의 `musics`를 그대로 쓴다)
+- `private`은 상속은 되지만 자식에서 쓸 수 없다. 자식까지 쓰게 하려면 `protected`를 쓴다.
+- 단점: 부모 메모리와 자식 메모리가 둘 다 만들어져서 메모리가 커지고 실행 속도가 느려질 수 있다. 그래서 상속은 꼭 필요할 때만 쓴다.
+
+```java
+class Super { int a; public void display() {} }
+class Sub extends Super { int b; public void bbb() {} }
+
+Sub sub = new Sub();
+```
+
+```
+stack              heap
+sub [100] ───▶  100 ┌ super 영역 : a, display()   ← 부모에게 받은 것
+                    └ this  영역 : b, bbb()       ← 자식이 추가한 것
+```
+
+- 자식 객체를 만들면 Heap에 부모 영역(`super`)과 자식 영역(`this`)이 함께 만들어진다. 13일차에 정리한 "b 안에 super와 this가 함께 있다"가 이 구조다.
+
+</details>
+
+<details>
+<summary><b>오버라이딩</b></summary>
+
+<br>
+
+```java
+class Animal
+{
+    int age = 10;
+    public void eat() { System.out.println("먹는다"); }
+    public void run() { System.out.println("걷는다"); }
+}
+class Pig extends Animal
+{
+    int age;
+    public Pig() { age = 5; }
+    public void eat() { System.out.println("돼지처럼 먹는다"); }   // 재정의
+    public void run() { System.out.println("돼지처럼 걷는다"); }
+}
+// Dog, Horse도 같은 방식 (age 3, 7)
+
+Animal pig = new Pig();
+System.out.println("나이:" + pig.age);
+pig.eat();
+pig.run();
+```
+
+```
+나이:10
+돼지처럼 먹는다
+돼지처럼 걷는다
+나이:10          ← dog
+개처럼 먹는다
+개처럼 걷는다
+나이:10          ← horse
+말처럼 먹는다
+말처럼 걷는다
+```
+
+- 오버라이딩은 상속받은 메소드를 자식 클래스에서 다시 정의해서 기능을 바꾸는 것이다.
+
+| 오버라이딩 조건 |
+|---|
+| 상속을 받은 클래스에서 한다 |
+| 메소드 이름이 같다 |
+| 매개변수가 같다 |
+| 리턴형이 같다 |
+| 접근 지정어는 넓히는 것만 가능하고 좁힐 수 없다 (`private` < `default` < `protected` < `public`) |
+
+| 구분 | 오버로딩 | 오버라이딩 |
+|---|---|---|
+| 위치 | 같은 클래스 | 상속받은 클래스 |
+| 메소드 이름 | 같다 | 같다 |
+| 매개변수 | 다르다 | 같다 |
+| 리턴형 | 관계없다 | 같다 |
+| 목적 | 새로운 기능 추가 | 기존 기능 변경 |
+
+- 부모 타입 변수 `Animal`에 자식 객체(`new Pig()`)를 넣을 수 있다. 같은 `eat()`를 호출해도 만든 객체에 따라 돼지, 개, 말의 결과가 다르게 나온다.
+- 실행해 보면 메소드는 실제 객체(`Pig`)의 것이 실행되지만 `age`는 `Animal`의 10이 나온다. 변수는 오버라이딩되지 않고 변수의 타입(`Animal`)을 기준으로 읽기 때문이다. 자식에서 `int age;`를 다시 선언하면 부모의 `age`와 이름만 같은 별개의 변수가 된다.
+
+</details>
+
+<details>
+<summary><b>음악 순위 시스템 - 클래스 구성</b></summary>
+
+<br>
+
+14일차 영화 시스템은 `Movie`, `MovieSystem`, `Main` 세 개였다. 이번에는 같은 구조에 상속을 적용했다. 멜론과 지니는 데이터를 가져오는 방법만 다르고, 목록과 검색 기능은 같다.
+
+| 클래스 | 역할 | 종류 |
+|---|---|---|
+| `MusicVO` | 곡 한 개의 정보 (순위, 포스터, 곡명, 가수명, 앨범, 등락 상태, 등락 폭) | 데이터 클래스 |
+| `Music` | 목록, 곡명 검색, 가수명 검색 | 상속을 내리는 부모 클래스 |
+| `MelonMusic` | 멜론 차트에서 데이터를 읽어 저장 | `Music`을 상속 |
+| `GenieMusic` | 지니 차트에서 데이터를 읽어 저장 | `Music`을 상속 |
+| `UserMain` | 콘솔에서 목록과 검색 실행 | 실행 클래스 |
+| `MusicList` | 윈도우 화면 | `JFrame` 상속 |
+
+```java
+public class Music                                   // 상속을 내리는 클래스
+{
+    public static MusicVO[] musics = new MusicVO[50];    // 곡 50개를 저장
+
+    public MusicVO[] musicListData()                 // 1. 목록
+    {
+        return musics;
+    }
+    public MusicVO[] musicSearchTitle(String title)  // 2. 곡명 검색
+    {
+        int count = 0;
+        for (MusicVO vo : musics)
+        {
+            if (vo.getTitle().contains(title))
+                count++;
+        }
+        MusicVO[] music = new MusicVO[count];
+        int i = 0;
+        for (MusicVO vo : musics)
+        {
+            if (vo.getTitle().contains(title))
+            {
+                music[i] = vo;
+                i++;
+            }
+        }
+        return music;
+    }
+    // musicSearchSinger()는 getSinger()로 같은 방식
+}
+```
+
+```java
+public class MelonMusic extends Music
+{
+    public MelonMusic()                              // 객체를 만들 때 데이터를 읽어서 저장
+    {
+        Document doc = Jsoup.connect("https://www.melon.com/chart/index.htm").get();
+        Elements title = doc.select("tr#lst50 div.rank01 a");
+        // singer, album, poster, etc도 같은 방식
+        for (int i = 0; i < title.size(); i++)
+        {
+            musics[i] = new MusicVO();
+            musics[i].setTitle(title.get(i).text());
+            musics[i].setRank(i + 1);
+            // ...
+        }
+    }
+}
+```
+
+| 가져올 정보 | 멜론 | 지니 |
+|---|---|---|
+| 곡명 | `tr#lst50 div.rank01 a` | `table.list-wrap a.title` |
+| 가수명 | `tr#lst50 div.rank02 span.checkEllipsis` | `table.list-wrap a.artist` |
+| 앨범 | `tr#lst50 div.rank03 a` | `table.list-wrap a.albumtitle` |
+| 포스터 | `tr#lst50 div.wrap img` (`src`) | `table.list-wrap a.cover img` (`src`) |
+| 등락 | `tr#lst50 div.wrap span.rank_wrap` | `table.list-wrap span.rank` |
+
+- 4일차, 7일차에 맛본 Jsoup 크롤링을 클래스 구조 안에 넣었다. 4일차에는 `main`에서 바로 출력했고 이번에는 읽은 값을 `MusicVO` 객체에 담아 배열에 저장한다.
+- 순위는 사이트의 순위 칸을 읽지 않고 반복 인덱스에 1을 더해서(`i + 1`) 정한다.
+- 목록과 검색은 부모 `Music`에 한 번만 만들고, 멜론과 지니는 생성자에서 데이터를 채우는 일만 한다. 이것이 상속으로 재사용하는 구조다.
+- `musics`는 부모의 `static` 배열이다. `new GenieMusic()`을 하면 같은 배열이 지니 데이터로 다시 채워진다.
+- `MusicVO`는 변수를 `private`으로 감추고 Lombok `@Data`로 Getter, Setter를 만든다. 캡슐화를 적용한 데이터 클래스다.
+
+**등락 상태 나누기**
+```java
+String temp = etc.get(i).text();
+if (temp.equals("유지"))                  // 멜론은 "순위 동일"
+{
+    id = 0;
+    state = "유지";
+}
+else
+{
+    id = Integer.parseInt(temp.replaceAll("[^0-9]", ""));   // 숫자만 남긴다
+    state = temp.replaceAll("[^가-힣]", "");                 // 한글만 남긴다
+}
+```
+- 7일차에 배운 `replaceAll` 정규식을 응용했다. 예를 들어 `순위 상승 3`이면 숫자는 `3`, 한글은 `순위상승`이 된다. 한 문자열에서 숫자와 글자를 따로 뽑아 `idcrement`와 `state`에 저장한다.
+
+</details>
+
+<details>
+<summary><b>음악 순위 시스템 - 콘솔과 화면</b></summary>
+
+<br>
+
+**콘솔 (UserMain)**
+```java
+Music music = new MelonMusic();                  // 부모 타입 변수에 자식 객체
+MusicVO[] list = music.musicListData();
+for (MusicVO vo : list)
+{
+    System.out.println(vo.getRank() + "." + vo.getTitle());
+}
+list = music.musicSearchTitle(title);            // 곡명 검색
+System.out.println("총 검색:" + list.length + "건");
+list = music.musicSearchSinger(singer);          // 가수명 검색
+```
+- 변수 타입이 `Music`이라서 `new MelonMusic()`을 `new GenieMusic()`으로 바꿔도 나머지 코드는 그대로 쓴다. 14일차에 `Main`이 `MovieSystem`의 메소드만 불러서 입력과 출력을 맡던 구조와 같다.
+
+**화면 (MusicList)**
+```java
+public class MusicList extends JFrame implements ActionListener
+{
+    JTable table;
+    DefaultTableModel model;
+    JButton b1, b2;
+    Music music = new MelonMusic();                  // 처음에는 멜론 순위
+
+    public void print()
+    {
+        for (int i = model.getRowCount() - 1; i >= 0; i--)
+            model.removeRow(i);                      // 기존 행을 모두 지운다
+
+        MusicVO[] m = music.musicListData();
+        for (MusicVO vo : m)
+        {
+            String[] data = {String.valueOf(vo.getRank()), vo.getTitle(), vo.getSinger(), vo.getAlbum()};
+            model.addRow(data);
+        }
+    }
+
+    public void actionPerformed(ActionEvent e)
+    {
+        if (e.getSource() == b1)
+        {
+            music = new GenieMusic();                // 지니뮤직 버튼
+            print();
+        }
+        if (e.getSource() == b2)
+        {
+            music = new MelonMusic();                // 멜론 버튼
+            print();
+        }
+    }
+}
+```
+- 8일차에 따라 쳐 보기만 했던 `extends JFrame`이 이번에 배운 상속이다. `JFrame`의 창 기능을 그대로 물려받고 버튼과 표를 붙였다.
+- `implements ActionListener`는 인터페이스라서 아직 배우지 않았다. 버튼을 눌렀을 때 `actionPerformed()`가 실행되고, `e.getSource() == b1`로 어느 버튼인지 구분한다.
+- 표는 `DefaultTableModel`에 행을 넣는 방식이다. 갱신할 때는 기존 행을 지우고 다시 채운다. 앞에서부터 지우면 인덱스가 밀리기 때문에 뒤에서부터 지운다.
+- 버튼을 누르면 부모 타입 변수 `music`에 다른 자식 객체를 넣고 `print()`를 부른다. `print()`는 어느 자식인지 몰라도 `music.musicListData()` 한 줄로 목록을 가져온다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 자바 프로그램 구조, 상속, 오버라이딩 개념 정리 |
+| `Animal`을 상속받는 `Pig`, `Dog`, `Horse`에서 `eat()`, `run()` 오버라이딩, 부모 타입 변수로 호출 |
+| 곡 한 개를 담는 `MusicVO` 클래스 (`@Data`) |
+| 목록, 곡명 검색, 가수명 검색을 가진 부모 클래스 `Music` |
+| 멜론, 지니 차트를 Jsoup으로 읽어 `MusicVO[]`에 저장하는 `MelonMusic`, `GenieMusic` (`Music` 상속) |
+| 콘솔에서 목록, 곡명 검색, 가수명 검색을 실행하는 `UserMain` |
+| 지니뮤직, 멜론 버튼으로 순위표를 바꿔 보여 주는 Swing 화면 `MusicList` |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Pig`, `Dog`, `Horse`에서 `int age;`를 다시 선언해서 `Animal` 타입 변수로 읽으면 자식 값(5, 3, 7)이 아니라 부모의 10이 나온다. 자식 값을 쓰려면 다시 선언하지 말고 부모의 `age`를 생성자에서 바꾸어야 한다.
+- `musics`가 50칸으로 고정이다. 사이트에서 읽은 곡이 50개보다 적으면 빈 칸이 `null`이라서 검색할 때 `NullPointerException`이 난다. 등락 문자열에 숫자가 없는 곡이 있으면 `Integer.parseInt("")`에서 예외가 나서 그 뒤의 곡이 저장되지 않을 수도 있다.
+- 곡명, 가수명 입력을 `scan.next()`로 받아서 공백이 있는 이름은 앞부분만 검색된다. 10일차 영화 검색과 같은 문제라서 `nextLine()`을 써야 한다.
+- `MelonMusic`, `GenieMusic`에 확인용 `System.out.println`이 남아 있어서 객체를 만들 때마다 곡 정보가 콘솔에 출력된다.
+- `MusicList`에는 창을 닫을 때 프로그램을 끝내는 `setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)`가 없어서 창을 닫아도 프로그램이 끝나지 않을 수 있다.
+- `idcrement`는 `increment`의 오타로 보인다. 이름을 바꾸면 `getIdcrement()` 같은 Getter, Setter 이름도 함께 바뀐다.
+- `.classpath`에 Lombok, jsoup, JTattoo가 모두 내 PC의 절대 경로(`C:/javaDev`, `C:/Users/.../Downloads`)로 등록되어 있고 저장소에는 jar가 없다. 다른 PC에서는 빌드 오류가 나므로 프로젝트 안에 `lib` 폴더를 만들어 상대 경로로 두는 방법을 알아볼 것. JTattoo는 등록만 되어 있고 코드에서는 아직 쓰지 않았다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 공통 기능은 부모 클래스에 한 번만 만들고 `extends`로 물려받아 재사용한다. 자바는 부모를 하나만 가질 수 있다.
+- 자식 객체에는 부모 영역(`super`)과 자식 영역(`this`)이 함께 만들어진다.
+- 오버라이딩은 이름, 매개변수, 리턴형이 같은 메소드를 자식에서 다시 정의해 기능을 바꾸는 것이고, 접근 지정어는 좁힐 수 없다.
+- 부모 타입 변수에 자식 객체를 넣으면 메소드는 실제 객체 것이 실행되고 변수는 변수 타입을 기준으로 읽힌다.
+- 데이터 클래스, 기능 클래스, 실행 클래스로 나누고, 데이터를 가져오는 부분만 자식으로 분리하면 멜론과 지니처럼 같은 기능을 쉽게 바꿔 쓸 수 있다.
+
+</details>
