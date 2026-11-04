@@ -3779,3 +3779,601 @@ public class MusicList extends JFrame implements ActionListener
 - 데이터 클래스, 기능 클래스, 실행 클래스로 나누고, 데이터를 가져오는 부분만 자식으로 분리하면 멜론과 지니처럼 같은 기능을 쉽게 바꿔 쓸 수 있다.
 
 </details>
+
+---
+
+## 16일차 | 2026.11.02 (월) | Chapter 07. 클래스의 종류 (다형성, 추상 클래스)
+
+<details>
+<summary><b>생성자 정리와 super(), this()</b></summary>
+
+<br>
+
+```java
+class Human
+{
+    String name, sex, address, phone;
+    public Human(String name, String sex, String address, String phone)
+    {
+        this.name = name;
+        this.sex = sex;
+        this.address = address;
+        this.phone = phone;
+    }
+}
+class Student extends Human
+{
+    int hakbun;
+    String subject;
+    public Student(String name, String sex, String address, String phone)
+    {
+        super(name, sex, address, phone);      // 부모 생성자 호출
+    }
+}
+```
+
+| 구분 | `super` / `super()` | `this` / `this()` |
+|---|---|---|
+| 변수로 쓸 때 | 상속을 내린 클래스의 객체 | 자신의 객체 |
+| 생성자 호출 | 상속을 내린 클래스의 생성자 | 자신이 가진 다른 생성자 |
+
+- `super()`와 `this()`는 생성자 안에서만, 첫 줄에서만 호출한다.
+- 부모의 매개변수 없는 생성자는 자식 생성자 첫 줄에서 `super()`로 자동 호출된다. 부모에 매개변수가 있는 생성자만 있으면 자식에서 `super(값...)`을 직접 불러야 하고, 부르지 않으면 `constructor Human in class Human cannot be applied to given types` 오류가 난다.
+- 자식 객체를 만들면 부모 생성자가 먼저 실행된다. `class B extends A`에서 `new B()`를 하면 `A() call...`이 먼저, `B() call...`이 그다음에 출력된다.
+- 생성자는 객체를 만들 때 호출되고, 변수를 초기화한다. 클래스명과 같고 리턴형이 없으며 여러 개 만들 수 있다(오버로딩). 생성자가 없으면 매개변수 없는 생성자가 자동으로 만들어진다.
+
+**1 ~ 10장 정리**
+| 번호 | 내용 |
+|:-:|---|
+| 1 | 클래스는 객체의 설계도 |
+| 2 | 클래스의 구성요소: 변수, 생성자, 메소드 |
+| 3 | 객체 생성은 `new 생성자()` |
+| 4 | 생성자는 필요할 때만 만든다 |
+| 5 | 접근 지정어: 메소드, 클래스, 인터페이스, 생성자는 `public`, 변수는 `private`으로 감추고 Getter, Setter로 읽기와 쓰기 |
+| 6 | 제어어: `static`(공유), `abstract`(공통, 구현은 자식에서), `final`(재정의 안 됨) |
+| 7 | 변수, 메소드 종류: `static`(공통), 인스턴스(객체마다 따로) |
+| 8 | 상속은 재사용이고 필요하면 정의를 바꿔서 쓴다. 모든 클래스는 `Object`를 상속받는다 |
+| 9 | 오버로딩, 오버라이딩(기존 메소드의 기능을 변경) |
+| 10 | 추상 클래스는 공통 부분을 모아 상속을 내리고 구현해서 사용. 보완이 인터페이스 |
+
+</details>
+
+<details>
+<summary><b>상속 정리 - 재사용 기법, 장단점, 상위 클래스 규칙</b></summary>
+
+<br>
+
+**재사용 기법 두 가지**
+| 방식 | 관계 | 설명 |
+|---|---|---|
+| 변경 없이 재사용 | 포함 (has-a) | 만들어진 클래스를 변수로 가져다 쓴다. 웹에서 많이 쓴다 |
+| 변경 후 재사용 | 상속 (is-a) | 상속받아서 필요한 부분을 재정의한다. 추상 클래스, 인터페이스도 여기에 속한다 |
+
+```java
+public class 재사용기법 /* extends JFrame */
+{
+    JFrame f = new JFrame();           // 포함: JFrame을 변수로 가지고 있다
+    public 재사용기법()
+    {
+        f.setSize(640, 400);
+        f.setVisible(true);
+    }
+}
+```
+- 15일차 `MusicList`는 `extends JFrame`으로 창의 기능을 물려받았다. 이번에는 같은 `JFrame`을 변수로 가지는 포함 방식으로 창을 띄웠다. 상속 코드는 주석(`setSize()`, `setVisible()`)으로 남겨 비교했다.
+
+**상속의 장점과 단점**
+| 구분 | 내용 |
+|---|---|
+| 장점 | 유지보수가 쉽다, 이미 쓰이고 있는 클래스라 신뢰성이 높다, 소스가 간결하다 |
+| 단점 | 속도가 느리다(최적화 문제), 메모리가 커진다(부모와 자식 둘 다 할당), 가독성이 떨어진다(메소드나 변수가 어디서 왔는지 모른다), 결합성이 높아진다(클래스 하나를 고치면 다른 클래스에 영향) |
+
+- 자바 클래스는 단일 상속만 가능하다. `class C extends A, B`는 오류이고, `A → B → C`처럼 단계적으로 상속하는 것은 가능하다. 단일 상속을 보완하는 것이 인터페이스다.
+- 생성자는 상속되지 않는다. `private`은 상속은 되지만 접근할 수 없어서 `protected`나 Getter, Setter를 쓴다.
+
+**상위 클래스 변수 사용 규칙**
+```
+인간
+ ├ 남자      인간 a = new 남자();   가능
+ └ 여자      인간 a = new 여자();   가능
+             남자 a = new 여자();   불가능 (형제 클래스끼리는 크기가 같아서 담을 수 없다)
+```
+- 상속 관계에서는 위로 올라갈수록 크기가 커진다. 큰 쪽 변수에 작은 쪽 객체를 담을 수 있다. 3일차에 `double d = 10`처럼 값보다 크거나 같은 데이터형에 담던 규칙이 클래스에도 적용된다. 형제 클래스끼리 담으면 `incompatible types` 오류가 난다.
+- 상위 클래스 변수로 객체를 쓸 때 변수는 변수의 클래스 타입 기준, 메소드는 `new`로 만든 생성자 타입 기준으로 호출된다. 15일차에 `나이:10`이 나온 이유다.
+- 상속을 내린 클래스는 상속받은 클래스에 접근할 수 없고(`this`만 가능), 상속받은 클래스는 `this`와 `super` 둘 다 쓸 수 있다.
+
+**변수 초기화 방법 고르기**
+| 순서 | 방법 | 대상 |
+|:-:|---|---|
+| 1 | 명시적 초기화 `private int age = 10;` | 가장 먼저 가능한지 본다 |
+| 2 | `static { }` | static 변수 |
+| 3 | 인스턴스 블록 `{ }` | 인스턴스 변수 |
+| 4 | 생성자 | 인스턴스 변수 |
+
+- 명시적 초기화가 안 될 때 2, 3, 4번을 쓴다. 블록 안에서는 파일 읽기, 웹 연결, 윈도우 UI, 제어문, 연산자를 쓸 수 있다.
+- `static` 블록과 `static` 메소드 안에서는 인스턴스 변수를 쓸 수 없다. `this`, `super`도 마찬가지다.
+
+</details>
+
+<details>
+<summary><b>상위 클래스로 여러 클래스 제어 - 다형성</b></summary>
+
+<br>
+
+```java
+class 동물 { public void run() { System.out.println("달린다"); } }
+class 개 extends 동물 { public void run() { System.out.println("개가 달린다"); } }
+class 소 extends 동물 { public void run() { System.out.println("소가 달린다"); } }
+class 말 extends 동물 { public void run() { System.out.println("말이 달린다"); } }
+
+동물 animal = null;                  // 주소가 없는 상태
+switch (ani)                         // 입력받은 동물 이름
+{
+case "개": animal = new 개(); break;
+case "말": animal = new 말(); break;
+case "소": animal = new 소(); break;
+}
+animal.run();                        // 개가 달린다 (입력에 따라 달라진다)
+```
+
+- 모든 클래스(라이브러리, 사용자 정의)는 `Object`를 상속받는다. `Object`가 가장 위에 있는 클래스다.
+- 개, 소, 말처럼 관련된 여러 클래스를 하나로 모아서 처리할 때 상위 클래스(동물) 변수를 쓴다. 입력에 따라 만드는 객체가 달라지고, 변수가 가리키는 주소도 실행할 때마다 바뀐다(동적 바인딩). 같은 `run()`을 호출해도 객체에 따라 결과가 다르다.
+- 클래스 변수는 `new`를 하기 전에는 `null`이다. 개, 말, 소가 아닌 값을 입력하면 `animal`이 `null`인 채로 `run()`을 호출해서 `NullPointerException`이 난다.
+
+| 객체지향 4대 특성 | 내용 |
+|---|---|
+| 캡슐화 | 데이터를 보호한다 |
+| 상속 | 서로 다른 클래스를 한 클래스로 묶어서 관리한다. 기존 클래스의 변수와 메소드를 가져오고, 바꿔서 쓸 수 있다(오버라이딩) |
+| 다형성 | 오버로딩(메소드 추가), 오버라이딩(메소드 내용 변경) |
+| 추상화 | 공통적인 클래스를 묶어서 관리한다. 인터페이스 |
+
+- 13일차에 3대 특성으로 정리했던 것에 추상화가 더해져 4대 특성이 되었다.
+
+</details>
+
+<details>
+<summary><b>추상 클래스</b></summary>
+
+<br>
+
+```java
+abstract class 도형
+{
+    String color = "검정색";
+    abstract void setColor(String color);        // 구현하지 않은 메소드
+    abstract void draw();                        // 도형마다 다르게 구현
+    void tick()                                  // 구현한 메소드 (선택사항)
+    {
+        System.out.println("두께: 5mm");
+    }
+}
+class 선 extends 도형
+{
+    void draw() { System.out.println("선을 그린다: 색상은" + color); }
+    void setColor(String color) { this.color = color; }
+}
+// 네모, 세모도 같은 방식
+class 원 extends 도형
+{
+    void draw() { System.out.println("원을 그린다: 색상은" + color); }
+    void setColor(String color) { this.color = color; }
+    void tick() { System.out.println("두께: 10mm"); }    // 필요한 것만 재정의
+}
+
+도형 a = new 선();
+a.draw();
+a.tick();
+a = new 원();
+a.draw();
+a.tick();
+```
+
+```
+선을 그린다: 색상은검정색
+두께: 5mm
+...
+원을 그린다: 색상은검정색
+두께: 10mm
+```
+
+- 추상 클래스는 구현하지 않은 메소드(추상 메소드)를 가진 미완성 클래스다. `new`로 직접 만들 수 없고, 상속받은 클래스에서 추상 메소드를 구현한 뒤 그 클래스로 만든다. 자식은 추상 메소드를 반드시 구현해야 한다.
+- 형식은 `public abstract class ClassName`, 추상 메소드는 `public abstract 리턴형 메소드(매개변수...);`다. 프로그램마다 구현이 다른 것은 추상 메소드로, 공통으로 쓰는 것은 구현해 둔다.
+- 변수, 생성자, 구현한 메소드도 가질 수 있다. 서로 다른 클래스를 모아 한 이름으로 제어하고, 결합성이 낮은 프로그램을 만들 수 있다.
+  - 예: `DriverManager` 하나로 오라클, MySQL, MSSQL, PostgreSQL, MariaDB 등을 같은 방법으로 쓴다.
+  - 예: 뮤직 추상 클래스 아래에 지니뮤직, 멜론, Mnet.
+- 단점은 단일 상속이라 제약이 많고, 기능을 추가하면 상속받은 다른 클래스에 영향을 준다. 그래서 실제로는 인터페이스를 더 많이 쓴다.
+- 클래스를 쓸 때 `new`로 만들 수 있으면 일반 클래스(`Scanner`), 만들 수 없으면 추상 클래스나 인터페이스다. `Calendar`는 추상 클래스라서 `new Calendar()`가 아니라 `Calendar.getInstance()`로 객체를 받는다.
+
+**클래스 재사용 세 가지** (객체지향 프로그램은 부품을 조립하는 CBD, 부품이 클래스다)
+| 방식 | 문법 |
+|---|---|
+| 있는 그대로 사용 | 포함 클래스 |
+| 변경해서 사용 | 상속(오버라이딩) |
+| 새로운 기능 추가 | 오버로딩 |
+
+- 추상 클래스는 `extends`(단일 상속), 인터페이스는 `implements`(다중 구현)다. 라이브러리에서는 인터페이스를 주로 지원한다. 메소드의 기능 이름은 같고 구현이 다를 때 쓴다. 예를 들어 버튼의 `click()`은 로그인, 계산기, 회원가입, 페이지 버튼마다 하는 일이 다르다.
+- 이미 쓰이는 프로그램을 재사용하면 검증을 거쳐서 신뢰성이 좋다. 대규모 프로젝트(예: 시청 시스템을 다른 시청에 재사용)에서 중요하다.
+
+</details>
+
+<details>
+<summary><b>추상 클래스로 음악 시스템 만들기</b></summary>
+
+<br>
+
+15일차 음악 시스템에 추상 클래스를 적용했다. 사이트마다 달라지는 것(데이터 수집)과 같은 것(목록, 상세 보기, 검색)을 나눠서, 다른 것만 추상 메소드로 남겼다.
+
+| 클래스 | 역할 | 종류 |
+|---|---|---|
+| `Music` | 곡 한 개의 정보 (번호, 곡명, 가수명, 앨범, 등락 상태, 등락 폭) | 데이터 클래스 (`@Data`) |
+| `MusicSystem` | 목록, 상세 보기, 검색 + 데이터 수집 | 추상 클래스 |
+| `MelonMusic`, `GenieMusic` | 데이터 수집을 구현 | `MusicSystem` 상속 |
+| `UserMain` | 실행 | |
+
+```java
+public abstract class MusicSystem
+{
+    private static Music[] musics = new Music[50];       // 감춘 변수
+
+    public Music[] musicList() { return musics; }                     // 구현
+    public Music musicDetail(int mno) { return musics[mno - 1]; }     // 구현
+    public Music[] musicFindData(String title) { /* 개수 세고 배열 생성 */ }
+
+    public static Music[] getMusics() { return musics; }             // 자식에게 열어 주는 Getter
+
+    public abstract void dataCollection();                           // 구현하지 않은 메소드
+}
+```
+
+```java
+public class MelonMusic extends MusicSystem
+{
+    @Override
+    public void dataCollection()
+    {
+        Music[] musics = getMusics();                  // 부모의 Getter로 받아서
+        // Jsoup으로 멜론 차트를 읽어 musics[i]에 저장
+    }
+}
+
+MusicSystem ms = new GenieMusic();
+ms.dataCollection();
+Music[] musics = ms.musicList();           // 지니 순위 출력
+ms = new MelonMusic();
+ms.dataCollection();
+musics = ms.musicList();                   // 멜론 순위 출력
+```
+
+- 15일차에서는 `Music`(부모)의 생성자에서 크롤링했는데, 이번에는 크롤링을 `dataCollection()` 메소드로 분리했다. 객체를 만든 뒤 필요할 때 부른다.
+- `musics`를 15일차에는 `public static`으로 열어 두었지만 이번에는 `private static`으로 감추고 `getMusics()`로만 꺼내 쓴다. `private`은 상속은 되어도 자식에서 직접 접근할 수 없기 때문에 Getter가 필요하다. 캡슐화를 적용한 것이다.
+- 부모(추상 클래스) 타입 변수 `ms`에 `new GenieMusic()`과 `new MelonMusic()`을 바꿔 넣으면서 같은 코드로 두 사이트의 순위를 처리한다.
+- 상세 보기(`musicDetail`)는 14일차 영화 시스템처럼 번호에서 1을 뺀 인덱스로 꺼낸다.
+- 주석에 적은 게시판 예시도 같은 구조다. 게시판은 글쓰기, 목록, 상세 보기, 검색, 수정, 삭제가 공통이고, 답변형 게시판은 답변이, 댓글형 게시판은 댓글이 추가된다. 구현한 것은 부모에 두고 달라지는 것만 자식에서 구현하거나 추가한다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 부모 클래스 `Human`을 상속받는 `Student`, `Sawon`에서 `super()`로 부모 생성자 호출 (`main`은 비어 있음) |
+| 상속 장단점, 변수 초기화 방법, 상위 클래스 규칙 정리 (주석) |
+| `JFrame`을 변수로 가지는 포함 방식으로 창 띄우기 |
+| `동물`을 상속받는 `개`, `소`, `말`을 입력에 따라 만들어 `run()` 호출 |
+| 추상 클래스 `도형`과 `선`, `네모`, `세모`, `원`, 추상 메소드 구현과 `tick()` 재정의 |
+| 클래스 재사용 방법(포함, 상속, 오버로딩), 추상 클래스와 인터페이스 정리 (주석) |
+| 추상 클래스 `MusicSystem`과 `MelonMusic`, `GenieMusic`으로 음악 순위 시스템 작성 |
+| 1 ~ 10장 정리 (주석) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `다형성_3`은 개, 말, 소 이외의 값을 입력하면 `animal`이 `null`이라 `NullPointerException`이 난다. `switch`에 `default`를 두거나 `null` 검사가 필요하다.
+- 상속되는 것에 대한 주석이 서로 다르다. `정리_67`에는 "생성자, 초기화 블록, static은 상속이 불가능", `다형성_1`에는 "생성자 / static은 사용이 가능하게"라고 적혀 있다. 15일차에 확인한 대로 생성자와 초기화 블록은 상속되지 않고, `static`은 자식에서 이름으로 쓸 수 있다. 주석을 하나로 정리해야 한다.
+- `MusicSystem`도 `musics`가 50칸 고정이고, 읽은 곡이 50개보다 적으면 검색에서 `NullPointerException`이 난다. `dataCollection()`에는 확인용 `System.out.println`이 남아 있다. 15일차에 적은 문제와 같다.
+- 음악 시스템은 Lombok과 jsoup이 `.classpath`에 `C:/javaDev`, `C:/Users/.../Downloads` 절대 경로로 등록되어 있어서 저장소만으로는 빌드되지 않는다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 자식 생성자에서 부모 생성자를 `super()`로 부르고, 부모가 먼저 실행된다. 부모에 매개변수 있는 생성자만 있으면 `super(값)`을 직접 써야 한다.
+- 재사용은 변경 없이 쓰는 포함(has-a)과 바꿔서 쓰는 상속(is-a)이 있다. 상속은 편하지만 결합성이 높아지는 단점이 있다.
+- 상위 클래스 변수 하나로 여러 자식 객체를 다룰 수 있고, 같은 메소드를 호출해도 객체에 따라 결과가 다르다. 객체지향의 4대 특성은 캡슐화, 상속, 다형성, 추상화다.
+- 추상 클래스는 구현하지 않은 메소드를 포함한 미완성 클래스이고, 자식이 반드시 구현한다. `new`로 직접 만들 수 없다.
+- 달라지는 부분만 추상 메소드로 남기고 공통 기능은 부모에 구현해 두면 멜론, 지니처럼 같은 일을 하는 클래스를 한 변수로 바꿔 가며 쓸 수 있다.
+
+</details>
+
+---
+
+## 17일차 | 2026.11.03 (화) | Chapter 08. 인터페이스, Chapter 11. 예외처리 (시작)
+
+<details>
+<summary><b>인터페이스의 개념과 구성요소</b></summary>
+
+<br>
+
+- 인터페이스는 연결하는 리모컨이다. 추상 클래스의 일종이고, 클래스와 같이 취급한다.
+- 서로 다른 클래스 여러 개를 묶어 한 이름으로 관리한다. 예를 들어 `List` 아래에 `ArrayList`, `LinkedList`, `Vector`가 있고, `List list`에 `new ArrayList()`, `new LinkedList()`, `new Vector()`를 바꿔 넣어 쓸 수 있다.
+- 추상 클래스는 단일 상속이지만 인터페이스는 다중 상속이 가능하다. 서로 다른 클래스를 묶어서 결합성이 낮은 프로그램을 만들 수 있고, 유지보수에 좋다.
+
+```java
+interface 인터페이스명
+{
+    int MAX = 100;                  // 상수 (public static final 생략 가능, 반드시 초기화)
+    void display();                 // 추상 메소드 (public abstract 생략 가능)
+    default void aaa() { }          // default 메소드 : 구현한 메소드
+    static void bbb() { }           // static 메소드 : 구현한 메소드
+    private void ccc() { }          // private 메소드 : 인터페이스 안에서만 사용, 거의 쓰지 않는다
+}
+```
+
+| 구성요소 | 설명 |
+|---|---|
+| 상수 | 변수는 없고 상수만 있다. `int MAX;`처럼 초기화하지 않으면 오류가 난다 |
+| 추상 메소드 | 구현하지 않은 메소드. `public abstract`는 자동으로 붙는다 |
+| `default` 메소드 | 구현한 메소드. 기능을 추가할 때 쓴다 |
+| `static` 메소드 | 구현한 메소드 |
+| `private` 메소드 | 구현한 메소드 (JDK 9부터), 사용 빈도가 거의 없다 |
+
+- 인터페이스의 멤버는 `public`만 있다. 그래서 구현하는 클래스의 메소드도 `public`이어야 한다. `public` 없이 쓰면 `display() in Impl cannot implement display() in Ia` 오류가 난다. 오버라이딩 조건에서 접근 지정어는 같거나 넓어야 하는 규칙이다.
+- 인터페이스를 수정하면 구현한 클래스가 모두 오류가 난다. 그래서 고정해서 쓰고, 최근에는 `default` 메소드로 기능을 추가한다.
+
+**인터페이스 연결 방법**
+| 관계 | 키워드 | 예 |
+|---|---|---|
+| 인터페이스 → 인터페이스 | `extends` | `interface C extends A, B` (쉼표로 여러 개) |
+| 인터페이스 → 클래스 | `implements` | `class C implements A, B` |
+| 클래스 → 인터페이스 | 불가능 | |
+| 상속과 구현을 함께 | `extends` + `implements` | `class D extends C implements A, B` |
+
+- `Ic extends Ia, Ib`를 만들고 `Impl implements Ic`로 구현해서 `display()`, `bbb()`, `default` 메소드, `static` 메소드, 상수가 모두 동작하는 것을 확인했다. 상수는 `Ia.MAX`와 `Impl.MAX`로 모두 읽힌다.
+- 인터페이스는 윈도우 이벤트, 쓰레드, 데이터베이스, 웹과 앱 연동에 쓴다.
+
+</details>
+
+<details>
+<summary><b>인터페이스 만들기와 사용</b></summary>
+
+<br>
+
+```java
+public interface HelloInter
+{
+    public void seyHello(String name);
+}
+public class Hello implements HelloInter
+{
+    public void seyHello(String name)
+    {
+        System.out.println(name + "님 환영합니다!!");
+    }
+}
+
+HelloInter hello = new Hello();       // 인터페이스 타입 변수에 구현 클래스 객체
+hello.seyHello("홍길동");              // 홍길동님 환영합니다!!
+```
+
+```java
+public interface Execute
+{
+    public void execute();
+    public default void display() {}
+}
+public class 게시판 implements Execute { public void execute() { System.out.println("게시판 처리!"); } }
+// 회원가입, 로그인, 맛집목록, 맛집상세보기도 같은 방식 (각각 다른 메시지 출력)
+```
+
+```java
+Map map = new HashMap();
+map.put("1", new 게시판());
+map.put("2", new 회원가입());
+map.put("3", new 로그인());
+map.put("4", new 맛집목록());
+map.put("5", new 맛집상세보기());
+
+Execute e = (Execute) map.get(String.valueOf(menu));    // 번호로 클래스를 꺼낸다
+```
+
+- 서로 다른 다섯 개의 클래스가 `execute()`라는 같은 메소드를 가지도록 `Execute`로 묶었다. 메뉴 번호에 맞는 클래스를 꺼내 `e.execute()` 한 줄로 실행할 수 있어서 조건문이 필요 없다. 메뉴를 선택하면 `3`은 `로그인 처리!`, `5`는 `맛집상세보기 출력!`이 나온다.
+- `Map`은 키와 값을 한꺼번에 저장하는 컬렉션이다. 아직 배우지 않았고 `"1"`이라는 키로 객체를 찾는 용도로 먼저 써 보았다.
+- `HelloInter`에는 메소드 원형(설계)만 있고, 실제 동작은 구현 클래스 `Hello`가 정한다.
+
+</details>
+
+<details>
+<summary><b>인터페이스와 추상 클래스 비교</b></summary>
+
+<br>
+
+| 구분 | 추상 클래스 | 인터페이스 |
+|---|---|---|
+| 선언 | `abstract class` | `interface` |
+| 가질 수 있는 것 | 변수(인스턴스, 정적), 생성자, 구현한 메소드, 구현하지 않은 메소드 | 상수, 추상 메소드, `default`, `static`, `private` 메소드 |
+| 접근 지정어 | 제한 없음 | `public`만 (`private` 메소드 제외) |
+| 연결 | `extends` (단일 상속) | `implements` (다중 구현) |
+| 객체 생성 | `new` 불가, 상속받은 클래스로 간접 생성 | `new` 불가, 구현한 클래스로 생성 |
+| 용도 | 공통 기능을 모아서 재사용, 일부 메소드는 강제 구현 | 기능 설계, 표준화 |
+
+**인터페이스의 장점**
+- 코드가 표준화된다. 개발자들이 같은 메소드를 쓴다.
+- 설계만 되어 있어서 프로그램에 맞게 구현해서 쓴다.
+- 다른 클래스와 연결하기 편하고 결합성이 낮다.
+- 다중 상속이 가능하고, 독립적으로 쓸 수 있다(`Socket`, `ServerSocket`).
+- 소스가 통일되어 분석이 쉽다. 프레임워크(jQuery, Vue, React)도 같은 이유다. 스프링도 표준화를 위해 인터페이스를 쓴다.
+
+```java
+public interface Board
+{
+    public void write();
+    public void list();
+    public void detail();
+    public void update();
+    public void delete();                  // 게시판마다 다르다 (댓글, 자료실은 파일 삭제까지)
+    public default void paging() { }       // 모든 게시판이 같은 경우 구현
+}
+```
+- 모든 게시판이 같은 기능은 `default` 메소드로 구현해 두고, 게시판마다 다른 기능은 선언만 해서 프로그램별로 구현한다. 새로운 기능을 추가할 때 `default`로 넣으면 구현 클래스를 수정하지 않아도 된다.
+
+**컬렉션 인터페이스 미리보기**
+| 인터페이스 | 특징 | 구현 클래스 |
+|---|---|---|
+| `List` | 순서가 있고 중복 데이터를 저장할 수 있다 | `ArrayList`, `LinkedList` |
+| `Set` | 순서가 없고 중복 데이터를 허용하지 않는다 | `HashSet`, `TreeSet` |
+| `Map` | 키와 값을 동시에 저장한다 | `HashMap`, `Hashtable` |
+
+</details>
+
+<details>
+<summary><b>인터페이스로 만든 화면 - 이벤트와 퍼즐 게임</b></summary>
+
+<br>
+
+```java
+public class 인터페이스_1 extends JFrame implements MouseListener, WindowListener
+{
+    public void mouseClicked(MouseEvent e) { }
+    public void mousePressed(MouseEvent e) { }
+    public void mouseReleased(MouseEvent e) { }
+    public void mouseEntered(MouseEvent e) { }
+    public void mouseExited(MouseEvent e) { }
+    // WindowListener의 windowOpened ~ windowDeactivated 7개도 모두 구현
+}
+```
+- 인터페이스를 `implements`하면 안의 추상 메소드를 모두 구현해야 한다. 쓰지 않는 이벤트도 빈 본문으로 만들어야 하고, 마우스 이벤트 5개와 윈도우 이벤트 7개를 전부 만들었다.
+- 쉼표로 여러 인터페이스를 구현할 수 있다. 15일차에 설명 없이 썼던 `implements ActionListener`가 이 문법이다.
+
+**퍼즐 게임 (3 x 3)**
+```java
+public class 퍼즐게임 extends JFrame implements ActionListener, MouseListener
+{
+    JButton[] btns = new JButton[9];           // 퍼즐 칸
+    JButton b1, b2;                            // 시작, 종료
+    int[] panCount = new int[9];               // 칸마다 들어갈 숫자
+    int last = 0;                              // 빈칸 위치
+
+    public void getRand()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            panCount[i] = (int)(Math.random() * 9);       // 0 ~ 8
+            for (int j = 0; j < i; j++)
+            {
+                if (panCount[i] == panCount[j])
+                {
+                    i--;                                   // 중복이면 다시 뽑는다
+                    break;
+                }
+            }
+        }
+    }
+    public boolean isEnd()
+    {
+        for (int i = 0; i < 9; i++)
+            if (panCount[i] != i) return false;           // 0 ~ 8 순서면 완성
+        return true;
+    }
+}
+```
+- 화면은 `GridLayout(3, 3, 5, 5)`로 버튼 9개를 배치하고, 시작과 종료 버튼은 `setBounds()`로 좌표를 직접 정해서 붙였다(`setLayout(null)`).
+- 8일차 로또에서 쓴 중복 없는 난수(`i--`와 `break`)로 0 ~ 8을 섞는다. 8번이 빈칸이고 `last`가 빈칸의 위치다. 화면에는 `panCount[i] + 1`을 글자로 보여 주고 빈칸은 `""`다(`String.valueOf`).
+- 칸을 누르면 그 칸의 숫자가 빈칸으로 옮겨 가고 빈칸 위치가 그 칸으로 바뀐다. `isEnd()`가 true면 `JOptionPane.showConfirmDialog()`로 종료할지 묻고, 아니오를 누르면 다시 섞는다. 종료 버튼은 `showMessageDialog()` 뒤에 `System.exit(0)`이다.
+- `MouseListener`의 `mouseEntered()`, `mouseExited()`로 시작과 종료 버튼에 마우스를 올리면 초록색, 벗어나면 흰색이 되게 했다. 나머지 이벤트 메소드는 빈 본문이다.
+- 한 이벤트 처리 메소드(`actionPerformed`)에서 `e.getSource() == b1`처럼 어느 버튼인지 구분하는 방식은 15일차 `MusicList`와 같다.
+
+</details>
+
+<details>
+<summary><b>예외처리 시작 - 1 ~ 10장 총정리와 가변 매개변수</b></summary>
+
+<br>
+
+| 구분 | 내용 |
+|---|---|
+| 전역변수 | 클래스 전체에서 쓰는 변수. 객체가 같이 쓰는 `static`, 객체마다 따로 있는 인스턴스 변수 |
+| 지역변수 | 메소드 안에서만 쓰는 변수 (매개변수 포함) |
+| 기본형 | 정수(`int`, `long`, `byte`), 실수(`double`), 문자(`char`), 논리(`boolean`) |
+| 참조형 | 배열, 클래스. Stack에는 주소, 데이터는 Heap에 저장 |
+| 영구 저장 | 파일, RDBMS |
+| 묶는 단위 | 연산, 제어문 → 메소드 / 변수 + 메소드 → 클래스 / 클래스 여러 개 → 패키지 / 관련된 클래스를 제어 → 인터페이스 |
+
+- 데이터형 크기는 `byte < char < int < long < double`이고, 변수에는 값보다 크거나 같은 데이터형을 쓴다. 클래스는 상속을 내린 클래스가 상속받은 클래스보다 크다.
+
+```java
+class A { }
+class B extends A { }
+
+A a = new B();            // 가능 (A가 더 크다)
+B b = (B) new A();        // 컴파일은 되지만 실행하면 ClassCastException
+```
+- 관련 없는 두 클래스는 `A a = new B()`가 안 된다. 상속 관계가 있어야 크기가 정해진다.
+- 작은 쪽 변수에 큰 쪽 객체를 담는 것은 `(B)`처럼 강제로 형변환해야 컴파일되지만, 실제 객체가 `A`라면 실행할 때 `ClassCastException`이 난다. 3일차 `(int) 10.5` 같은 형변환과 달리 클래스는 실행해 봐야 맞는지 안다.
+
+**가변 매개변수**
+```java
+public static void display(int... a) { }
+
+display(10);
+display(10, 20);
+display(10, 20, 30);
+```
+- `int... a`는 같은 데이터형의 값을 개수와 관계없이 받는 매개변수다. 안에서는 배열로 취급해서 `a.length`가 각각 1, 2, 3이다.
+- 8일차에 쓴 `String.join("/", "2026", "10", "21")`이 가변 매개변수로 만든 메소드다.
+- 예외처리 폴더인데 이번 파일에는 `try ~ catch` 같은 예외처리 코드는 아직 없다. 14일차 영화 시스템에서 `try ~ catch`와 `throws`를 맛봤고, 예외처리는 다음 시간에 이어서 배운다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 인터페이스의 구성요소, 연결 방법(`extends`, `implements`) 정리 (주석) |
+| `HelloInter` 인터페이스와 `Hello` 구현 클래스, 인터페이스 타입 변수로 호출 |
+| `Execute` 인터페이스를 구현한 클래스 5개(게시판, 회원가입, 로그인, 맛집목록, 맛집상세보기)와 `Map`으로 번호에 맞는 클래스 호출 |
+| `JFrame`에 마우스, 윈도우 이벤트 인터페이스를 구현한 클래스 (이벤트 메소드 12개) |
+| 인터페이스와 추상 클래스 비교, 컬렉션 인터페이스 정리 (주석) |
+| `Board` 인터페이스에 `default` 메소드 `paging()` 추가 |
+| 3 x 3 퍼즐 게임 (`ActionListener`, `MouseListener` 구현) |
+| 1 ~ 10장 총정리, 가변 매개변수 `int... a` |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `UserMain`은 `Execute e`를 꺼내 놓고 쓰지 않은 채 `if`를 다섯 개 써서 같은 일을 한다. `e.execute()` 한 줄이면 된다. 메뉴가 1 ~ 5가 아니면 `e`가 `null`이라서 검사가 필요하다. `Map map = new HashMap();`은 타입을 지정하지 않은 형태라 컴파일 때 경고가 나온다.
+- 인터페이스 메소드 이름이 `seyHello`로 오타다. `sayHello`로 바꾸면 인터페이스를 구현한 `Hello`도 같이 바꿔야 한다. 인터페이스를 수정하면 구현 클래스가 모두 영향을 받는다는 노트 내용 그대로다.
+- 퍼즐 게임은 눌린 칸이 빈칸과 이웃한지 검사하지 않아서, 어느 숫자를 눌러도 빈칸과 자리가 바뀐다. 이웃한 칸만 움직이게 하려면 `last`와 눌린 칸의 위치 차이를 검사해야 한다. 시작 버튼을 누르기 전에도 칸을 누를 수 있다.
+- `Chapter11-예외처리`에 `try ~ catch ~ finally`, `throws`, `throw` 코드를 직접 짜 볼 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 인터페이스는 상수와 추상 메소드, `default`, `static`, `private` 메소드로 이루어진다. 구현하는 클래스는 추상 메소드를 모두 `public`으로 구현해야 한다.
+- 클래스는 `implements`로 여러 인터페이스를 구현할 수 있고, 인터페이스끼리는 `extends`로 연결한다.
+- 서로 다른 클래스를 인터페이스 하나로 묶으면 같은 메소드로 호출할 수 있고, 클래스 사이의 결합성이 낮아진다.
+- 추상 클래스는 공통 기능을 모아서 재사용하고, 인터페이스는 기능을 설계하고 표준화한다.
+- 클래스 변수에 상속 관계가 있는 객체만 담을 수 있다. 위로 올라가는 것은 자동이고, 내려가는 형변환은 실행할 때 오류가 날 수 있다.
+- 가변 매개변수 `int... a`는 개수가 정해지지 않은 값을 배열로 받는다.
+
+</details>
