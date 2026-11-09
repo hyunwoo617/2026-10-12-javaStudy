@@ -5162,3 +5162,785 @@ public class ClassName
 - 1권은 1장 자바 실행 과정부터 11장 예외처리까지 한 번 훑었다. 2권은 라이브러리, 컬렉션, 람다식, 입출력, SQL 순서로 노트에 적어 두었다.
 
 </details>
+
+---
+
+## 20일차 | 2026.11.06 (금) | Chapter 12. 라이브러리 (java.lang, Object 클래스)
+
+<details>
+<summary><b>라이브러리와 java.lang</b></summary>
+
+<br>
+
+- 라이브러리는 자바가 미리 만들어서 제공하는 클래스 모음이다. 모든 개발자가 같은 방식으로 쓰도록 표준화되어 있다.
+- 라이브러리를 볼 때는 아래 여섯 가지를 확인한다. 이 여섯 가지가 모인 것이 메소드 원형이다.
+
+| 확인할 것 | 내용 |
+|---|---|
+| 패키지 | 어느 패키지에 있는가 |
+| 클래스명 | 무슨 역할을 하는 클래스인가 |
+| 메소드명 | 무슨 기능인가 |
+| 리턴형 | 결과값이 무엇인가 |
+| 매개변수 | 어떤 값을 줘야 하는가 |
+| 예외처리 | 반드시 예외처리해야 하는가 |
+
+- `java.lang`은 프로그램에서 가장 많이 쓰는 기본 클래스 모음이고 `import`를 생략할 수 있다.
+
+| 클래스 | 역할 |
+|---|---|
+| `Object` | 모든 클래스의 최상위 클래스 |
+| `String` | 문자열 저장, 문자열 제어 (`char[]`을 다룬다) |
+| `StringBuffer`, `StringBuilder` | 문자열을 빠르게 만드는 클래스 (비동기 / 동기화 차이) |
+| Wrapper | 기본형을 클래스로 만든 것 (`int`는 `Integer`, `long`은 `Long`, `double`은 `Double`, `float`는 `Float`, `boolean`은 `Boolean`) |
+| `Math` | 수학 관련 |
+| `System` | 화면 출력, 키보드 읽기, 동작 시간, 가비지 컬렉션 |
+
+- 다른 패키지도 노트에 적어 두었다. `java.util`, `java.text`, `java.io`, `java.net`, `java.sql`까지가 J2SE(기본 라이브러리)이고, J2EE는 웹 사이트용, Spring은 그 위의 라이브러리다.
+
+</details>
+
+<details>
+<summary><b>Object 클래스와 주요 메소드</b></summary>
+
+<br>
+
+- 모든 클래스는 `Object`를 상속받는다. `extends Object`를 쓰지 않아도 상속받는 것으로 노트에 적었다. 그래서 `Object`가 가진 메소드를 어떤 클래스에서든 쓸 수 있다. 16일차에 정리한 "모든 클래스는 `Object`를 상속받는다"가 이 내용이다.
+
+| 메소드 | 역할 |
+|---|---|
+| `finalize()` | 소멸자. 객체 메모리를 해제한다 |
+| `clone()` | 객체 복제. 같은 값을 가진 새 메모리를 만든다 |
+| `toString()` | 객체를 문자열로 바꾼다. 오버라이딩을 가장 많이 하고 생략할 수 있다 |
+| `getClass()` | 객체의 클래스 정보를 얻는다 |
+| `equals()` | 객체를 비교한다 |
+| `hashCode()` | 객체 구분자 |
+
+```java
+class A
+{
+    String name;
+    public A(String name)
+    {
+        this.name = name;
+    }
+}
+
+A a = new A("홍길동");
+A b = new A("홍길동");
+System.out.println(a.hashCode() + "," + a);
+System.out.println(b.hashCode() + "," + b);
+if (a.equals(b)) System.out.println("같다");
+else System.out.println("다르다");
+```
+
+```
+366712642,com.sist.lang.A@15db9742
+644117698,com.sist.lang.A@266474c2
+다르다
+```
+
+- 이름이 같아도 `new`를 두 번 했으니 서로 다른 메모리에 만들어진다. `hashCode()` 값이 다르고 `equals()`는 `다르다`가 나온다. 오버라이딩하기 전의 `equals()`는 주소를 비교한다.
+- `toString()`을 오버라이딩하지 않으면 `클래스명@해시값`이 나온다. `15db9742`는 `hashCode()` 값 `366712642`를 16진수로 바꾼 것이다. 12일차에 객체를 그대로 출력했을 때 `Student@2ff4acd0`이 나온 것도 같은 이유다.
+- `hashCode()` 값과 주소는 실행할 때마다 달라질 수 있어서 위 숫자는 한 번 실행한 결과다.
+
+</details>
+
+<details>
+<summary><b>소멸자 finalize()와 gc()</b></summary>
+
+<br>
+
+```
+객체 생성        객체 활용         주소 삭제        소멸 확인
+new Main(100)    m.display()       m = null         finalize()
+```
+
+```java
+class Main
+{
+    private int a = 10;
+    public Main(int a)
+    {
+        this.a = a;
+        System.out.println("Main클래스 메모리 할당...(객체 생성)");
+    }
+    public void display()
+    {
+        System.out.println("Main:display() Call.. 객체활용");
+    }
+    @Override
+    protected void finalize() throws Throwable
+    {
+        System.out.println("Main 객체 메모리 해제 : 객체 소멸");
+    }
+}
+
+Main m = new Main(100);
+m.display();
+m = null;
+System.gc();
+```
+
+```
+Main클래스 메모리 할당...(객체 생성)
+Main:display() Call.. 객체활용
+Main 객체 메모리 해제 : 객체 소멸
+```
+
+- 12일차에 정리한 객체 생성, 활용, 소멸, 메모리 해제 순서를 `finalize()`로 눈으로 확인한 것이다.
+- `m = null`로 주소 값을 지우면 `Main` 객체를 가리키는 변수가 없어진다. `System.gc()`로 가비지 컬렉션을 부르면 `finalize()`가 호출되고 마지막 줄이 출력된다.
+- 노트에는 생성자 `A()`의 반대가 소멸자 `~A()`이고, 자바에서는 이것이 `finalize()`라고 적었다.
+
+</details>
+
+<details>
+<summary><b>객체 복제 clone()</b></summary>
+
+<br>
+
+```java
+class Sawon implements Cloneable
+{
+    private int sabun;
+    private String name;
+    private String dept;
+    // Getter, Setter, print() 생략
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
+}
+
+public static void main(String[] args) throws Exception
+{
+    Sawon hong = new Sawon();
+    hong.setSabun(1);
+    hong.setName("홍길동");
+    hong.setDept("개발부");
+
+    Sawon shim = (Sawon) hong.clone();   // 복제
+    Sawon kim = shim;                    // 대입
+
+    kim.setName("김두한");
+    kim.setDept("총무부");
+    kim.setSabun(2);
+    kim.print();
+    shim.print();
+}
+```
+
+- 복제하는 순서는 세 단계다. 클래스에 `implements Cloneable`을 붙이고, `clone()`을 오버라이딩해서 `super.clone()`을 돌려주고, 쓰는 쪽에서 `(Sawon)`으로 형변환한다.
+- `clone()`은 반환형이 `Object`라서 형변환이 필요하고, `CloneNotSupportedException`을 던진다고 선언되어 있어서 `main throws Exception`으로 넘겼다. 19일차에 배운 `throws`다.
+- 출력으로 확인한 것은 아래 세 가지다.
+
+| 비교 | 결과 |
+|---|---|
+| `hong`과 `shim` (복제) | 값은 같고 주소는 다르다 |
+| `shim`과 `kim` (대입) | 주소가 같다 |
+| `kim`의 값을 바꾼 뒤 `shim`을 출력 | `shim`도 `2 / 김두한 / 총무부`로 바뀐다 |
+
+- 복제는 새 메모리를 만들고, 대입(`kim = shim`)은 같은 메모리에 이름을 하나 더 붙이는 것이다.
+- 노트에 스프링의 `prototype`이 객체를 복제하는 방식이라고 적었다.
+
+</details>
+
+<details>
+<summary><b>참조형을 메소드에 넘길 때</b></summary>
+
+<br>
+
+```java
+class Member
+{
+    // mno, name, address, Getter, Setter, print() 생략
+    public void memberUpdate(Member m)   // Member m = mm
+    {
+        m.setMno(1);
+        m.setName("홍길동");
+        m.setAddress("서울시 마포구");
+    }
+}
+
+public static void arrayUpdate(int[] arr)   // arr = a
+{
+    for (int i = 0; i < arr.length; i++)
+    {
+        arr[i] = (int) (Math.random() * 100) + 1;
+    }
+    for (int i : arr) System.out.print(i + " ");
+}
+
+Member mm = new Member();
+mm.memberUpdate(mm);
+mm.print();
+
+int[] a = new int[5];
+arrayUpdate(a);
+for (int i : a) System.out.print(i + " ");
+```
+
+```
+======= 회원 정보 ======
+회원번호:1
+이름:홍길동
+주소:서울시 마포구
+100 88 34 52 97 
+=============
+100 88 34 52 97
+```
+
+- 배열과 클래스는 변수에 값이 아니라 주소가 들어 있다. 메소드에 넘기면 그 주소가 매개변수로 복사된다(`Member m = mm`, `int[] arr = a`). 그래서 메소드 안에서 바꾼 값이 호출한 쪽에도 그대로 남는다.
+- 위 숫자는 `Math.random()`이라서 실행할 때마다 달라진다. 메소드 안에서 출력한 값과 밖에서 다시 출력한 값이 같은 것이 포인트다.
+- 노트에는 이 두 가지를 "메모리 주소 => 배열 / 클래스 => 참조 데이터형"으로 묶어 적었다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `A` 객체 두 개의 `hashCode()`, `toString()` 출력과 `equals()` 비교 |
+| `Main` 객체를 만들고 `null`로 지운 뒤 `System.gc()`로 `finalize()` 호출 확인 |
+| `Sawon implements Cloneable`로 `clone()` 복제, 복제(`shim`)와 대입(`kim`)의 차이 확인 |
+| `Member` 객체와 `int[]` 배열을 메소드에 넘겨서 값 바꾸기 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `라이브러리_2.java`는 컴파일할 때 `finalize()`에 `[removal]` 경고가 나온다(Java 21에서 확인). 삭제 예정 메소드라는 표시다. 대신 쓰는 방법은 아직 모른다.
+- `라이브러리_2.java`는 `System.gc()` 직후에 `finalize()`가 항상 호출되는지 모른다. 한 번 실행했을 때는 출력되었다.
+- `라이브러리_3.java`는 노트에 `clone()`을 깊은 복사라고 적었다. `Sawon`의 변수는 `int`와 `String`뿐이라 차이가 드러나지 않는다. `int[]` 변수를 가진 클래스를 따로 만들어 `clone()`한 뒤 복제본의 배열 값을 바꿨더니 원본 배열 값도 같이 바뀌었다(배열 주소가 같았다). `clone()`은 변수를 그대로 복사하는 방식이라 참조형 변수는 주소만 복사된다. 배열이나 객체를 가진 클래스를 복제할 때 어떻게 해야 하는지는 아직 모른다.
+- `라이브러리_3.java`는 `kim`을 바꾼 뒤 `hong`을 다시 출력하지 않는다. `hong`이 그대로인지 코드로 확인하지 않았다.
+- `라이브러리_3.java`에서 `implements Cloneable`을 빼면 어떻게 되는지 확인하지 않았다.
+- `라이브러리_4.java`는 `mm.memberUpdate(mm)`처럼 자기 자신을 넘긴다. 다른 `Member` 객체를 인자로 넘겨서 그 객체만 바뀌는 경우는 확인하지 않았다.
+- `라이브러리_1.java`의 `equals()`는 `다르다`가 나왔다. 값이 같으면 `같다`가 나오게 하는 방법은 21일차 `Object_3.java`에서 다룬다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 라이브러리는 패키지, 클래스명, 메소드명, 리턴형, 매개변수, 예외처리 여부로 읽는다.
+- `java.lang`은 `import` 없이 쓴다. `Object`, `String`, `StringBuffer`, Wrapper, `Math`, `System`이 들어 있다.
+- `Object`는 모든 클래스의 최상위이고 `finalize()`, `clone()`, `toString()`, `getClass()`, `equals()`, `hashCode()`를 가지고 있다.
+- 오버라이딩하기 전의 `equals()`는 주소 비교이고 `toString()`은 `클래스명@해시값`이다.
+- 객체는 `new`로 만들고, `null`로 주소를 지우고, `gc()`로 회수하면 `finalize()`가 호출된다.
+- 복제(`clone()`)는 새 메모리를 만들고, 대입은 같은 메모리를 같이 쓴다.
+- 배열과 객체를 메소드에 넘기면 주소가 넘어가서 메소드 안에서 바꾼 값이 원본에 반영된다.
+
+</details>
+
+---
+
+## 21일차 | 2026.11.09 (월) | Chapter 12. 라이브러리 (Object, System, 문자열 정리)
+
+<details>
+<summary><b>Object 변수와 상속 변수의 접근 범위</b></summary>
+
+<br>
+
+- `Object`는 가장 큰 데이터형이라서 기본형, 참조형 상관없이 모든 값을 받을 수 있다. 노트에는 `Object o = 10`, `o = 0.5`, `o = true`, `o = "Hello"`, `Object o = new A()`로 적었다.
+- `Object`는 메소드만 제공하고 변수는 제공하지 않는다.
+- 상위 클래스 변수로는 하위 클래스에 새로 추가된 변수와 메소드를 쓸 수 없다.
+
+```java
+class A { int a; void display() {} }
+class B extends A { int b; void bbb() {} }
+```
+
+| 선언 | 쓸 수 있는 것 |
+|---|---|
+| `B bb = new B()` | `a`, `b`, `display()`, `bbb()` |
+| `A aa = new A()` | `a`, `display()` |
+| `A cc = new B()` | `a`, `display()` (오버라이딩한 메소드면 `B`의 것이 호출된다) |
+
+- 노트에는 `=` 왼쪽(변수의 클래스)이 쓸 수 있는 범위를 정하고, 오른쪽(생성자)이 오버라이딩한 메소드를 호출하는 쪽을 정한다고 적었다. 16일차 다형성에서 본 것과 이어진다.
+- 라이브러리 메소드는 대부분 `Object`를 돌려줘서 형변환이 필요하다. `Object_1.java`의 `JComboBox`가 예다.
+
+```java
+JComboBox box = new JComboBox();
+box.addItem("홍길동");          // addItem(Object o)
+// ...
+
+public void itemStateChanged(ItemEvent e)
+{
+    if (e.getSource() == box)
+    {
+        // String name = (String) box.getSelectedItem();
+        String name = box.getSelectedItem().toString();
+        la.setText(name);
+    }
+}
+```
+
+- `getSelectedItem()`이 `Object`를 돌려주기 때문에 `(String)`으로 형변환하거나 `toString()`을 쓴다.
+- 노트에는 이렇게 `Object`로 받는 문제를 줄이려고 제네릭으로 데이터형을 통일한다고 적었다. 제네릭에는 `<int>`, `<double>`을 못 쓰고 `<Integer>`, `<Double>`처럼 클래스를 쓴다.
+
+</details>
+
+<details>
+<summary><b>toString()과 equals() 오버라이딩</b></summary>
+
+<br>
+
+```java
+class Member
+{
+    private String name;
+    private String sex;
+    // Getter, Setter 생략
+
+    @Override
+    public String toString()
+    {
+        // return super.toString();    // 주소값
+        return "이름:" + name + ",성별:" + sex;
+    }
+}
+
+System.out.println("m1 주소:" + m1);            // .toString() 생략
+System.out.println("m1 주소:" + m1.toString());
+```
+
+```
+m1 주소:이름:홍길동,성별:남자
+m1 주소:이름:홍길동,성별:남자
+```
+
+- `println()`에 객체를 넣으면 `toString()`이 자동으로 호출된다. 그래서 `m1`만 써도 `m1.toString()`과 결과가 같다.
+- `super.toString()`은 주소 값이고, 오버라이딩하면 객체가 가진 실제 값을 출력한다.
+
+```java
+class Human
+{
+    private String name, sex;
+    // Getter, Setter, 생성자 생략
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Human)       // 객체 비교 연산자
+        {
+            Human s = (Human) obj;
+            return name.equals(s.name) && sex.equals(s.sex);
+        }
+        return false;
+    }
+}
+
+Human h1 = new Human("홍길동", "남자");
+Human h2 = new Human("홍길동", "남자");
+if (h1.equals(h2)) System.out.println(h1 + "==" + h2);
+else System.out.println(h1 + "!=" + h2);
+```
+
+```
+com.sist.lang.Human@15db9742==com.sist.lang.Human@7f31245a
+```
+
+- `equals(Object obj)`는 매개변수가 `Object`라서 `instanceof`로 `Human`인지 먼저 확인하고 `(Human)`으로 형변환한 다음 이름과 성별을 비교한다. `Human`이 아니면 `false`다.
+- `String`은 `==`가 주소 비교이고 `equals()`가 실제 문자열 비교다. `String`의 `equals()`도 이렇게 오버라이딩해서 값을 비교하게 만들어 둔 것이다.
+- 이름과 성별이 같아서 `==` 쪽이 출력되었다. 출력된 `Human@...` 두 주소는 서로 다르다. `Human`에는 `toString()`을 오버라이딩하지 않았기 때문이다.
+- 노트에는 이름이 겹칠 때 우선순위를 지역변수, 매개변수, `static` 변수, 인스턴스 변수 순으로 적었다. 충돌하면 `this.`(인스턴스)나 `클래스명.`(`static`)으로 구분한다.
+
+</details>
+
+<details>
+<summary><b>hashCode()와 getClass()</b></summary>
+
+<br>
+
+```java
+class Sawon
+{
+    private int sabun;
+    private String name;
+    // Getter, Setter, 생성자 생략
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Sawon)
+        {
+            Sawon s = (Sawon) obj;
+            return sabun == s.sabun && name.equals(s.name);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(sabun, name);
+    }
+}
+
+Sawon s1 = new Sawon(1, "박문수");
+Sawon s2 = new Sawon(1, "박문수");
+System.out.println(s1.hashCode());
+System.out.println(s2.hashCode());
+
+Set<Sawon> set = new HashSet<Sawon>();
+set.add(s1);
+set.add(s2);
+for (Sawon s : set)
+{
+    System.out.println(s.getSabun());
+    System.out.println(s.getName());
+}
+```
+
+```
+47807637
+47807637
+1
+박문수
+```
+
+- `hashCode()`는 객체 구분자이고 `equals()`는 값 비교다. 값이 같은 두 객체의 `hashCode()`가 같아지게 `Objects.hash(sabun, name)`으로 만들었다.
+- `HashSet`에 `s1`, `s2`를 넣었는데 한 명만 출력되었다. 같은 객체로 보고 중복을 하나로 합친 것이다.
+- `hashCode()`를 지우고 `equals()`만 오버라이딩한 `HashSet` 예제를 따로 만들어 돌렸더니 크기가 2가 되었다. `equals()`만으로는 부족하고 `hashCode()`도 같이 오버라이딩해야 한다.
+
+```java
+Food f = new Food();
+System.out.println(f.getClass());
+String s = "";
+System.out.println(s.getClass());
+```
+
+```
+class com.sist.lang.Food
+class java.lang.String
+```
+
+- `getClass()`는 객체의 데이터형(패키지를 포함한 클래스명)을 돌려준다. 클래스도 참조형 데이터형이다.
+
+</details>
+
+<details>
+<summary><b>System 클래스</b></summary>
+
+<br>
+
+| 기능 | 메소드 | 설명 |
+|---|---|---|
+| 프로그램 종료 | `System.exit(int code)` | `0`은 정상 종료, `0`이 아니면 비정상 종료 |
+| 표준 입력 | `System.in` | 키보드 입력값. `read()`로 읽는다 |
+| 표준 출력 | `System.out` | `print()` 가로, `println()` 세로(`\n` 포함), `printf()` 형식 출력 |
+| 메모리 회수 | `System.gc()` | heap의 메모리를 회수한다 |
+| 시간 측정 | `System.currentTimeMillis()` | 1/1000초 단위 |
+| 시스템 정보 | `System.getProperty()` | 운영체제, 자바 정보 |
+
+- 모두 `static` 메소드다. `printf()`의 형식은 `%d` 정수, `%s` 문자열, `%f` 실수, `%c` 문자다.
+
+```java
+int a = 5;
+for (int i = 1; i <= 10; i++)
+{
+    if (i == a)
+    {
+        System.out.println("프로그램 종료");
+        System.exit(0);         // break면 for문만 종료
+    }
+    System.out.println("i=" + i);
+}
+System.out.println("시작");
+System.out.println("GO");
+```
+
+```
+i=1
+i=2
+i=3
+i=4
+프로그램 종료
+```
+
+- `exit(0)`은 프로그램 전체를 끝내서 `시작`, `GO`가 출력되지 않는다. `break`였다면 `for`문만 끝나고 `시작`, `GO`가 출력된다. 웹에서는 쓰지 않는다고 적었다(브라우저가 종료되기 때문).
+
+```java
+System.out.print("정수 입력:");
+int num1 = System.in.read();         // '1' => 49
+System.out.println("num1=" + (num1 - '0'));
+System.in.read();                    // enter
+
+System.out.print("정수 입력:");
+int num2 = System.in.read();
+System.in.read();
+System.out.println("num2=" + num2);
+```
+
+```
+정수 입력:num1=1
+정수 입력:num2=53
+```
+
+- `System.in.read()`는 글자 하나를 읽어서 문자 코드로 돌려준다. `'1'`은 `49`, `'0'`은 `48`이라서 `'0'`을 빼야 숫자가 된다. 예외처리가 필수라서 `try ~ catch`로 감쌌다. `1`, `5`를 한 줄씩 입력했을 때의 결과다. 사용 빈도가 거의 없어서 `Scanner`를 쓴다고 적었다.
+- `num2`는 `'0'`을 빼지 않아서 `5`를 입력하면 `53`이 출력된다.
+
+```java
+long start = System.currentTimeMillis();
+for (int i = 1; i <= 100000000; i++)
+{
+    System.out.println(i);
+}
+long end = System.currentTimeMillis();
+System.out.println("걸린 시간:" + (end - start));
+```
+
+- 반복 전후의 시간을 빼서 걸린 시간을 구한다. 노트에는 웹에서 로그 파일에 쓴다고 적었다. 1억 번 출력이라 실행하지 않았다.
+
+```java
+System.getProperty("os.name");
+System.getProperty("user.name");
+System.getProperty("user.home");
+System.getProperty("java.version");
+```
+
+- 운영체제 이름, 사용자 이름, 사용자 홈 폴더, 자바 버전을 읽는다. 노트에는 자바 버전을 확인하는 이유를 CI/CD와 docker에서 버전을 맞추기 위해서라고 적었다.
+
+</details>
+
+<details>
+<summary><b>문자열 자르기와 비교 정리</b></summary>
+
+<br>
+
+- 7일차, 8일차에 배운 `substring`, `indexOf`, `lastIndexOf`, `equals`, `contains`, `startsWith`, `endsWith`를 지니 주소 문자열에 적용했다.
+
+```java
+String categroy = "https://www.genie.co.kr/chart/genre";
+String s = categroy.substring(categroy.lastIndexOf("/") + 1);
+System.out.println(s);                                          // genre
+s = categroy.substring(0, categroy.indexOf(":"));
+System.out.println(s);                                          // https
+s = categroy.substring(categroy.indexOf("/") + 2);              // www.genie.co.kr/chart/genre
+String s1 = s.substring(0, s.indexOf("/"));
+System.out.println(s1);                                         // www.genie.co.kr
+```
+
+| 코드 | 결과 |
+|---|---|
+| 마지막 `/` 뒤부터 끝까지 | `genre` |
+| 처음부터 `:` 앞까지 | `https` |
+| 첫 `/`에서 2칸 뒤부터 (`//` 건너뛰기) 다시 첫 `/` 앞까지 | `www.genie.co.kr` |
+
+```java
+String msg1 = "Hello Java";
+String msg2 = "HELLO JAVA";
+if (msg1.equalsIgnoreCase(msg2)) System.out.println("같다");
+else System.out.println("다르다");
+
+String msg = "Hello Java";
+if (msg.contains("Java")) System.out.println("포함됨");
+if (msg.startsWith("Hello")) System.out.println("Hello로 시작됨");
+if (msg.endsWith("Java")) System.out.println("Java로 끝남");
+```
+
+```
+같다
+포함됨
+Hello로 시작됨
+Java로 끝남
+```
+
+| 메소드 | 쓰는 곳 (노트) |
+|---|---|
+| `equals()` | 대소문자 구분. 로그인 |
+| `equalsIgnoreCase()` | 대소문자 구분 없음. 검색 |
+| `contains()` | 검색 |
+| `startsWith()` | 자동 완성기 |
+| `endsWith()` | 확장자 |
+
+- 문자열은 `==`를 쓰지 않고 `equals()`로 비교한다.
+- `문자열_정리.java`에는 `String` 메소드를 메소드 원형(리턴형, 매개변수)으로 다시 적었다. `main`은 비어 있고 주석만 있다. 그중 일부는 아래와 같다.
+
+| 메소드 | 원형 | 설명 |
+|---|---|---|
+| `length()` | `int length()` | 문자 개수 |
+| `trim()` | `String trim()` | 앞뒤 공백 제거 |
+| `valueOf()` | `static String valueOf(기본형)` | 모든 데이터형을 문자열로 |
+| `replace()` | `String replace(char, char)`, `String replace(String, String)` | 문자, 문자열 변경 |
+| `replaceAll()` | `String replaceAll(String regex, String s)` | 정규식으로 변경 (`[A-Za-z]`, `[0-9]`, `[가-힣]`) |
+| `concat()` | `String concat(String s)` | 문자열 결합. `s += "Java"`와 같은 결과 |
+
+- `String`은 `final`이라서 오버라이딩할 수 없다. 라이브러리가 제공하는 기능만 쓴다.
+
+</details>
+
+<details>
+<summary><b>문자열 나누기 - split과 StringTokenizer</b></summary>
+
+<br>
+
+```java
+String data = "계란,새송이버섯,대파,참기름,통깨,물,굵은소금,식초,진간장,맛술,설탕,올리고당,다진 마늘";
+
+String[] datas = data.split(",");
+for (String s : datas) System.out.println(s);
+
+StringTokenizer st = new StringTokenizer(data, ",");
+System.out.println("분리된 재료:" + st.countTokens());
+while (st.hasMoreTokens())
+{
+    System.out.println(st.nextToken());
+}
+```
+
+- 두 방법 모두 재료 13개가 같은 순서로 출력되었고 `countTokens()`는 `13`이었다. `다진 마늘`처럼 안에 공백이 있는 항목은 `,` 기준이라서 한 덩어리로 나온다.
+
+| | `split()` | `StringTokenizer` |
+|---|---|---|
+| 패키지 | `java.lang` (`String`) | `java.util` (`import` 필요) |
+| 결과 | `String[]` 배열 | 하나씩 꺼내 읽는다 |
+| 구분 기호 | 정규식 | 글자 그대로 |
+| 개수 | `length` | `countTokens()` |
+| 읽기 | 반복문으로 배열 접근 | `hasMoreTokens()`와 `nextToken()` |
+
+- `StringTokenizer`의 메소드는 `countTokens()`(분리된 단어 개수), `hasMoreTokens()`(남은 단어가 있는 동안), `nextToken()`(단어를 하나씩 읽기)다. 노트에는 웹과 네트워크에서 많이 쓰고 크롤링한 데이터를 데이터베이스에 넣을 때 쓴다고 적었다.
+- 단점으로 노트에 빈 문자열(공백, null)이 있는 경우 문제가 생긴다고 적었다. `"a,,b"`로 따로 실행하니 `split(",")`는 3개(가운데가 빈 문자열), `StringTokenizer`는 2개였다. 빈 칸이 사라진다.
+
+```java
+String color = "red|green|blue|black|white";
+String[] colors = color.split("\\|");               // String regex
+StringTokenizer st = new StringTokenizer(color, "|");
+```
+
+- `|`는 정규식에서 "선택"이라는 뜻이라서 `split`에는 `\\|`로 써야 하고, `StringTokenizer`는 그대로 `"|"`를 쓴다. 10일차에 정리한 `+`, `*`, `|` 앞에 `\\`를 붙이는 규칙이다. 두 방법 모두 5개 색이 같은 순서로 출력되었다.
+
+| 정규식 기호 | 뜻 |
+|---|---|
+| `^` | 제외 |
+| `\|` | 선택 |
+| `?` | 0개 또는 1개 |
+| `+` | 1개 이상 |
+| `*` | 0개 이상 |
+| `.` | 임의의 한 글자 |
+
+- `문자열_1.java`는 `main`이 비어 있고 주석만 있다. 주석에는 `String`을 `String 변수명 = "";`(기본형처럼, 표준)과 `new String("")`(참조형)으로 만들 수 있고, `String`은 값만 전송하는 Call By Value만 쓸 수 있다고 적었다. 문자열을 빠르게 결합하는 `StringBuffer`, `StringBuilder`(`append()`)도 `java.lang`에 있다고 적었다.
+- `문자열_1.java`에 주석 처리된 한 줄 `Object[] arr = {10, 'A', 10.5, "홍길동", 10L, 10.5F};`는 따로 풀어서 돌려 보니 `Integer Character Double String Long Float`로 들어갔다. `Object` 배열이라서 데이터형이 다른 값을 한 배열에 담을 수 있다.
+
+</details>
+
+<details>
+<summary><b>지니 음악 프로그램 - GenieMusic, MusicVO, UserMain</b></summary>
+
+<br>
+
+- 15일차 음악 순위 시스템과 같은 지니 차트를 읽는다. 15일차에는 `Music`을 상속받은 `GenieMusic`이 생성자에서 한 번 읽었고, 이번에는 카테고리를 고를 때마다 다시 읽도록 `getData(int cno)` 메소드로 만들었다. 노트에는 생성자나 `static {}`은 한 번만 호출되어 재호출이 안 되기 때문에 사용자가 요청할 때마다 호출하는 메소드로 만든다고 적었다.
+
+| 클래스 | 역할 |
+|---|---|
+| `MusicVO` | 곡 한 개의 정보 (`mno`, `title`, `singer`, `album`, `state`, `idcrement`, `poster`). Lombok `@Data` |
+| `GenieMusic` | 카테고리 주소 7개를 가지고 Jsoup으로 읽어서 `MusicVO[50]`에 저장한다 |
+| `UserMain` | 메뉴를 출력하고 번호를 받아 `gm.getData(cno - 1)`을 호출한다. `9`는 종료 |
+
+```java
+private static MusicVO[] musics = new MusicVO[50];
+private static String[] category = {
+    "https://www.genie.co.kr/chart/top200",
+    "https://www.genie.co.kr/chart/genre?ditc=D&ymd=20261108&genrecode=M0100",
+    // 장르 코드만 다른 주소 5개 더
+};
+
+public void getData(int cno)
+{
+    try
+    {
+        Document doc = Jsoup.connect(category[cno]).get();
+        Elements title = doc.select("table.list-wrap a.title");
+        // singer, album, poster, etc도 같은 방식
+        for (int i = 0; i < title.size(); i++)
+        {
+            musics[i] = new MusicVO();
+            musics[i].setMno(i + 1);
+            musics[i].setTitle(title.get(i).text());
+            // ...
+        }
+    } catch (Exception ex) {}
+
+    for (MusicVO vo : musics)
+    {
+        System.out.println(vo.getMno() + "." + vo.getTitle());
+    }
+}
+```
+
+- 등락 칸은 15일차와 같은 방식으로 `replaceAll`로 나눈다. `유지`면 `state`가 `유지`, `id`가 `0`이고, 아니면 `temp.replaceAll("[^가-힣]", "")`로 한글만 `state`에, `temp.replaceAll("[^0-9]", "")`로 숫자만 `Integer.parseInt()`로 바꿔서 `id`에 넣는다. `^`는 `[ ]` 안에서 "제외"라는 뜻이라서 `[^가-힣]`은 한글이 아닌 것을 지운다.
+- `Jsoup.connect().get()`은 반드시 예외처리해야 하는 Checked 예외가 따른다. 노트에는 파일은 `IOException`, 네트워크는 `MalformedURLException`, 데이터베이스는 `SQLException`, 쓰레드는 `InterruptedException`, 클래스는 `ClassNotFoundException`이라고 적었다. 18일차에 정리한 Checked 예외 구분과 이어진다.
+- `UserMain`은 `while (true)`로 메뉴를 반복하다가 `9`를 입력하면 `System.exit(0)`으로 끝낸다. 방금 배운 `System.exit()`가 여기에 쓰였다.
+- Jsoup, Lombok jar와 인터넷 연결이 필요해서 실행하지 못했다. 코드를 읽고 쓴 것이다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `JComboBox`에 `addItem()`으로 이름을 넣고 `getSelectedItem().toString()`으로 선택한 이름을 라벨에 표시 (`Object_1`) |
+| `Member`에 `toString()`을 오버라이딩해서 객체를 그대로 출력하면 값이 나오게 하기 |
+| `Human`의 `equals()`를 오버라이딩해서 이름과 성별이 같으면 같은 객체로 비교 |
+| `Sawon`의 `equals()`, `hashCode()`를 오버라이딩하고 `HashSet`에 넣어 중복 제거 확인 |
+| `getClass()`로 `Food`, `String`의 클래스 정보 출력 |
+| `System.exit(0)`, `System.in.read()`, `currentTimeMillis()`, `getProperty()` 연습 |
+| `substring`, `indexOf`, `lastIndexOf`로 주소 문자열 자르기, `equals`, `equalsIgnoreCase`, `contains`, `startsWith`, `endsWith` 비교 |
+| `split()`과 `StringTokenizer`로 재료 문자열과 색 문자열 나누기 |
+| 지니 차트 카테고리 7개를 고르는 `GenieMusic`, `MusicVO`, `UserMain` 작성 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Object_1.java`는 화면(Swing)이라 실행하지 못했다. 콤보박스를 바꿀 때 `itemStateChanged()`가 몇 번 호출되는지 모른다.
+- `Object_1.java` 주석에 "`Object`를 제외하고 다른 클래스는 `final`"이라고 적었는데 코드로 확인하니 `String`, `Integer`는 `final`이고 `Thread`는 `final`이 아니었다. 19일차 `BarThread extends Thread`가 `Thread`를 상속받은 것과 맞다. `final`인 클래스가 어디까지인지 정리할 것.
+- `Object_3.java`의 `if (h1.equals(h2)) // 주소` 주석은 코드와 다르다. `equals()`를 오버라이딩했으니 주소가 아니라 이름과 성별을 비교한다. 코드를 기준으로 하면 `==` 쪽이 출력된다. `Human`에 `Object_2.java`처럼 `toString()`을 오버라이딩하면 출력도 값으로 나온다.
+- `Object_3.java`의 `h3 = h1`, `static String n`은 쓰지 않는다. 생성자에서 `name = n`처럼 매개변수와 이름이 다른 변수만 써서 `this.`와 `Human.n` 구분이 필요한 상황이 없다.
+- `Object_3.java`, `Object_4.java`의 `equals()`는 `name`이 `null`이면 `name.equals(...)`에서 `NullPointerException`이 난다. 코드를 읽고 쓴 것이고 실행하지 않았다. `null`을 비교하는 방법을 알아볼 것.
+- `Object_5.java` 주석에 오타가 있다. `toLpwerCase`는 `toLowerCase`이고 비교 메소드는 `compare()`가 아니라 `compareTo()`다. `main`은 `getClass()` 두 줄뿐이고 긴 주석은 `java.lang` 클래스 요약이다.
+- `System_2.java`는 입력 바이트를 따로 흉내 내서 확인했다(Eclipse 콘솔에서 실행한 것은 아니다). 한 글자만 읽어서 `10`을 입력하면 `num1=1`, `0`이 enter 자리로 소비되고 `num2`는 입력을 기다리지 않고 `10`이 된다. Windows는 enter가 `\r\n` 두 글자라서(주석의 `enter => 13`) 첫 입력 뒤에 enter를 한 번만 읽으면 `\n`이 남아 `num2=10`이 되었다. `catch (Exception ex) {}`가 비어 있다.
+- `System_3.java`는 1억 번 `println()`이라 실행하지 않았다. 시간 대부분이 출력일 것으로 보이니 출력 없는 반복과 비교해서 확인할 것.
+- `System_4.java` 주석에 `user.name`을 컴퓨터명이라고 적었다. 리눅스 환경에서 따로 실행하니 컴퓨터 이름(`vm`)이 아니라 로그인 계정 이름(`root`)이 나왔다. 학원 PC에서 직접 찍어서 어느 쪽인지 확인할 것.
+- `문자열_2.java`의 변수명 `categroy`는 `category` 오타다. `문자열_정리.java`의 `endWith`도 `endsWith`가 맞다.
+- `문자열_4.java`의 정규식 표에는 `^`가 "제외"라고만 적혀 있다. `[^가-힣]`처럼 `[ ]` 안에서 쓸 때의 뜻이다.
+- `GenieMusic.java`의 `catch (Exception ex) {}`가 비어 있어서 접속 실패, 선택자 불일치, 인덱스 범위 초과가 모두 조용히 지나간다. 그 뒤 `for (MusicVO vo : musics)`가 `vo.getMno()`를 호출하니 `musics`가 한 번도 채워지지 않았다면 `NullPointerException`이 날 것으로 보인다.
+- `UserMain.java`에 `0`, `8`, `10` 같은 범위 밖 번호를 넣으면 `category[cno - 1]`에서 `ArrayIndexOutOfBoundsException`이 나고, 위의 빈 `catch`가 삼킨 뒤 이전 카테고리 목록을 다시 출력할 것으로 보인다. 메뉴에는 `8`이 없다. 문자를 입력하면 `scan.nextInt()`에서 `InputMismatchException`으로 끝난다. 18일차 다중 catch를 쓸 것.
+- `GenieMusic.java`의 `musics`는 `static`이라 카테고리를 바꿀 때 `title.size()`가 50보다 작으면 뒤쪽에 이전 카테고리 곡이 남는다. 읽은 개수만큼만 출력하도록 고칠 것.
+- `GenieMusic.java`의 `ymd=20261108` 날짜가 주소에 고정되어 있다. 날짜를 바꾸는 방법을 알아볼 것. `getData()`가 읽기와 출력을 같이 하는 것도 나눌 수 있다.
+- `UserMain.java` 메뉴의 `ZAZZ`는 `JAZZ` 오타로 보인다. `MusicVO`의 변수 `idcrement`도 `increment`가 맞다. 변수명을 바꾸면 Lombok Getter, Setter 이름과 `GenieMusic`의 호출도 같이 바꿔야 한다.
+- `.classpath`에 jsoup, Lombok, JTattoo가 `C:/Users/sist33/Downloads`, `C:/javaDev` 절대 경로로 등록되어 있어서 다른 PC에서 열면 라이브러리를 못 찾는다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- `Object` 변수는 모든 값을 받지만, 상위 클래스 변수로는 하위 클래스에 추가된 변수와 메소드를 쓸 수 없다. 라이브러리가 `Object`를 돌려주면 형변환이나 `toString()`이 필요하다.
+- `toString()`은 객체를 값으로 출력하게 오버라이딩하고, `equals()`는 값 비교로 오버라이딩한다.
+- `equals()`와 `hashCode()`는 같이 오버라이딩해야 `HashSet`이 값이 같은 객체를 중복으로 본다.
+- `getClass()`는 패키지를 포함한 클래스명을 돌려준다.
+- `System.exit(0)`은 프로그램 전체를 끝낸다. `System.in.read()`는 글자 하나의 문자 코드를 읽어서 쓰기 불편하고, 실제로는 `Scanner`를 쓴다.
+- `currentTimeMillis()`는 시작과 끝 시간을 빼서 걸린 시간을 구하고, `getProperty()`는 운영체제와 자바 정보를 읽는다.
+- 문자열은 `substring`, `indexOf`, `lastIndexOf`로 자르고, `equals`, `equalsIgnoreCase`, `contains`, `startsWith`, `endsWith`로 비교한다.
+- `split()`은 정규식 기준이고 빈 값도 남긴다. `StringTokenizer`는 글자 그대로 나누고 빈 값이 사라진다.
+- 지니 차트 프로그램은 `getData()` 메소드로 만들어서 카테고리를 고를 때마다 다시 읽는다. 빈 `catch`와 범위 밖 번호는 고쳐야 할 곳이다.
+
+</details>
