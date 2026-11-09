@@ -4360,7 +4360,6 @@ display(10, 20, 30);
 - `UserMain`은 `Execute e`를 꺼내 놓고 쓰지 않은 채 `if`를 다섯 개 써서 같은 일을 한다. `e.execute()` 한 줄이면 된다. 메뉴가 1 ~ 5가 아니면 `e`가 `null`이라서 검사가 필요하다. `Map map = new HashMap();`은 타입을 지정하지 않은 형태라 컴파일 때 경고가 나온다.
 - 인터페이스 메소드 이름이 `seyHello`로 오타다. `sayHello`로 바꾸면 인터페이스를 구현한 `Hello`도 같이 바꿔야 한다. 인터페이스를 수정하면 구현 클래스가 모두 영향을 받는다는 노트 내용 그대로다.
 - 퍼즐 게임은 눌린 칸이 빈칸과 이웃한지 검사하지 않아서, 어느 숫자를 눌러도 빈칸과 자리가 바뀐다. 이웃한 칸만 움직이게 하려면 `last`와 눌린 칸의 위치 차이를 검사해야 한다. 시작 버튼을 누르기 전에도 칸을 누를 수 있다.
-- `Chapter11-예외처리`에 `try ~ catch ~ finally`, `throws`, `throw` 코드를 직접 짜 볼 것.
 
 </details>
 
@@ -4375,5 +4374,791 @@ display(10, 20, 30);
 - 추상 클래스는 공통 기능을 모아서 재사용하고, 인터페이스는 기능을 설계하고 표준화한다.
 - 클래스 변수에 상속 관계가 있는 객체만 담을 수 있다. 위로 올라가는 것은 자동이고, 내려가는 형변환은 실행할 때 오류가 날 수 있다.
 - 가변 매개변수 `int... a`는 개수가 정해지지 않은 값을 배열로 받는다.
+
+</details>
+
+---
+
+## 18일차 | 2026.11.04 (수) | Chapter 11. 예외처리
+
+<details>
+<summary><b>예외처리 개념 - 에러와 예외</b></summary>
+
+<br>
+
+- 예외처리는 프로그램을 실행하는 중에 생길 수 있는 에러에 대비하는 코드다. 비정상 종료를 막아서 프로그램의 정상 상태를 유지하는 것이 목적이다.
+- 에러는 두 가지로 나뉜다. `Error`는 메모리 부족이나 윈도우 종료처럼 코드로 어쩔 수 없는 심각한 에러이고, `Exception`은 파일명, 경로, 서버 IP / PORT를 잘못 쓴 것처럼 소스에서 처리할 수 있는 가벼운 에러다.
+- 예외처리를 한다고 에러가 저절로 고쳐지는 것은 아니다. 에러가 난 부분을 건너뛰고 프로그램을 계속 진행시키는 것이고, `if`로 미리 막는 것과 비슷하다.
+- 2일차에 배운 컴파일(`javac`)과 실행(`java`) 두 단계 중 어디서 걸리는지로 예외의 종류가 나뉜다. 컴파일할 때 예외처리가 되어 있는지 확인하는 것이 CheckedException이고, 실행할 때 나는 것이 UnCheckedException이다.
+
+**예외 처리 방법 (노트 정리)**
+| 방법 | 형태 | 설명 |
+|---|---|---|
+| 예외 복구 (직접 처리) | `try ~ catch ~ finally` | 에러가 나면 catch에서 처리하고 finally에서 자원을 정리한다 |
+| 예외 회피 (간접 처리) | 메소드 뒤에 `throws 예외클래스` | 처리를 호출한 쪽에 넘긴다 |
+| 예외 발생 | `throw new 예외클래스()` | 테스트할 때나 사용자 정의 예외를 직접 발생시킨다 |
+| 사용자 정의 | `class MyException extends Exception` | 직접 만든 예외 클래스 |
+
+- 14일차에 이름만 적고 지나간 복구, 회피, 발생이 이 세 가지다. 이날 코드로 쓴 것은 복구(`try ~ catch ~ finally`)이고, 나머지는 다음 시간에 이어진다.
+
+```java
+for (int i = 1; i <= 10; i++)
+{
+    try
+    {
+        int a = (int)(Math.random() * 3);        // 0 ~ 2
+        int val = i / a;
+        System.out.println(i + ":" + val);
+    }
+    catch (Exception e) {}
+}
+```
+- `a`가 0이면 `i / a`에서 `ArithmeticException`이 나고, catch로 이동해서 아무것도 하지 않고 다음 `i`로 넘어간다. try가 for 안에 있어서 한 번 실패해도 반복은 계속된다.
+- 세 번 실행했더니 출력이 빠진 번호가 `1 2 3 8`, `2 7 9`, `3 7 9`로 매번 달랐다. `a`가 난수라서 어느 번호에서 0이 나올지 모른다. `7:3`처럼 정수끼리 나눈 결과는 몫만 나온다.
+
+</details>
+
+<details>
+<summary><b>예외의 종류와 계층 구조</b></summary>
+
+<br>
+
+| 구분 | CheckedException | UnCheckedException |
+|---|---|---|
+| 확인 시점 | 컴파일할 때 예외처리가 되어 있는지 확인한다 | 확인하지 않는다 |
+| 처리 | 반드시 한다 (`try ~ catch` 또는 `throws`) | 필요할 때만 한다 |
+| 원인 | 개발자 실수. 파일 경로, 파일명, URL, IP / PORT를 잘못 쓴 경우 | 사용자 입력. 자주 에러가 나는 부분 |
+| 패키지 | `java.io`, `java.net`, `java.sql` | `RuntimeException`의 자식들 |
+
+| 예외 | 분류 | 언제 나는가 |
+|---|---|---|
+| `IOException` | Checked | 입출력. 파일 읽기, 쓰기, 네트워크 |
+| `InterruptedException` | Checked | 쓰레드 (`Thread.sleep()` 등) |
+| `MalformedURLException` | Checked | URL, 크롤링 |
+| `ClassNotFoundException` | Checked | 리플렉션 (클래스 이름으로 제어) |
+| `SQLException` | Checked | 데이터베이스 연동 |
+| `ArrayIndexOutOfBoundsException` | UnChecked | 배열 범위 초과 |
+| `NumberFormatException` | UnChecked | 문자열을 숫자로 바꿀 수 없을 때 |
+| `ClassCastException` | UnChecked | 클래스 형변환 |
+| `NullPointerException` | UnChecked | 메모리 할당 없이 사용 |
+| `ArithmeticException` | UnChecked | 0으로 나눴을 때 |
+
+```
+Object
+  Throwable                       예외처리의 최상위 클래스
+    Error                         심각한 에러
+    Exception
+      (Checked)    IOException, InterruptedException, MalformedURLException, ...
+      (UnChecked)  RuntimeException
+                     ArrayIndexOutOfBoundsException, NumberFormatException,
+                     ClassCastException, NullPointerException, ArithmeticException
+```
+- 6일차에 `Thread.sleep(1000)` 때문에 main에 `throws Exception`을 붙인 이유가 `InterruptedException`이 Checked라서다.
+- UnChecked는 예외처리 없이도 컴파일이 된다. 그래서 노트에 "우선 `if`로 유효성 검사, 그다음 `try ~ catch`"라고 적었다.
+
+</details>
+
+<details>
+<summary><b>예외를 직접 일으켜 보기 - 다섯 가지 UnChecked 예외</b></summary>
+
+<br>
+
+```java
+public static void aaa(int a, int b)
+{
+    try
+    {
+        System.out.println(a / b);
+    }
+    catch (ArithmeticException ex)
+    {
+        ex.printStackTrace();
+    }
+}
+// bbb(null), ccc(" 20"), ddd(), eee()도 같은 모양으로 try ~ catch
+```
+
+| 메소드 | try 안의 코드 | 결과 |
+|---|---|---|
+| `aaa(10, 0)` | `a / b` | `ArithmeticException`, 메시지 `/ by zero` |
+| `bbb(null)` | `data.length()` | `NullPointerException`, `String.length()`를 호출할 수 없다는 메시지 |
+| `ccc(" 20")` | `Integer.parseInt(num)` | `NumberFormatException`, 메시지 `For input string: " 20"` |
+| `ddd()` | `int[] arr = new int[2]; arr[2] = 200;` | `ArrayIndexOutOfBoundsException`, 메시지 `Index 2 out of bounds for length 2` |
+| `eee()` | `A a = new B(); B b = (B) a;` | 예외가 나지 않는다 |
+
+- `printStackTrace()`는 예외 종류와 메시지, 에러가 난 위치를 `예외처리종류.java:41`처럼 줄 번호까지 보여 준다. `getMessage()`는 에러 문장만 돌려준다. 코드에는 `getMessage()`를 주석으로 남기고 `printStackTrace()`를 썼다.
+- `ccc(" 20")`은 숫자 앞에 공백이 있어서 변환이 안 된다. 노트에 `"10" => " 10"(X)`로 적은 경우다. 입력값을 숫자로 바꾸는 일은 웹에서 한 번도 빠지지 않고 나온다고 노트에 적었다.
+- `eee()`는 `ClassCastException`을 일으키려고 만든 메소드인데 `A a = new B();`로 실제 객체가 `B`라서 형변환이 성공한다. 주석 처리된 `A a = new A();`로 바꾸면 `class A cannot be cast to class B`가 난다. 17일차에 쓴 `B b = (B) new A();`와 같은 경우다.
+- `fff() throws Exception`(Checked)과 `ggg() throws RuntimeException`(UnChecked)은 선언만 했다. main에서 `ggg()`는 try 없이 호출해도 컴파일된다.
+
+</details>
+
+<details>
+<summary><b>try ~ catch ~ finally 실행 순서</b></summary>
+
+<br>
+
+```java
+System.out.println("1");
+System.out.println("2");
+System.out.println("3");
+try
+{
+    System.out.println("4");
+    System.out.println("5");
+    System.out.println(10 / 0);          // 여기서 에러
+    System.out.println("7");             // 실행되지 않는다
+}
+catch (Exception ex)
+{
+    System.out.println("0으로 나눌 수 없습니다");
+}
+finally
+{
+    System.out.println("프로그램 정상 수행");
+}
+System.out.println("10");
+System.out.println("프로그램 종료");
+```
+실행 결과
+```
+1
+2
+3
+4
+5
+0으로 나눌 수 없습니다
+프로그램 정상 수행
+10
+프로그램 종료
+```
+- `println(10 / 0)`은 출력하기 전에 값을 계산하다가 에러가 난다. 그래서 `5` 다음에 아무것도 찍히지 않고 바로 catch로 이동하고, 그 아래에 있는 `7`은 실행되지 않는다.
+- catch가 끝나면 finally가 실행되고, 그다음 try 문 밖의 `10`과 `프로그램 종료`가 이어진다. 에러가 났어도 프로그램은 정상 종료한다.
+- try로 감싸지 않으면 에러가 난 줄에서 프로그램이 멈춘다. 이 코드는 항상 0으로 나눠서 에러가 나는 경우만 확인했다. 에러가 나지 않을 때는 catch를 건너뛰고 finally가 실행된다고 노트에 적었다.
+
+| 블록 | 역할 |
+|---|---|
+| `try` | 정상으로 수행하는 문장. 실수나 입력 문제로 에러가 날 수 있는 코드 |
+| `catch (예외클래스 e)` | 에러가 났을 때 확인하고 복구한다. `printStackTrace()`로 에러 위치, `getMessage()`로 에러 문장 |
+| `finally` | 에러가 나든 안 나든 무조건 실행한다. 파일, 서버, 데이터베이스 닫기 같은 자원 관리. 필요 없으면 생략한다 |
+
+- try ~ catch는 코드 전체에 쓸 수도 있고 일부분에만 쓸 수도 있다.
+
+</details>
+
+<details>
+<summary><b>다중 catch</b></summary>
+
+<br>
+
+```java
+Scanner scan = new Scanner(System.in);
+System.out.print("첫번째 문자 입력:");
+String first = scan.next();
+System.out.print("두번째 문자 입력:");
+String second = scan.next();
+
+int[] arr = new int[2];
+try
+{
+    arr[0] = Integer.parseInt(first);
+    arr[1] = Integer.parseInt(second);
+    System.out.println(arr[0] / arr[1]);
+}
+catch (NumberFormatException e)
+{
+    System.out.println("정수 변환에 실패하였습니다");
+}
+catch (ArrayIndexOutOfBoundsException e)
+{
+    System.out.println("배열 범위 초과");
+}
+catch (Exception e)
+{
+    System.out.println(e.getMessage());
+}
+System.out.println("프로그램 종료");
+```
+
+| 입력 | 출력 | 잡은 catch |
+|---|---|---|
+| `10`, `2` | `5` | 없음 |
+| `abc`, `2` | 정수 변환에 실패하였습니다 | `NumberFormatException` |
+| `10`, `xyz` | 정수 변환에 실패하였습니다 | `NumberFormatException` |
+| `3.5`, `2` | 정수 변환에 실패하였습니다 | `NumberFormatException` |
+| `10`, `0` | `/ by zero` | `Exception` |
+
+- 의심되는 에러가 여러 개일 때 쓴다. 이 코드는 문자열을 정수로 바꾸고, 배열에 저장하고, 나누는 세 곳이 의심된다.
+- `3.5`도 `Integer.parseInt()`로는 바꿀 수 없어서 문자와 같은 결과가 나온다.
+- `10`, `0`의 `ArithmeticException`은 앞의 두 catch에 해당하지 않아서 마지막 `Exception`이 받는다. 어느 경우든 catch는 하나만 실행되고, 마지막의 `프로그램 종료`는 항상 출력된다.
+- 예외 클래스도 상속 관계라서 `Exception`이 부모다. 노트에 catch는 크기가 작은 것부터 쓴다고 적었다. 그래서 구체적인 예외를 먼저 쓰고 `Exception`은 맨 마지막에 둔다.
+
+</details>
+
+<details>
+<summary><b>finally와 자원 관리 - 파일 읽기</b></summary>
+
+<br>
+
+```java
+FileReader fr = null;
+try
+{
+    fr = new FileReader("파일 경로");
+    int i = 0;
+    while ((i = fr.read()) != -1)         // -1 => EOF (파일의 끝)
+    {
+        System.out.print((char) i);
+    }
+}
+catch (Exception ex)
+{
+    System.out.println(ex.getMessage());
+}
+finally
+{
+    try
+    {
+        if (fr != null)
+            fr.close();
+    }
+    catch (Exception ex) {}
+}
+```
+- 6일차에 배운 파일 읽기(`while ((i = fr.read()) != -1)`)에 예외처리를 붙인 코드다. 파일을 여는 `FileReader`는 Checked 예외라서 try ~ catch가 반드시 필요하다. 파일이 없을 수도 있고 경로를 잘못 쓸 수도 있기 때문이다.
+- `FileReader fr`를 try 안에서 선언하면 finally에서 쓸 수 없다. 그래서 try 위에서 `null`로 만들어 두고 try 안에서 값을 넣는다.
+- 파일이 없으면 `new FileReader()`에서 실패하고 `fr`은 `null`인 채로 finally에 온다. `fr.close()`를 바로 부르면 `NullPointerException`이라서 `if (fr != null)`로 검사한다. close도 예외가 날 수 있어서 try ~ catch를 한 번 더 감쌌다.
+- 경로가 `C:\Users\sist33\...`로 되어 있다. 이 경로가 없는 컴퓨터에서 실행하면 catch로 가서 에러 메시지를 출력하고 끝난다. 실제 있는 파일 경로로 바꿔서 실행하면 파일 내용이 그대로 출력된다.
+
+</details>
+
+<details>
+<summary><b>try-with-resources - finally 없이 자동으로 닫기</b></summary>
+
+<br>
+
+```java
+try (FileReader fr = new FileReader("파일 경로"))
+{
+    int i = 0;
+    while ((i = fr.read()) != -1)
+    {
+        System.out.print((char) i);
+    }
+    // fr.close() 필요 없음
+}
+catch (Exception ex)
+{
+    ex.printStackTrace();
+}
+```
+
+| 구분 | finally 방식 | try-with-resources |
+|---|---|---|
+| 변수 선언 | try 위에서 `null`로 선언 | try 괄호 안에서 선언 |
+| 닫기 | finally에서 `null` 검사 후 `close()` | 블록이 끝나면 자동으로 닫힌다 |
+| 코드 양 | 길다 | 짧다 |
+
+- 두 코드가 같은 파일을 읽어서, 읽은 내용이 원본 파일과 같게 출력되는 것을 확인했다. 파일 경로를 잘못 쓰면 `FileNotFoundException`이 `printStackTrace()`로 출력된다.
+- 노트에는 "finally 없이 자동 닫기 => 파일에서 가능"이라고만 적었다. 파일 말고 어떤 것에 쓸 수 있는지는 아직 모른다.
+
+</details>
+
+<details>
+<summary><b>숫자야구 게임 - 예외처리를 쓴 화면 프로그램</b></summary>
+
+<br>
+
+```java
+public class 숫자야구게임 extends JFrame implements ActionListener
+{
+    JButton b1, b2, b3;               // 시작, 전송, 종료
+    JTextField tf;                    // 숫자 입력 (한 줄)
+    JTextArea ta;                     // 결과 기록
+    private int[] com = new int[3];   // 컴퓨터가 정한 숫자
+    private int[] user = new int[3];  // 사용자가 입력한 숫자
+    int s, b;                         // 스트라이크, 볼
+}
+```
+- 17일차 인터페이스에서 배운 `ActionListener`를 구현한 화면이다. 결과를 보여 주는 `JTextArea`는 `JScrollPane`에 넣어 가운데에 붙이고, 입력 칸과 버튼은 `JPanel`에 담아 아래에 붙였다. `ta.setEditable(false)`로 직접 수정은 막았고, 시작을 누르기 전에는 `tf.setEnabled(false)`로 입력도 막아 둔다.
+- 변수 `com`, `user`는 `private`으로 감췄다. 14일차 캡슐화다.
+
+**게임 흐름**
+- 시작 버튼: `getRand()`로 컴퓨터 숫자 3개(1 ~ 9, 중복 없음)를 만들고, 입력 칸을 켜고, 시작 버튼은 끈다. 중복 없는 난수를 만드는 `i--`와 `break`는 8일차 로또, 17일차 퍼즐 게임과 같은 방식이다.
+- 전송 버튼이나 입력 칸에서 엔터: 텍스트 필드에 `tf.addActionListener(this)`도 등록하고 `e.getSource() == tf || e.getSource() == b2`로 묶어서 엔터와 전송 버튼을 같게 처리한다.
+- 종료 버튼: `dispose()`는 창의 메모리를 회수하고 `System.exit(0)`이 프로그램을 실제로 끝낸다.
+
+**입력값 검사 (위에서부터 차례로)**
+| 순서 | 검사 | 메시지 |
+|---|---|---|
+| 1 | `temp.trim().length() != 3` | 세자리 정수를 입력해야 됩니다 |
+| 2 | `Integer.parseInt(temp)`에서 예외 | 잘못된 입력입니다 |
+| 3 | 세 자리 중 같은 숫자가 있다 | 중복된 수는 사용할 수 없습니다 |
+| 4 | 0이 들어 있다 | 0은 사용할 수 없습니다 |
+
+```java
+int input = 0;
+try
+{
+    input = Integer.parseInt(temp);
+}
+catch (Exception ex)
+{
+    sendMessage("잘못된 입력입니다!!\n정수만 입력해야 됩니다");
+    return;                                 // 예외 복구 : 처음으로 돌아간다
+}
+user[0] = input / 100;
+user[1] = (input % 100) / 10;
+user[2] = input % 10;
+```
+- `input`을 try 안에서 선언하면 try 밖에서 못 쓴다. 그래서 `0`으로 먼저 초기화한다. 주석에 "지역변수는 반드시 초기화"라고 적었다. 파일 읽기에서 `fr = null`로 둔 것과 같은 이유다.
+- `return;`으로 메소드를 끝내면 그 아래의 판정은 실행되지 않는다. 입력이 잘못되면 메시지를 띄우고 다시 입력받는 구조다.
+- 세 자리를 나누는 식은 4일차에 배운 자릿수 분리(`won / 100`, `(won % 100) / 10`, `won % 10`)와 같다.
+- 메시지를 띄우고, 입력 칸을 비우고, 커서를 돌려 놓는 세 줄이 반복되어서 `sendMessage(String msg)` 메소드로 뺐다. 11일차에 배운 반복 제거다.
+
+**스트라이크와 볼 판정**
+```java
+for (int i = 0; i < 3; i++)
+{
+    for (int j = 0; j < 3; j++)
+    {
+        if (com[i] == user[j])
+        {
+            if (i == j) s++;       // 같은 숫자, 같은 자리
+            else        b++;       // 같은 숫자, 다른 자리
+        }
+    }
+}
+String msg = String.format("Input Number:%d,Result:%dS-%dB\n", input, s, b);
+ta.append(msg);
+```
+정답이 `123`일 때 코드의 판정식으로 확인한 결과
+| 입력 | 결과 |
+|---|---|
+| `123` | 3S-0B |
+| `321` | 1S-2B |
+| `134` | 1S-1B |
+| `231` | 0S-3B |
+| `456` | 0S-0B |
+
+- `s == 3`이면 `showConfirmDialog()`로 종료할지 묻는다. 예는 `dispose()`와 `System.exit(0)`, 아니오는 기록과 입력 칸을 비우고 `getRand()`로 새 숫자를 만든다. 17일차 퍼즐 게임과 같은 방식이다.
+- `getRand()`를 20만 번 호출해서 같은 숫자가 나온 경우도 1 ~ 9 밖의 숫자가 나온 경우도 없는 것을 확인했다.
+
+**이벤트 인터페이스 정리 (주석)**
+| 인터페이스 | 쓰는 곳 | 메소드 |
+|---|---|---|
+| `ActionListener` | 버튼, 메뉴, 텍스트 필드 | `actionPerformed()` |
+| `MouseListener` | 테이블, 트리, 이미지 | `mouseClicked()`, `mousePressed()`, `mouseReleased()`, `mouseEntered()`, `mouseExited()` |
+| `KeyListener` | 키보드 | `keyTyped()`, `keyPressed()`, `keyReleased()` |
+| `ItemListener` | 콤보박스, 리스트 | `itemStateChanged()` |
+
+- 주석에 리턴형과 매개변수 유무에 따른 네 가지 메소드 유형, 호출 흐름도 정리해 두었다. 11일차 내용과 같다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 예외처리 개념, 에러와 예외, 처리 방법 네 가지, 예외 계층 구조 정리 (주석) |
+| 0으로 나누는 for문을 try 안에 넣고 빈 catch로 건너뛰기 (3번 실행해서 비교) |
+| `ArithmeticException`, `NullPointerException`, `NumberFormatException`, `ArrayIndexOutOfBoundsException`, `ClassCastException`을 메소드 하나씩 만들어 try ~ catch |
+| Checked, UnChecked 선언 메소드 `fff()`, `ggg()` |
+| try, catch, finally가 실행되는 순서를 번호를 찍어서 확인 |
+| 두 수를 입력받아 나누기, 다중 catch 세 개 |
+| `FileReader`로 파일을 읽고 finally에서 닫기 |
+| try-with-resources로 같은 파일 읽기 |
+| 숫자야구 게임 (`JFrame`, `ActionListener`, 입력값 검사, 스트라이크와 볼 판정) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `예외처리종류.java`의 `eee()`는 `A a = new B();`라서 `ClassCastException`이 나지 않는다. `//A a=new A();`의 주석을 풀고 `new B()` 줄을 막아야 예외가 난다.
+- `예외처리종류.java`에서 Checked 예외를 던지는 `fff()`는 선언만 하고 호출하지 않았다. 호출하면서 `try ~ catch`나 `throws`를 쓰지 않으면 어떤 컴파일 오류가 나는지 확인할 것.
+- `예외처리_다중처리.java`의 `ArrayIndexOutOfBoundsException` catch는 배열 길이가 2이고 인덱스 0, 1만 써서 실행될 일이 없다. 이 예외를 일으키려면 배열 크기나 인덱스를 바꿔야 한다.
+- `예외처리_개념.java`는 catch가 `{}`로 비어 있어서 어느 `i`에서 0으로 나눴는지 알 수 없다. `e.getMessage()`를 출력하면 `/ by zero`를 볼 수 있다.
+- `예외처리_finally_사용.java`, `예외처리_자원자동화처리.java`는 파일 경로가 학원 PC의 `C:\Users\sist33\...`로 고정되어 있다. 다른 컴퓨터에서는 파일을 찾지 못한다. 6일차에 적은 문제와 같다. 상대 경로나 프로젝트 안의 파일로 바꿀 것.
+- `숫자야구게임.java`는 길이 검사에는 `temp.trim()`을 쓰고 `Integer.parseInt(temp)`에는 `trim()`하지 않은 값을 넣는다. 앞이나 뒤에 공백이 있는 ` 123`은 길이 검사는 통과하고 `parseInt`에서 `NumberFormatException`이 나서 "잘못된 입력입니다"가 뜬다. `예외처리종류.java`의 `ccc(" 20")`과 같은 경우이고, `Integer.parseInt(temp.trim())`으로 바꾸면 된다.
+- `숫자야구게임.java` 주석에 초기화 순서가 `기본 => 명시적 => static {} => {} => 생성자`로 적혀 있다. 이 파일에는 초기화 블록이 없어서 순서를 실행으로 확인하지 못했다. 13일차에 남긴 초기화 순서 확인과 같은 질문이다.
+- 14일차 README에 적은 `MovieSystem`의 `static` 블록은 `fr.close()`가 try 안에 있다. 읽는 도중에 예외가 나면 close를 건너뛴다. 이번에 배운 finally나 try-with-resources로 바꿀 수 있는지 확인할 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 예외처리는 비정상 종료를 막기 위한 것이다. 에러를 고쳐 주는 것이 아니라 에러가 난 부분을 건너뛰고 프로그램을 계속 진행시킨다.
+- `Error`는 코드로 처리하기 어려운 심각한 에러, `Exception`은 처리할 수 있는 가벼운 에러다. 컴파일 때 처리 여부를 확인하는 Checked 예외는 반드시 처리하고, 실행 중에 나는 UnChecked 예외(`RuntimeException`)는 필요할 때 처리한다. UnChecked는 `if`로 먼저 막고 안 되면 `try ~ catch`를 쓴다.
+- `try`에는 에러가 날 수 있는 코드를, `catch`에는 에러 확인과 복구(`printStackTrace()`, `getMessage()`)를, `finally`에는 에러와 상관없이 실행할 자원 정리를 쓴다.
+- 에러가 나면 try 안의 나머지 문장은 건너뛰고 catch, finally, try 밖의 순서로 이어진다.
+- catch는 여러 개 쓸 수 있고, 구체적인 예외를 먼저, 부모인 `Exception`은 마지막에 쓴다. 하나가 잡히면 나머지는 건너뛴다.
+- 파일처럼 닫아야 하는 자원은 try 밖에서 `null`로 선언하고 finally에서 `null`을 검사한 뒤 닫거나, try-with-resources로 자동으로 닫는다.
+- `Integer.parseInt()`처럼 입력값을 바꾸는 코드는 try ~ catch로 감싸서 잘못된 입력에서 처음으로 돌아가게 만든다. 숫자야구 게임이 그 예다.
+
+</details>
+
+---
+
+## 19일차 | 2026.11.05 (목) | Chapter 10. 중첩 클래스, Chapter 11. 예외처리 (throws, throw), 1권 정리
+
+<details>
+<summary><b>중첩 클래스 개념과 종류</b></summary>
+
+<br>
+
+- 클래스 안에 클래스를 만드는 것이 중첩 클래스다. 두 클래스가 변수와 메소드를 공통으로 쓰는 경우에 쓴다. 노트에는 네트워크, 쓰레드, 윈도우에서 쓰고 웹에서는 사용 빈도가 없다고 적었다.
+- 장점은 다른 클래스와 연결해서 쓰기 쉽고 코드의 복잡성이 줄어드는 것이다. 단점은 객체 생성이 어렵다는 것이다.
+- 서버와 클라이언트가 예다. `Server` 안에 접속자 정보를 저장하는 변수가 있고, 통신을 맡는 `Client extends Thread`를 안에 둔다. 윈도우도 `JFrame` 안에 게임을 돌리는 `Thread` 클래스를 둔다.
+
+| 종류 | 위치 | 설명 |
+|---|---|---|
+| 인스턴스 멤버 클래스 | 클래스 안, 메소드 밖 | 바깥 클래스의 변수, 메소드를 마음대로 쓴다. 바깥 객체를 만들고 나서 만든다 |
+| 정적(static) 멤버 클래스 | 클래스 안, 메소드 밖, `static` | 바깥 객체 없이 만든다 |
+| 지역 클래스 | 메소드 안 | 그 메소드 안에서만 쓴다. 사용 빈도가 거의 없다 (노트에 콜백, 람다식이라고 적음) |
+| 익명 클래스 | 변수에 객체를 넣는 자리 | 이름 없이, 상속 없이 오버라이딩한다 |
+
+```java
+Outer p = new Outer();
+Outer.Inner c = p.new Inner();           // 인스턴스 멤버 : 바깥 객체 p가 있어야 한다
+
+Outer2.Inner c1 = new Outer2.Inner();    // 정적 멤버 : 바깥 객체 없이 만든다
+```
+
+</details>
+
+<details>
+<summary><b>중첩 클래스 다섯 가지 직접 만들기</b></summary>
+
+<br>
+
+```java
+class Outer                               // 인스턴스 멤버
+{
+    private String name = "홍길동";
+    class Inner
+    {
+        int a = 10;
+        public void print() { System.out.println(a + ":" + name); }
+    }
+}
+class Outer2                              // 정적 멤버
+{
+    static class Inner
+    {
+        public void print() { System.out.println("static Inner:print() Call..."); }
+    }
+}
+class Outer3                              // 지역 클래스
+{
+    public void print()
+    {
+        class Inner
+        {
+            public void print() { System.out.println("지역클래스:Inner:print() Call..."); }
+        }
+        Inner i = new Inner();
+        i.print();
+    }
+}
+class Inner                               // 익명 클래스에서 부모가 되는 클래스
+{
+    public void print() { System.out.println("Inner:print() Call..."); }
+}
+class Outer4                              // 익명 클래스
+{
+    Inner in = new Inner()
+    {
+        public void print() { System.out.println("Outer4에서 print() 오버라이딩됨"); }
+    };
+}
+```
+실행 결과
+```
+****======= 인스턴스 멤버 ======
+10:홍길동
+======= 정적 멤버 ========
+static Inner:print() Call...
+======= 지역 클래스 ========
+지역클래스:Inner:print() Call...
+****======= 익명의 클래스 ======
+Inner:print() Call...
+Outer4에서 print() 오버라이딩됨
+value=30
+value=20
+value=10
+```
+- 인스턴스 멤버 `Outer.Inner`는 `private`인 `name`을 `Inner`가 바로 읽는다. 14일차에 `private` 변수는 같은 클래스 밖에서 접근할 수 없다고 배웠는데, 안쪽 클래스는 바깥 클래스 안에 있어서 읽힌다.
+- 정적 멤버는 `new Outer2.Inner()`처럼 바깥 객체 없이 만든다. 바깥 객체가 필요한 인스턴스 멤버의 `p.new Inner()`와 다르다.
+- 익명 클래스는 `Inner`를 상속한 클래스를 따로 만들지 않고, 변수에 넣는 자리에서 `print()`를 바로 오버라이딩한다. 15일차 오버라이딩에서 `extends`로 자식 클래스를 만들던 것을 이름 없이 한 자리에서 하는 것이다. `Outer4`의 `in.print()`는 `Inner`가 아니라 오버라이딩한 메소드가 실행된다.
+- 같은 이름 `Inner`가 여러 개 있다. `Outer5` 안에서 `new Inner()`는 `Outer5` 안의 `Inner`를 가리켜서 컴파일되고 `method()`도 호출된다.
+- 컴파일하면 안쪽 클래스도 따로 `.class` 파일이 만들어진다. `Outer$Inner.class`, `Outer2$Inner.class`, 지역 클래스는 `Outer3$1Inner.class`, 익명 클래스는 `Outer4$1.class`다.
+
+**이름이 같은 변수 세 개 (Outer5)**
+```java
+class Outer5
+{
+    int value = 10;
+    public void display() { Inner i = new Inner(); i.method(); }
+    class Inner
+    {
+        int value = 20;
+        public void method()
+        {
+            int value = 30;
+            System.out.println("value=" + value);                // 30
+            System.out.println("value=" + this.value);           // 20
+            System.out.println("value=" + Outer5.this.value);    // 10
+        }
+    }
+}
+```
+- 13일차에 배운 "지역변수가 우선, `this`는 자기 객체의 변수" 규칙에 하나가 더 붙었다. 바깥 클래스의 변수는 `Outer5.this.value`로 읽는다.
+
+</details>
+
+<details>
+<summary><b>화면에서 쓴 중첩 클래스 - 익명 클래스와 멤버 클래스</b></summary>
+
+<br>
+
+**익명 클래스 - 수정할 수 없는 표**
+```java
+model = new DefaultTableModel(row, col)
+{
+    @Override
+    public boolean isCellEditable(int row, int column)
+    {
+        return false;                    // 셀을 직접 수정하지 못하게 한다
+    }
+};
+table = new JTable(model);
+```
+- 15일차에 `MusicList`에서 쓴 `JTable`과 `DefaultTableModel`이다. `DefaultTableModel`의 `isCellEditable()` 하나만 바꾸려고 자식 클래스를 따로 만들지 않고 `new` 하는 자리에서 오버라이딩했다. 한 번만 쓰니까 일회성이라 익명 클래스를 쓴다. 메소드를 추가하는 것도 된다고 주석에 적었다.
+- 열은 아이디, 이름, 성별이고, `new String[0][3]`으로 빈 표를 만들고 `model.addRow(arr)`로 `admin / 홍길동 / 남자` 한 줄을 넣었다.
+- 컴파일하면 익명 클래스 파일 `중첩클래스$1.class`가 만들어진다. 화면은 실행하지 못했고 코드를 읽고 쓴 설명이다.
+
+**멤버 클래스 - 막대가 차오르는 화면**
+```java
+public class 중첩클래스_2 extends JFrame implements ActionListener
+{
+    JProgressBar[] bar = new JProgressBar[5];
+
+    public void go()
+    {
+        for (int n = 0; n < bar.length; n++)
+        {
+            for (int i = 0; i <= 100; i++)
+            {
+                bar[n].setValue(i);
+                try { Thread.sleep(100); } catch (Exception e) {}
+            }
+        }
+    }
+
+    public void actionPerformed(ActionEvent e)
+    {
+        if (e.getSource() == b1)
+        {
+            BarThread b = new BarThread();
+            b.start();
+        }
+    }
+
+    class BarThread extends Thread
+    {
+        public void run() { go(); }
+    }
+}
+```
+- `BarThread`가 `중첩클래스_2` 안에 있는 멤버 클래스다. 그래서 바깥 클래스의 `go()`를 `run()`에서 바로 부른다. 노트에 쓴 "쓰레드 + 윈도우" 조합이 이 모양이다. 컴파일하면 `중첩클래스_2$BarThread.class`가 만들어진다.
+- 시작 버튼을 누르면 `BarThread`를 만들어 `start()`를 부르고, `run()` 안에서 `go()`를 호출한다. 쓰레드의 동작 원리는 아직 배우지 않아서 이 코드는 노트와 형태만 따라 썼다.
+- `Thread.sleep(100)`은 `InterruptedException`(Checked)이라서 try ~ catch로 감쌌다. 6일차에는 main에 `throws Exception`을 붙여서 넘겼는데 이번에는 직접 처리했다.
+- `go()`는 바깥 for가 막대를 하나씩 돌아서 5개가 동시에 차는 것이 아니라 차례로 찬다. 막대 하나가 `sleep(100)`을 101번 해서 약 10초, 전체 약 50초다. 이 화면도 실행하지 못했고 코드를 읽고 쓴 설명이다.
+
+</details>
+
+<details>
+<summary><b>예외 회피 throws와 예외 발생 throw</b></summary>
+
+<br>
+
+**throws - 예외를 넘긴다**
+```java
+void method() throws IOException { }
+
+void method1()
+{
+    try { method(); }
+    catch (IOException i) { }            // 직접 처리한다
+}
+
+void method2() throws IOException
+{
+    method();                            // 처리하지 않고 다시 넘긴다
+}
+```
+- `throws`는 예외를 처리하는 것이 아니라 "이 메소드는 예외가 발생할 수 있다"고 알려 주고 처리를 호출한 쪽에 넘기는 것이다. 복구가 불가능하면 건너뛴다. 예외 떠넘기기라고 노트에 적었다.
+- 형식은 `method() throws 예외클래스, 예외클래스...`이고 순서는 상관없다. Checked 예외를 선언한 메소드를 쓰려면 `try ~ catch`로 처리하거나 자기도 `throws`로 다시 넘겨야 한다.
+- 라이브러리 메소드에 주로 나온다. `Thread.sleep(long m) throws InterruptedException`이 그 예다. 6일차에 main에 붙인 `throws Exception`이 바로 이 회피이고, main이 넘긴 예외는 JVM이 받는다.
+- 노트에는 소스가 복잡한 경우나 이미 만들어진 소스에서 쓴다고 적었고, 가장 많이 쓰는 예외처리는 `try ~ catch`로 에러를 복구하는 것이라고 적었다.
+- UnChecked 예외인 `throws RuntimeException`은 호출하는 쪽에서 처리하지 않아도 된다.
+
+**throw - 예외를 일부러 발생시킨다**
+```java
+public static void main(String[] args) throws Exception
+{
+    Scanner s = new Scanner(System.in);
+    System.out.print("정수 입력:");
+    int a = s.nextInt();
+    try
+    {
+        if (a % 2 == 0)
+        {
+            System.out.println("예외를 임의의로 발생");
+            throw new Exception("홀수만");
+        }
+    }
+    catch (Exception ex)
+    {
+        System.out.println(ex.getMessage());
+    }
+}
+```
+
+| 입력 | 출력 |
+|---|---|
+| `4`, `0`, `-2` | `예외를 임의의로 발생` 다음 줄에 `홀수만` |
+| `3`, `-3`, `7` | 아무것도 출력되지 않는다 |
+| `abc` | `InputMismatchException`이 출력되고 프로그램이 끝난다 |
+
+- `throw new Exception("홀수만")`을 만나면 바로 catch로 이동하고, `ex.getMessage()`가 생성자에 넣은 `홀수만`을 꺼낸다. 에러가 실제로 나지 않아도 일부러 예외를 만들어서 catch를 테스트할 수 있다. 짝수를 에러로 취급하는 코드다. `-3 % 2`는 `-1`이라서 `0`이 아니다. 4일차에 배운 나머지의 부호 규칙이다.
+- `abc`는 `s.nextInt()`에서 나는 `InputMismatchException`이다. 이 줄이 try 밖에 있어서 catch가 잡지 못하고, 예외가 JVM까지 올라가서 프로그램이 끝난다.
+- 사용자 정의 예외는 JVM이 알지 못해서 `throw`로 직접 던져야 한다. 노트에는 `class MyException extends Exception { public MyException(String msg) { super(msg); } }` 형태만 주석으로 적었고 실제 클래스는 만들지 않았다.
+- `display()`는 `throws Throwable, IOException, ClassNotFoundException, InterruptedException`으로 선언만 하고 호출은 주석 처리했다. `RuntimeException < Exception < Throwable`, `IOException < Exception < Throwable`라고 주석에 적었다.
+
+| 키워드 | 역할 |
+|---|---|
+| `try` | 예외가 발생할 수 있는 코드를 넣는다 |
+| `catch` | 발생한 예외를 처리한다 |
+| `finally` | 자원을 정리한다 (닫기) |
+| `throw` | 예외를 직접 발생시킨다 |
+| `throws` | 예외 처리를 호출한 곳에 넘긴다 |
+
+</details>
+
+<details>
+<summary><b>예외처리 정리 - 에러 원인과 처리 기준</b></summary>
+
+<br>
+
+- 에러가 나는 원인은 두 가지다. 프로그래머의 실수(초기값이 없는 상태, 배열 인덱스 오류, 무한 루프, 파일명 / URL / IP)와 사용자 오류(입력, 유효성 검사)다. 예외처리를 하면 비정상 종료를 막고 견고한 프로그램이 된다.
+- 처리할 때는 `if`문을 먼저 생각한다. 멤버 변수는 명시적 초기화로 값을 먼저 넣고, `if`로 처리할 수 없을 때 예외처리를 쓴다.
+- 예외는 프로그램에 돌발적으로 생기는 의도하지 않은 상황이다. 사전에 막아서 정상으로 수행하게 하는 것이 목적이다.
+- 노트에 try 안에 for를 넣는 경우와 for 안에 try를 넣는 경우를 나란히 적었다. 18일차 `i / a` 코드가 for 안에 try를 둔 경우여서, 한 번 실패해도 다음 반복으로 넘어갔다.
+- catch를 여러 개 쓸 때는 크기가 작은 것부터 쓴다. 18일차 다중 catch 내용과 같다.
+
+</details>
+
+<details>
+<summary><b>1권 정리 - 이것이 자바다 1 ~ 11장</b></summary>
+
+<br>
+
+**자바 코딩의 구성 (1장)**
+```java
+package 패키지명;            // 자신의 저장 위치
+import 클래스;               // 다른 클래스를 쓰려고 불러온다. 여러 개 가능
+public class ClassName
+{
+    변수 (static, instance)
+    생성자
+    메소드
+    main()                   // 프로그램의 시작점
+}
+```
+- 한 파일에 클래스를 여러 개 쓸 수 있고, `public` 클래스는 하나만 쓴다. 자바 파일명과 `public` 클래스 이름은 같아야 한다. 이번에 쓴 중첩클래스 파일처럼 한 파일에 클래스가 여러 개 있고 `public`은 파일 이름과 같은 하나뿐이다.
+- 실행은 `A.java`를 `javac`로 컴파일해서 `A.class`를 만들고, `java`(인터프리터)가 JVM에서 실행한다. 2일차 내용과 같다.
+- 주의점: 필요한 곳에 주석을 쓴다, 명령문이 끝나면 `;`을 찍되 제어문 뒤에는 찍지 않는다, 변수와 메소드는 소문자로 시작하고 클래스, 인터페이스, 추상 클래스, enum은 대문자로 시작하고 상수는 모두 대문자로 쓴다, 단어가 두 개면 두 번째 단어의 첫 글자를 대문자로 쓴다(`fileName`), 들여쓰기를 한다, JDK는 21 버전을 설치한다.
+
+**데이터형과 변수 (2장)**
+- 변수는 한 개의 데이터를 저장하는 메모리 공간의 이름이다. 데이터형은 메모리 크기를 정한다.
+- 정수 `byte` / `int` / `long`, 실수 `float` / `double`, 문자 `char`, 논리 `boolean`이다. 크기는 `byte < char < int < long < double`이다. 17일차 총정리에 쓴 내용과 같다.
+
+**장별로 정리한 일차 (README 제목의 Chapter 기준)**
+| 이것이 자바다 | 내용 | 정리한 일차 |
+|---|---|---|
+| 1장 | 자바 실행 과정, 코딩 구성 | 2일차 |
+| 2장 | 데이터형, 변수 | 3일차 |
+| 3장 | 연산자 | 4일차 |
+| 4장 | 제어문 | 5 ~ 7일차 |
+| 5장 | 참조타입 (문자열, 배열), 메소드 | 7 ~ 12일차 |
+| 6장 | 객체지향 프로그램 (클래스, 생성자, 상속) | 13 ~ 15일차 |
+| 7장 | 클래스의 종류 (다형성, 추상 클래스) | 16일차 |
+| 8장 | 인터페이스 | 17일차 |
+| 9장 | 모듈 | 노트에 (X)로 적음 |
+| 10장 | 중첩 클래스 | 19일차 |
+| 11장 | 예외처리 | 17 ~ 19일차 |
+
+**2권 계획 (노트)**
+- 자바 라이브러리: `java.lang`, `java.util`, `java.io`, `java.net`, `java.sql`, `java.text`, `java.lang.reflect`, `java.util.regex`
+- 컬렉션, 람다식, 입출력, SQL 순서다. 17일차에 컬렉션 인터페이스 `List`, `Set`, `Map`을 미리 봤다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| 중첩 클래스 개념, 종류, 장단점 정리 (주석) |
+| 인스턴스 멤버, 정적 멤버, 지역, 익명 클래스를 하나씩 만들고 출력 |
+| `Outer5`로 지역변수, `this.value`, `Outer5.this.value` 구분 |
+| `DefaultTableModel`을 익명 클래스로 만들어 셀 수정 막기, 표에 한 줄 추가 |
+| `JProgressBar` 5개와 `Thread`를 상속한 멤버 클래스 `BarThread`로 막대 채우기 |
+| `throws` 선언 메소드와 `main throws Exception` |
+| `throw new Exception("홀수만")`으로 짝수 입력 시 예외를 일부러 발생 |
+| throws, throw, try, catch, finally 역할 정리 (주석) |
+| 이것이 자바다 1권 1 ~ 11장 정리 (1장, 2장 상세, 3 ~ 11장 목차) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `중첩클래스_2.java`는 시작 버튼을 누른 뒤에도 `b1`을 끄지 않는다. 다시 누르면 `BarThread`가 하나 더 시작되어 같은 막대를 두 쓰레드가 채울 것으로 보인다. 18일차 `숫자야구게임.java`의 `b1.setEnabled(false)`처럼 끄는 방법을 쓸 것. 코드를 읽고 쓴 것이고 화면은 실행하지 못했다.
+- `중첩클래스_2.java`의 `go()`는 막대 5개를 차례로 채운다. 동시에 채우려면 막대마다 쓰레드가 필요한지는 아직 모른다. `Thread.sleep(100)`의 catch는 `Exception`으로 비어 있다.
+- `예외처리_1.java`의 `MyException`은 주석 안에만 있다. 직접 클래스를 만들고 `throw new MyException("...")`으로 던져서 catch가 받는지 확인할 것.
+- `예외처리_1.java`는 `s.nextInt()`가 try 밖에 있어서 `abc`를 입력하면 `InputMismatchException`으로 프로그램이 끝난다. try 안으로 옮기고 18일차 다중 catch처럼 `InputMismatchException` catch를 추가할 것.
+- `예외처리_1.java`에서 홀수를 입력하면 아무것도 출력되지 않아 입력이 통과했는지 알 수 없다.
+- `예외처리_1.java`의 `display()` 호출은 주석 처리되어 있다. `Throwable`을 던진다고 선언한 메소드를 `main throws Exception`만으로 호출해도 되는지, 주석의 `catch(Throwable e)`가 필요한지 주석을 풀어 확인할 것. 출력 문구 `예외를 임의의로 발생`도 오타다.
+- `자바_1장.java`는 1장과 2장만 자세히 정리했고 3 ~ 11장은 목차 한 줄씩이다. 장별로 이어서 채울지 정할 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 중첩 클래스는 클래스 안의 클래스이고 바깥 클래스의 변수, 메소드를 같이 쓸 때 편하다. 인스턴스 멤버는 `바깥객체.new Inner()`, 정적 멤버는 `new Outer.Inner()`로 만든다.
+- 익명 클래스는 상속 없이 만드는 자리에서 바로 오버라이딩한다. 한 번만 쓰는 클래스에 맞다.
+- 이름이 같은 변수가 겹치면 지역변수, `this.value`, `Outer.this.value` 순서로 구분해서 읽는다.
+- `throws`는 예외를 처리하지 않고 호출한 쪽에 넘기는 선언이다. `Thread.sleep()` 같은 라이브러리 메소드는 `throws InterruptedException`을 달고 있어서 `try ~ catch`로 감싸거나 다시 `throws`로 넘긴다.
+- `throw`는 예외를 일부러 발생시켜서 catch로 보내는 것이고, 사용자 정의 예외는 `throw`로 직접 던진다.
+- 예외처리를 쓰기 전에 `if`로 막을 수 있는지 먼저 생각한다. 가장 많이 쓰는 방식은 `try ~ catch`로 복구하는 것이다.
+- 1권은 1장 자바 실행 과정부터 11장 예외처리까지 한 번 훑었다. 2권은 라이브러리, 컬렉션, 람다식, 입출력, SQL 순서로 노트에 적어 두었다.
 
 </details>
