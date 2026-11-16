@@ -5944,3 +5944,1352 @@ public void getData(int cno)
 - 지니 차트 프로그램은 `getData()` 메소드로 만들어서 카테고리를 고를 때마다 다시 읽는다. 빈 `catch`와 범위 밖 번호는 고쳐야 할 곳이다.
 
 </details>
+
+---
+
+## 22일차 | 2026.11.10 (화) | Chapter 12. 라이브러리 (Math, StringBuffer, Wrapper, Format, 리플렉션)
+
+<details>
+<summary><b>Math 클래스</b></summary>
+
+<br>
+
+- `Math`는 수학 연산 클래스이고 메소드가 모두 `static`이라 `Math.ceil()`, `Math.random()`처럼 객체 없이 바로 쓴다. 주석에는 웹에서 `ceil`(올림)은 총페이지 계산에, `random()`은 `0.0 ~ 0.99`, `round()`는 반올림에 쓴다고 적었다. 오라클에도 같은 함수가 있다.
+- 주석에는 라이브러리를 볼 때 역할, 리턴형, 매개변수, 메소드명, 예외처리 여부를 확인하라고 적었다.
+
+```java
+// Math_2.java
+int a = 10, b = 20, e = -1;
+int c = Math.max(a, b);
+int d = Math.min(a, b);
+int f = Math.abs(e);
+```
+
+```
+c=20
+d=10
+f=1
+```
+
+| 메소드 | 하는 일 |
+|---|---|
+| `ceil(double)` | 올림 (`10.1` → `11.0`) |
+| `round(double)` | 반올림 (`10.5` → `11`) |
+| `random()` | `0.0` 이상 `1.0` 미만의 난수 |
+| `max(a, b)`, `min(a, b)` | 큰 값, 작은 값 |
+| `abs(x)` | 절댓값 |
+
+- 반환형이 `double`이라서 `(int)(Math.ceil(count / 10.0))`처럼 `int`로 형변환해서 쓴다. `(int)(Math.random() * 100) + 1`은 1~100이다.
+- `Math_1.java`는 오라클에서 레시피 개수를 읽어서 총페이지를 계산한다. `Class.forName("oracle.jdbc.driver.OracleDriver")`는 리플렉션으로 드라이버를 메모리에 올리는 것이라고 주석에 적었다.
+
+```java
+Class.forName("oracle.jdbc.driver.OracleDriver");                  // 1. 드라이버 등록
+Connection conn = DriverManager.getConnection(url, "hr", "happy"); // 2. 연결
+PreparedStatement ps = conn.prepareStatement(sql);                 // 3. SQL 전송
+ResultSet rs = ps.executeQuery();                                  // 4. 결과 받기
+rs.next();
+int count = rs.getInt(1);
+rs.close(); ps.close(); conn.close();                              // 5. 닫기
+```
+
+- DB 주소가 `xxx.xxx.xxx.xx:xxxx`로 가려져 있어서 `Math_1`은 실행하면 `SQLRecoverableException`(접속 실패)이 나고 끝난다. 접속 뒤의 `ceil`, `random`, `round` 출력은 코드를 읽고 쓴 것이다.
+
+</details>
+
+<details>
+<summary><b>StringBuffer와 StringBuilder</b></summary>
+
+<br>
+
+- `String`은 값을 바꿀 수 없어서 문자열을 `+`로 이을 때마다 새 메모리를 만든다. `StringBuffer`, `StringBuilder`는 메모리 공간을 하나만 쓰고 안에서 바꾼다(가변). 주석의 비교표는 아래와 같다.
+
+| | `String` | `StringBuffer` | `StringBuilder` |
+|---|---|---|---|
+| 문자열 변경 | 불가능 | 가능 | 가능 |
+| 문자열 추가 | 새 객체 생성 | 기존 객체 변경 | 기존 객체 변경 |
+| 동기화 | 해당 없음 | 지원 | 미지원 |
+| 속도 | 반복 변경하면 비효율 | 상대적으로 느림 | 일반적으로 빠름 |
+| 사용 목적 | 일반 문자열 | 쓰레드 공유 | 일반 문자열 조립 |
+
+- 주요 메소드는 `append()`(결합), `insert()`(삽입), `delete()`(범위 삭제), `deleteCharAt()`(한 글자 삭제), `replace()`(변경), `reverse()`(뒤집기), `length()`, `charAt()`, `toString()`이다.
+
+```java
+StringBuffer sb = new StringBuffer("Java");
+sb.append(" Hello");          // Java Hello
+sb.insert(4, "Language");     // JavaLanguage Hello
+sb.delete(0, 4);              // Language Hello     (end - 1까지)
+sb.replace(0, 4, "Spring");   // Springuage Hello
+sb.reverse();                 // olleH egaugnirpS
+String s = sb.toString();
+```
+
+```
+Java Hello
+JavaLanguage Hello
+Language Hello
+Springuage Hello
+olleH egaugnirpS
+```
+
+- `delete(0, 4)`와 `replace(0, 4, ...)`의 두 번째 숫자는 `end - 1`까지다. `substring`, `subList`와 같은 규칙이다.
+- `StringBuffer_1.java`와 `StringBuilder_1.java`는 만개의레시피 목록 페이지 HTML을 한 줄씩 읽어서 하나의 문자열로 만든다. `String html = ""; html += s + "\n"`(`StringBuffer_1`)와 `sb.append(s + "\n")`(`StringBuilder_1`)를 `currentTimeMillis()`로 걸린 시간을 재서 비교하려는 코드다. 인터넷 연결이 필요해서 실행하지 못했다.
+- `new URL(...)`은 20버전부터 경고가 나서 `URI.create(...).toURL()`로 만든다고 주석에 적었다. 주석에는 `URLConnection`을 상속받은 `HttpURLConnection`, `HttpsURLConnection`을 그림으로 그려 두었다.
+
+</details>
+
+<details>
+<summary><b>Wrapper 클래스</b></summary>
+
+<br>
+
+- Wrapper 클래스는 기본형을 객체로 쓸 수 있게 만든 클래스다. 제네릭에는 `<int>`를 못 쓰고 `<Integer>`처럼 클래스만 쓸 수 있어서 필요하다.
+
+| 기본형 | Wrapper | 문자열 → 값 |
+|---|---|---|
+| `byte` | `Byte` | |
+| `short` | `Short` | |
+| `int` | `Integer` | `parseInt` |
+| `long` | `Long` | `parseLong` |
+| `float` | `Float` | |
+| `double` | `Double` | `parseDouble` |
+| `char` | `Character` | |
+| `boolean` | `Boolean` | `parseBoolean` |
+
+```java
+int num = 100;
+Integer i = 100;      // Boxing   (기본형 → 클래스)
+int ii = i;           // UnBoxing (클래스 → 기본형)
+
+int a = 10;
+Integer.MAX_VALUE;                  // 2147483647
+Integer.toBinaryString(a);          // 1010   (2진법)
+Integer.toHexString(a);             // a      (16진법)
+Integer.toOctalString(a);           // 12     (8진법)
+Integer.parseInt("100");            // 100
+Integer i2 = 100, j = 200;
+i2 + j;                             // 300
+```
+
+- 웹이나 윈도우에서는 입력값이 모두 `String`이라서 필요한 데이터형으로 바꿔 쓴다. 데이터베이스에는 값이 없으면 `null`인데 `int`는 `null`을 못 담고 `Integer`는 담는다. 주석에는 `int aa = null`은 안 되고 `Integer bb = null`은 된다고 적었다.
+- `Wrapper_2.java`는 `String[] s = {"100", "20", "1", "5", null}`을 `ss != null`일 때만 `parseInt()`한다. `null`을 걸러서 `100`, `20`, `1`, `5`만 출력되었다. 오라클의 `IS NOT NULL`과 같은 확인이라고 적었다.
+- `Integer i = (int) d`처럼 `double`을 `int`로 바꿀 때는 기본형으로 형변환한 다음 담는다. `10.5`가 `10`으로 출력되었다.
+
+</details>
+
+<details>
+<summary><b>java.text 포맷 클래스</b></summary>
+
+<br>
+
+| 클래스 | 하는 일 |
+|---|---|
+| `SimpleDateFormat` | 날짜 형식 변경 (게시판, 공지, 예약일) |
+| `DecimalFormat` | 숫자 패턴 변경, 천 단위 구분 |
+| `NumberFormat` | 숫자 형식, 통화, 백분율 |
+| `MessageFormat` | 문자열 서식 (데이터가 많이 들어갈 때) |
+| `ChoiceFormat` | 조건별 문자열 선택 (점수별 등급) |
+
+- 날짜 패턴: `yyyy`/`yy`(년), `MM`/`M`(월), `dd`/`d`(일), `hh`(12시간)/`HH`(24시간), `mm`/`m`(분), `ss`/`s`(초). 월 `MM`과 분 `mm`이 다르다.
+
+```java
+SimpleDateFormat sdf = new SimpleDateFormat("yy/M/d hh:mm:ss");     // 26/11/16 05:27:08
+DecimalFormat df = new DecimalFormat("###,###,###");                // 100,000
+```
+
+- 오라클에 넣을 SQL을 문자열 연결로 만들 때 따옴표 때문에 복잡하다. `MessageFormat`은 `{0}`, `{1}` 자리에 값을 넣고, 따옴표 `'`는 `''`로 쓴다.
+
+```java
+sql = "INSERT INTO member VALUES("
+    + "{0},''{1}'',''{2}'',''{3}'',''{4}'',{5},''{6}'')";
+Object[] obj = {no, name, sex, address, phone, age, content};
+MessageFormat.format(sql, obj);
+```
+
+```
+INSERT INTO member VALUES(1,'홍길동','남자','서울','010-1111-1111',30,'홍길동입니다')
+```
+
+- 문자열 연결로 만든 SQL과 `MessageFormat`으로 만든 SQL의 출력이 같다. 주석에는 JDBC에서는 `?`를 쓴다고 적었다(`INSERT INTO member VALUES(?,?,?,?,?,?,?)`).
+
+```java
+double[] limits = {0, 60, 70, 80, 90};
+String[] formats = {"F", "D", "C", "B", "A"};
+ChoiceFormat cf = new ChoiceFormat(limits, formats);
+cf.format(85);                                   // B
+```
+
+```java
+NumberFormat nf = NumberFormat.getInstance();             // 1,234,567.89
+nf = NumberFormat.getCurrencyInstance();                  // ₩1,234,568
+nf = NumberFormat.getPercentInstance();                   // 25%   (0.25)
+```
+
+- `NumberFormat`은 `new`를 쓰지 않고 `getInstance()`로 얻는다. 주석에는 미완성 클래스(추상 클래스)는 `new`로 메모리 할당이 안 되기 때문이라고 적었다. 16일차 추상 클래스와 이어진다.
+
+</details>
+
+<details>
+<summary><b>리플렉션 (Class, Field, Constructor, Method)</b></summary>
+
+<br>
+
+- 리플렉션은 실행 중인 프로그램의 클래스, 변수, 생성자, 메소드 정보를 읽고 직접 조작하는 기술이다. 클래스 이름 문자열로 제어하고(패키지명부터 쓴다), 메소드를 호출하고 변수 값을 바꾸고, `new` 없이 객체를 만들 수 있다. private에도 접근할 수 있어서 보안 문제가 있다.
+- 주석에는 컴파일 시점(`javac`)에는 `static` 변수와 메소드가 저장되고, 실행 시점(`java`)에는 동적이며 리플렉션은 실행 시점에 클래스의 모든 정보를 읽는다고 적었다. Spring, SpringBoot, MyBatis, JPA 같은 프레임워크가 쓰는 기술이고 직접 만들어 쓰는 경우는 극히 드물다고 적었다.
+
+| 구성 요소 | 클래스 |
+|---|---|
+| 클래스 | `Class` |
+| 변수 | `Field` |
+| 생성자 | `Constructor` |
+| 메소드 | `Method` |
+
+```java
+Class cls = Class.forName("com.sist.reflect.Member");
+Class c1 = String.class;                 // Class 객체를 얻는 다른 방법
+Class c2 = str.getClass();
+
+Method[] methods = cls.getDeclaredMethods();
+Field[] fields = cls.getDeclaredFields();               // static 포함
+Constructor[] cons = cls.getDeclaredConstructors();
+
+Object obj = cls.getDeclaredConstructor(int.class, String.class, String.class)
+                .newInstance(2, "박문수", "부산");      // new 없이 객체 생성
+
+Field f = cls.getDeclaredField("address");
+f.setAccessible(true);                  // private 접근 가능
+f.set(obj, "제주");
+f.get(obj);
+
+m.invoke(obj, null);                    // 메소드 호출
+```
+
+- `리플렉션_2`를 실행하고 검색어에 `insert`를 넣으면 이렇게 나온다.
+
+```
+========= Method ======
+select
+update
+insert
+delete
+========= 변수(멤버) =======
+mno
+name
+address
+school
+======= 생성자 ======
+com.sist.reflect.Member
+com.sist.reflect.Member
+====== 객체 메모리 할당(생성자 호출) ======
+Member(int mno, String name, String address) Call...
+객체 주소:com.sist.reflect.Member@1fb3ebeb
+======== 변수 제어 ========
+제주
+심청이
+3
+======= 메소드 제어 ======
+검색어 입력:insert...
+```
+
+- `getDeclaredMethods()`의 순서는 선언 순서(`insert`, `update`, `delete`, `select`)가 아니었다. 순서를 믿고 `methods[0]`을 쓰면 안 된다.
+- 변수 `school`은 `static`인데 `getDeclaredFields()`에 같이 나온다(주석에도 "static 포함"). 생성자는 기본 생성자와 매개변수 3개짜리, 둘 다 `Member` 이름으로 나온다.
+- 장점은 프레임워크 개발에 쓰고 코드 재사용과 유지보수가 쉬운 것이고, 단점은 직접 호출보다 느리고, private에 접근해서 보안 문제가 있고, 코드 가독성이 떨어지는 것이라고 주석에 적었다.
+- `리플렉션_1.java`는 `Sawon`에 `info()`~`info4()`를 만들고 `getDeclaredMethods()`를 돌면서 이름이 `info1`이면 이름을 출력한다. `methods[0].invoke(obj)`는 주석 처리되어 있고 `info1`만 출력된다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `Math.max`, `min`, `abs` 출력 (`Math_2`) |
+| 오라클에서 레시피 개수를 읽어 `Math.ceil`로 총페이지 계산 (`Math_1`) |
+| `StringBuffer`로 `append`, `insert`, `delete`, `replace`, `reverse` 연습 (`StringBuilder_2`) |
+| 만개의레시피 HTML을 `String` 결합과 `StringBuilder`로 읽어서 시간 비교 (`StringBuffer_1`, `StringBuilder_1`) |
+| `Integer` 진법 변환, `parseInt`, `null` 거르기 (`Wrapper_1`, `Wrapper_2`) |
+| `SimpleDateFormat`, `DecimalFormat`, `MessageFormat`, `ChoiceFormat`, `NumberFormat` (`Format_1`) |
+| `Class.forName`으로 객체 만들고 `Field`, `Method` 제어 (`리플렉션_1`, `리플렉션_2`) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Math_1.java`의 SQL은 `SELECT CEIL(COUNT(*)/10) FROM recipe`라서 `count`에는 레시피 개수가 아니라 이미 올림한 총페이지 수가 들어온다. 그런데 출력은 "레시피의 갯수", 그 뒤에 `Math.ceil(count / 10.0)`를 한 번 더 한다. 읽고 쓴 것이고 DB에 접속하지 못해서 실행하지 못했다. SQL을 `COUNT(*)`만 하면 의도한 대로 맞아 보인다.
+- `StringBuffer_1.java`의 주석에는 `StringBuffer`가 "비동기화"라고 적혀 있다. 같은 날 `StringBuilder_1.java` 주석의 표에는 `StringBuffer`가 동기화 지원, `StringBuilder`가 미지원이다. 표 쪽이 맞는 것으로 알고 있으니 확인할 것.
+- `StringBuffer_1.java`, `StringBuilder_1.java`, `리플렉션_1.java`, `리플렉션_2.java`의 `catch (Exception ex) {}`가 비어 있어서 접속 실패나 리플렉션 오류가 조용히 지나간다.
+- `리플렉션_2`의 `m.invoke(obj, null)`은 컴파일할 때 `non-varargs call of varargs method` 경고가 난다. 메소드에 넘길 값이 없으면 `m.invoke(obj)`로 써도 된다.
+- `Format_1.java`의 `SimpleDateFormat("yy/M/d hh:mm:ss")`는 `hh`가 12시간제라서 오후 5시가 `05`로 나온다. 오전인지 오후인지 구분이 안 된다. 24시간제는 `HH`다.
+- `Format_1.java` 주석의 "소핑몰"은 "쇼핑몰" 오타다.
+- `StringBuilder_1.java` 주석에 `reverse()`를 "꺼꾸로"라고 적었다(거꾸로).
+- `Wrapper_1.java`에 주석 처리된 `//int aa=null;`은 컴파일 오류가 날 것이라고 읽고 썼다. 실행하지 않았다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- `Math`는 전부 `static` 메소드이고 총페이지는 `(int)Math.ceil(개수 / 10.0)`로 구한다.
+- 문자열을 자주 바꾸거나 이어 붙이면 `String` 대신 `StringBuilder`(속도)나 `StringBuffer`(쓰레드 공유, 동기화)를 쓴다. `delete`, `replace`의 끝 번호는 `end - 1`까지다.
+- Wrapper 클래스로 기본형과 객체를 오가고(Boxing, UnBoxing), `parseInt()` 등으로 `String`을 숫자로 바꾼다. `null`은 `Integer`만 담을 수 있다.
+- `SimpleDateFormat`은 날짜, `DecimalFormat`과 `NumberFormat`은 숫자, `MessageFormat`은 SQL 같은 서식, `ChoiceFormat`은 등급을 만든다.
+- 리플렉션은 클래스 이름 문자열로 클래스 정보를 읽고, 객체를 만들고, 변수 값을 바꾸고, 메소드를 호출한다. 메소드 순서는 믿을 수 없다. 프레임워크가 쓰는 기술이다.
+
+</details>
+
+---
+
+## 23일차 | 2026.11.11 (수) | Chapter 12. 라이브러리 (어노테이션, 정규식, java.time)
+
+<details>
+<summary><b>어노테이션 만들기</b></summary>
+
+<br>
+
+- 어노테이션은 기능이 없고 클래스, 변수, 메소드, 생성자, 매개변수에 표시를 해서 바로 찾게 해 주는 인덱스 역할이다. 주석에는 `if`문을 대체하는 프로그램이라고 적었다. 사용자 정의 어노테이션은 `@interface`로 만든다.
+
+```java
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface RequestMapping {
+    public String value();      // @RequestMapping("1")
+}
+
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface GetMapping {
+}
+```
+
+| 정하는 것 | 값 |
+|---|---|
+| 유지 정책 `@Retention` | `SOURCE`(소스에만 있고 컴파일하면 사라짐), `CLASS`(클래스 파일까지, 리플렉션으로 못 읽음), `RUNTIME`(프로그램 끝까지, 리플렉션으로 읽음) |
+| 구분 `@Target` | 클래스 `TYPE`, 메소드 `METHOD`, 생성자 `CONSTRUCTOR`, 변수 `FIELD`, 매개변수 `PARAMETER` |
+| 제어 위치 | 메소드 위, 생성자 위, 클래스 위, 매개변수 옆 |
+
+- `RUNTIME`이 많이 쓰인다고 주석에 적었다. Spring의 `@Controller`, `@Service`, `@Autowired`, `@GetMapping`, `@RequestMapping`, MyBatis의 `@Select`, `@Insert`, `@Update`, `@Delete`가 이미 만들어진 어노테이션이다.
+- `value()`는 문자열이고 `@RequestMapping("1")`처럼 쓴다. 주석 처리된 `int val()`로 정수를 받는 방식(`@RequestMapping(1)`)도 적혀 있다. 괄호 안은 `String`인지 `int`인지에 따라 바뀐다.
+- `어노테이션_1.java`는 `main`에서 `String.class`, `Integer.class`를 출력한다.
+
+```
+class java.lang.String
+class java.lang.Integer
+```
+
+</details>
+
+<details>
+<summary><b>리플렉션과 어노테이션으로 메뉴 처리</b></summary>
+
+<br>
+
+- 리플렉션과 어노테이션을 합치면 `if`문 없이 메뉴 번호로 메소드를 찾아 호출할 수 있다. `Board` 클래스의 각 메소드 위에 `@RequestMapping("번호")`를 붙이고, 사용자가 고른 번호와 같은 값의 메소드를 `invoke`한다.
+
+```java
+class Board
+{
+    @RequestMapping("1")
+    public void list() { System.out.println("게시판 목록 요청"); }
+    @RequestMapping("2")
+    public void insert() { ... }
+    // 3 상세보기, 4 수정, 5 삭제, 6 검색
+    @GetMapping
+    public void reply() { System.out.println("게시물 댓글 달기"); }
+}
+
+Class clsName = Class.forName("com.sist.reflect.Board");           // 1. 클래스 읽기
+Object obj = clsName.getDeclaredConstructor().newInstance();        // 2. 메모리 할당
+Method[] methods = clsName.getDeclaredMethods();                    // 3. 메소드 전체 읽기
+for (Method m : methods)                                            // 4. 어노테이션 찾기
+{
+    RequestMapping rm = m.getAnnotation(RequestMapping.class);
+    if (Integer.parseInt(rm.value()) == menu)
+    {
+        m.invoke(obj, null);
+    }
+}
+```
+
+- 메뉴에서 `1`, `6`, `7`을 차례로 넣어서 실행하니 `게시판 목록 요청`(그 뒤에 `Math.random()` 값이 한 줄), `게시물 검색 요청`, `프로그램 종료`가 나왔다. `3`을 넣으면 `게시판 상세보기 요청`이 나왔다. 7번은 `System.exit(0)`이다.
+- 주석에는 `Board`에 `else if`로 `board.list()`를 부르던 코드를 주석 처리하고 이 방식으로 바꿨다. 메뉴가 늘어도 `if`문을 늘리지 않고 메소드와 어노테이션만 추가하면 된다.
+- 리플렉션 주석에 `getDeclareConstructor`(`getDeclaredConstructor`)라고 적은 곳이 있다. 생성자 매개변수는 `int.class`, `String.class`처럼 클래스로 넘긴다.
+- `import static java.lang.Math.random`은 `Math.`을 안 쓰고 `random()`만 쓰게 해 준다.
+
+</details>
+
+<details>
+<summary><b>정규식 (Pattern, Matcher)</b></summary>
+
+<br>
+
+- 정규표현식은 지정된 패턴으로 문자열을 검색하고 검사하는 기술이다. 자바, 자바스크립트, 오라클에서 같은 기호를 쓴다. 이메일, 전화번호, 비밀번호(8~20자, 대소문자, 특수문자) 같은 유효성 검사와 로그 분석, 크롤링 문자열 필터링에 쓴다고 주석에 적었다.
+
+| 기호 | 뜻 |
+|---|---|
+| `[abc]` | `a`, `b`, `c` 중 한 글자 |
+| `[A-Z]`, `[a-z]`, `[A-Za-z]` | 알파벳 |
+| `[0-9]`, `\d` | 숫자 (자바 문자열에서는 `\\d`) |
+| `[가-힣]` | 한글 |
+| `\s` | 공백 |
+| `\w` | 알파벳 한 글자 |
+| `.` | 임의의 한 글자 |
+| `?` | 0개 또는 1개 |
+| `*` | 0개 이상 |
+| `+` | 1개 이상 |
+| `{n}`, `{n,m}` | n개, n~m개 |
+| `a\|b` | a 또는 b |
+| `^` | 시작 (`[ ]` 안에서는 제외) |
+| `$` | 끝 |
+| `( )` | 그룹 (`group()` 전체, `group(1)` 첫 번째 그룹) |
+
+- 검색 순서는 `Pattern.compile("패턴")`으로 패턴 객체를 만들고, `p.matcher(대상 문자열)`로 `Matcher`를 얻고, `m.find()`로 패턴에 맞는 데이터를 찾고, `m.group()`으로 찾은 문자열을 꺼낸다.
+
+```java
+String res = "맛있,맛있고,맛있게,맛있소,맛있다,맛없다,맛있습니다";
+Pattern p = Pattern.compile("맛있[가-힣]+");
+Matcher m = p.matcher(res);
+while (m.find())
+{
+    System.out.println(m.group());
+}
+```
+
+```
+맛있고
+맛있게
+맛있소
+맛있다
+맛있습니다
+```
+
+- `맛있`은 뒤에 한글이 없고(쉼표가 온다), `맛없다`는 `맛있`으로 시작하지 않아서 빠졌다.
+- 문자열에서 숫자만 뽑거나 자르는 것도 정규식이다.
+
+```java
+String price = "가격: 30,000원";
+price.replaceAll("[^0-9]", "");                // 30000
+"홍길동|남자|30|서울|010-1111-1111".split("\\|");  // 홍길동 / 남자 / 30 / 서울 / 010-1111-1111
+```
+
+- `|`는 정규식에서 "또는"이라서 문자 그대로 자르려면 `\\|`로 쓴다. 21일차 `split`에서 본 규칙이다. 특수 기호를 문자로 쓰려면 `\\?`, `\\+`, `\\^`, `\\$`, `\\\\`처럼 앞에 `\\`를 붙인다.
+- `String.matches("패턴")`은 문자열 전체가 패턴과 맞는지 확인해서 `true`, `false`로 돌려준다. `Regex_3`, `Regex_4`, `Regex_5`의 출력은 모두 `true`였다(`Regex_5`는 24줄).
+
+```java
+"h##llo".matches("h..llo");                   // true   . 은 임의의 한 글자
+"안녕하세요".matches(".....");                  // true
+"홍길동".matches("^홍[가-힣]+");                // true
+"Hefgdgdgdgdgllo".matches("H[A-Za-z]*llo");   // true
+"sflsafaklfalfo".matches("s.*o$");            // true
+"color".matches("colo?r");                    // true   ? 는 0회 또는 1회
+"colour".matches("colou?r");                  // true
+"".matches("c?a?t?");                         // true   전부 0개여도 맞다
+"dog".matches("dog|cat|pig");                 // true
+"yes".matches("y(es)?");                      // true
+"abcabc".matches("(abc)+");                   // true   그룹이 1번 이상 반복
+"hahahe".matches("(ha)+he");                  // true
+"a1b2c3".matches("(\\w\\d)+");                // true
+"1 2".matches("\\d\\s\\d");                   // true
+"1+2".matches("\\d\\+\\d");                   // true
+"^abc$".matches("\\^(abc)\\$");               // true
+```
+
+- 주석에는 오라클의 `LIKE '%맛있고%' OR ...`을 `REGEXP_LIKE(s, '[A-E]')`로 줄일 수 있고, 자바의 `.`은 오라클 LIKE의 `_`와 비슷하다고 적었다.
+- 주석의 수업 일정 메모에는 제네릭과 컬렉션(2일), IO(2일), 쓰레드와 네트워크(2일), 람다와 스트림(1일)이 적혀 있다.
+
+</details>
+
+<details>
+<summary><b>java.time - 날짜와 시간</b></summary>
+
+<br>
+
+- `java.time`의 `LocalDateTime`(날짜+시간), `LocalDate`(날짜), `LocalTime`(시간)은 `final` 클래스다. 주석에는 MySQL에서는 `LocalDateTime`, 오라클에서는 `Date`를 쓴다고 적었다. `Date`, `Calendar`, `LocalDateTime`은 웹과 데이터베이스에서 계속 나오고, 컬렉션도 그렇다고 적었다.
+
+```java
+LocalDateTime now = LocalDateTime.now();                          // 현재 날짜 + 시간
+LocalDateTime dateTime = LocalDateTime.of(2026, 11, 11, 12, 30, 30);   // 특정 날짜 시간
+LocalDateTime f = now.plusDays(4).plusHours(3);                  // 더하기
+LocalDateTime p = now.minusMonths(1);                            // 빼기
+now.getYear(); now.getMonthValue(); now.getDayOfMonth(); now.getHour();
+
+DateTimeFormatter ff = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+LocalDateTime t = LocalDateTime.parse("2026-03-31 15:47:40", ff);    // 문자열 → 날짜
+String fff = dateTime.format(ff);                                  // 날짜 → 문자열
+```
+
+```
+2026-11-11T12:30:30        // dateTime
+2026-03-31T15:47:40        // t
+2026-11-11 12:30:30        // fff
+```
+
+- 실행한 날(11월 16일)에는 `now.plusDays(4).plusHours(3)`이 11월 20일 20시, `now.minusMonths(1)`이 10월 16일로 나왔다. `LocalDateTime`을 그대로 출력하면 날짜와 시간 사이에 `T`가 들어간다.
+- 패턴은 `MM`(월)과 `mm`(분), `hh`(1~12시)와 `HH`(1~24시)를 구분한다. 22일차 `SimpleDateFormat`과 같은 규칙이다. 주석에는 변환 결과를 JPA와 연결해서 쓴다고 적었다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `@interface`로 `RequestMapping`, `GetMapping` 만들기 |
+| `Board`의 메소드에 `@RequestMapping("번호")`를 붙이고 메뉴 번호로 `invoke` (`리플렉션_3`) |
+| `Pattern`, `Matcher`로 `맛있[가-힣]+` 검색 (`Regex_1`) |
+| `replaceAll("[^0-9]", "")`로 숫자만 추출, `split("\\|")`로 자르기 (`Regex_2`) |
+| `.`, `*`, `?`, `[ ]`, `\|`, `( )`, `\d`, `\s`, `\w` 패턴을 `matches()`로 확인 (`Regex_3`~`Regex_5`) |
+| `LocalDateTime`으로 날짜 더하기, 빼기, 값 꺼내기, 문자열 변환 (`Time_1`) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `리플렉션_3.java`의 `reply()`에는 `@GetMapping`이 붙어 있고 `@RequestMapping`이 없다. 반복문에서 `m.getAnnotation(RequestMapping.class)`가 `null`을 돌려주면 `rm.value()`에서 `NullPointerException`이 나고, 바깥의 `catch (Exception ex) {}`가 삼켜서 아무 소리 없이 지나간다. `getDeclaredMethods()` 순서에서 `reply`가 앞에 오면 뒤쪽 메소드가 호출되지 않을 것으로 보인다. 읽고 쓴 것이고 내 환경에서는 `1`, `3`, `6`이 모두 호출되었다. `rm != null`을 먼저 확인할 것.
+- `리플렉션_3.java`의 `import static ...ElementType.METHOD`, `RUNTIME`, `Retention`, `Target`은 쓰지 않는다. `GetMapping`을 `리플렉션_3`에서 쓰는 이유(`reply`에 붙임)는 주석에 없다.
+- `Regex_1.java` 주석의 "`맛있[A-Z]+`" 설명은 실제 코드의 `맛있[가-힣]+`와 다르다. 주석에 `[가-히]`라고 쓴 곳도 `[가-힣]`이 맞다.
+- `Regex_3.java`의 `"d".matches(".")`는 한 글자 전체이므로 `true`다. `matches()`는 문자열 일부가 아니라 전체가 맞아야 한다. 일부만 찾는 것은 `find()`다.
+- `Regex_5.java`의 `"aabb".matches("(a+b+)*")`, `"123123".matches("(\\d+)+")`는 `true`가 나왔지만 이런 중첩 반복은 맞지 않는 긴 문자열에서 아주 느려질 수 있다고 알고 있다. 확인하지 않았다.
+- `Time_1.java`의 `dateTime`은 `2026-11-11 12:30:30`으로 직접 정한 값이다. 주석의 "2026-11-11 12:22:28"은 수업 시간에 찍은 값으로 보인다.
+- `어노테이션_1.java`의 `import java.sql.*;`, `java.util.*;`은 쓰지 않는다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 어노테이션은 `@interface`로 만들고 `@Retention(RUNTIME)`, `@Target(METHOD)` 등으로 유지 정책과 위치를 정한다. 기능은 없고 표시일 뿐이다.
+- 리플렉션으로 메소드 위의 어노테이션 값을 읽어서 같은 값의 메소드를 `invoke`하면 `if`문 없이 메뉴를 처리한다. Spring이 이 방식이다.
+- 정규식은 `Pattern.compile`, `matcher`, `find`, `group` 순서로 찾고, 짧은 검사는 `String.matches`, `replaceAll`, `split`을 쓴다. `?`는 0~1개, `*`는 0개 이상, `+`는 1개 이상이다.
+- `java.time`의 `LocalDateTime`은 `now`, `of`, `plusDays`, `minusMonths`, `getYear`로 다루고, `DateTimeFormatter`로 문자열과 바꾼다.
+
+</details>
+
+---
+
+## 24일차 | 2026.11.12 (목) | Chapter 13~15. 제네릭, 컬렉션 (List, 음악 프로그램)
+
+<details>
+<summary><b>컬렉션 프레임워크</b></summary>
+
+<br>
+
+- 컬렉션은 데이터를 담아 두는 상자의 모음이고, 데이터를 쉽게 관리하려고 만든 라이브러리(자료구조)다. "프레임워크"는 일정한 틀을 만들어 두고 그 틀에 맞춰 만든다는 뜻이라서 모든 개발자가 같은 방식(표준화)으로 쓴다.
+- 배열은 크기가 고정이라서 작게 만들면 부족하고 크게 만들면 낭비된다. 컬렉션은 크기가 가변이고 정렬과 검색 기능을 제공한다.
+
+```
+         Collection (인터페이스)
+              |
+   ---------------------------------
+   |             |                 |
+  List          Set               Map
+   |             |                 |
+ArrayList     HashSet           HashMap
+Vector        TreeSet           Hashtable
+LinkedList
+```
+
+| | List | Set | Map |
+|---|---|---|---|
+| 순서 | 있음 (자동 인덱스) | 없음 | 없음 |
+| 중복 | 허용 | 허용 안 함 | 키는 중복 없음, 값은 허용 |
+| 구현 클래스 | `ArrayList`, `Vector`, `LinkedList` | `HashSet`, `TreeSet` | `HashMap`, `Hashtable` |
+| 쓰이는 곳 | 오라클 데이터, 목록 | `DISTINCT`처럼 중복 제거 | Spring 클래스 관리, MyBatis SQL 관리, 쿠키, 세션, 요청값 |
+
+- `ArrayList`는 비동기라서 속도가 빠르고 데이터베이스 연동에 최적이다. `Vector`는 동기화되어 있어 네트워크 접속자 정보에 쓴다. `LinkedList`는 추가와 삭제가 많을 때 쓴다고 주석에 적었다.
+- 컬렉션은 `java.util` 패키지에 있어서 `import java.util.*;`가 필요하다.
+
+</details>
+
+<details>
+<summary><b>List 사용법 (Vector로 연습)</b></summary>
+
+<br>
+
+- `Collection.java`는 `Vector`로 List의 주요 메소드를 연습한다. 일반 `Vector`는 모든 데이터가 `Object`라서 꺼낼 때 `(String)`으로 형변환한다.
+
+| 기능 | 메소드 |
+|---|---|
+| 추가 | `add(데이터)`, `add(int index, 데이터)` |
+| 읽기 | `get(int index)` |
+| 수정 | `set(int index, 데이터)` |
+| 삭제 | `remove(int index)` |
+| 개수 | `size()` |
+| 전체 삭제 | `clear()` |
+| 존재 여부 | `isEmpty()` |
+
+```java
+Vector list = new Vector();
+list.add("홍길동"); list.add("심청이"); list.add("이순신"); list.add("강감찬"); list.add("박문수");
+list.add("춘향이");                 // 0:홍길동 1:심청이 2:이순신 3:강감찬 4:박문수 5:춘향이
+list.add(2, "을지문덕");            // 지정한 위치에 추가 → 뒤의 인덱스가 하나씩 밀린다
+list.remove(1);                     // 심청이 삭제 → 인덱스가 앞으로 당겨진다
+list.set(1, "춘향이");              // 을지문덕을 춘향이로 수정
+list.clear();                       // 전체 삭제
+list.isEmpty();                     // true
+```
+
+```
+0:홍길동 1:심청이 2:이순신 3:강감찬 4:박문수
+추가:        0:홍길동 1:심청이 2:이순신 3:강감찬 4:박문수 5:춘향이
+지정 위치:   0:홍길동 1:심청이 2:을지문덕 3:이순신 4:강감찬 5:박문수 6:춘향이
+삭제:        0:홍길동 1:을지문덕 2:이순신 3:강감찬 4:박문수 5:춘향이
+수정:        0:홍길동 1:춘향이 2:이순신 3:강감찬 4:박문수 5:춘향이
+현재인원:0 → 존재하는 인원이 없습니다
+```
+
+- 중간에 넣거나 빼면 뒤의 인덱스가 밀리거나 당겨져서 속도가 느리다고 주석에 적었다. 수정 뒤에 `춘향이`가 두 번 들어 있어도 List는 중복을 허용한다.
+
+</details>
+
+<details>
+<summary><b>List 사이의 집합 연산</b></summary>
+
+<br>
+
+- `Collection_2.java`는 두 List의 데이터를 SQL의 집합 연산처럼 다룬다. 멜론과 지니뮤직 차트를 비교하는 데 쓴다.
+
+| 연산 | 메소드 | 예 (`1 2 3 4 5`와 `1 2 6 7 8`) |
+|---|---|---|
+| UNION (중복 없는 합집합) | `containsAll()`로 적었다 | `1 2 3 4 5 6 7 8` |
+| INTERSECT (교집합) | `retainAll()` | `1 2` |
+| UNION ALL (중복 포함 합집합) | `addAll()` | `1 2 3 4 5 1 2 6 7 8` |
+| MINUS (차집합) | `removeAll()` | `3 4 5` |
+| 부분 복사 | `subList(start, end)` | `end - 1`까지 |
+
+```java
+ArrayList list = new ArrayList();
+list.add(3); list.add(4); list.add(8); list.add(7); list.add(9);
+list.add(1); list.add(2); list.add(6); list.add(5);
+
+ArrayList list2 = new ArrayList(list.subList(1, 4));   // 인덱스 1, 2, 3 → 4 8 7
+list2.add(10); list2.add(11); list2.add(12);           // 4 8 7 10 11 12
+
+Collections.sort(list);                                // 1 2 3 4 5 6 7 8 9
+list.retainAll(list2);                                 // 교집합 → 4 7 8
+ArrayList list3 = new ArrayList();
+list3.addAll(list2);                                   // 전체 복사
+```
+
+```
+===== 일부만 추출 =====    4 8 7 10 11 12
+===== 데이터 출력 =====    3 4 8 7 9 1 2 6 5
+===== 데이터 정렬 =====    9 8 7 6 5 4 3 2 1
+===== 같은 데이터 추출 ==  4 7 8
+===== 전체복사 =====       4 8 7 10 11 12 / 4 7 8
+```
+
+- 정렬 뒤의 출력은 `for`문이 `i = list.size() - 1`에서 거꾸로 돌아서 내림차순으로 나온다. `Collections.sort(list)` 자체는 오름차순이다(`Arrays.sort(배열)`과 같은 역할).
+- 이 프로그램은 제네릭 없이 `ArrayList`를 쓰기 때문에 `int num = (int) list.get(i)`로 형변환한다.
+
+</details>
+
+<details>
+<summary><b>제네릭</b></summary>
+
+<br>
+
+- 제네릭은 클래스나 메소드를 정의할 때 쓰는 데이터형을 미리 정하지 않고 사용할 때 정하는 기술이다. `ArrayList list = new ArrayList()`는 모든 것이 `Object`라서 형변환이 필요하고, 읽을 때 `ClassCastException`이 날 수 있고, 어떤 데이터가 들어 있는지 알기 어렵다.
+- 제네릭을 쓰면 데이터형이 통일되고(안정성), 형변환이 없고(소스가 간결), 어떤 데이터인지 보여서(가독성) 재사용이 된다. `<int>`, `<double>`은 안 되고 `<Integer>`, `<Double>`처럼 클래스만 쓴다. 제네릭을 안 쓰면 컴파일할 때 경고가 난다.
+
+```java
+class Box<T>
+{
+    T t;
+    public void setT(T t) { this.t = t; }
+    public T getT() { return t; }
+}
+
+Box box = new Box();                    // T : Object
+Box<String> box1 = new Box<String>();   // T : String
+Box<Integer> box2 = new Box<Integer>(); // T : Integer
+```
+
+| 기호 | 뜻 |
+|---|---|
+| `T` | Type |
+| `E` | Element |
+| `K`, `V` | Key, Value (`Box<K, V>`) |
+
+- `class Box<T extends Number>`처럼 `extends`로 제한하면 숫자(`Integer`, `Double`, `Byte` 등)만 쓸 수 있고 `Box<String>`은 안 된다. `<?>`(와일드카드)는 데이터형을 모를 때 쓰고 읽기 전용에 쓴다고 주석에 적었다. 라이브러리에서 가끔 나온다.
+- `MainClass.java`는 `Box`만 만들고 `try {} catch`는 비어 있다. 주석이 개념 설명이다.
+
+</details>
+
+<details>
+<summary><b>음악 프로그램 - Music, MusicSystem, GenieMusic, MelonMusic, UserMain</b></summary>
+
+<br>
+
+- 15일차에는 `Music[]` 배열이었는데, 이번에는 `ArrayList<Music>`로 만든다. 지니와 멜론이 같은 구조라서 `MusicSystem`을 추상 클래스로 만들고 곡을 모으는 `dataCollection()`만 추상 메소드로 둔다.
+
+| 클래스 | 역할 |
+|---|---|
+| `Music` | 곡 한 개 (`mno`, `title`, `singer`, `poster`, `key`). Lombok `@Data` |
+| `MusicSystem` | 추상 클래스. 곡 목록 `mList`(`static`, `@Getter`)와 공통 기능(목록, 전체, 상세, 검색), 유튜브 키 찾기 |
+| `GenieMusic` | `MusicSystem`을 상속. Jsoup으로 지니 차트를 읽어 `mList`에 저장 |
+| `MelonMusic` | `MusicSystem`을 상속. Jsoup으로 멜론 차트를 읽어 `mList`에 저장 |
+| `UserMain` | 지니(1), 멜론(2)을 고르고 메뉴를 반복 |
+
+```java
+public abstract class MusicSystem {
+    @Getter
+    private static ArrayList<Music> mList = new ArrayList<Music>();
+    public abstract void dataCollection();
+
+    public ArrayList<Music> musicList(int page) {        // 페이지 나누기
+        final int ROWSIZE = 10;
+        int start = (page * ROWSIZE) - ROWSIZE;
+        int end = page * ROWSIZE;
+        return new ArrayList<Music>(mList.subList(start, end));
+    }
+    public ArrayList<Music> musicAllData() { return mList; }
+    public Music musicDetailData(int mno) { return mList.get(mno - 1); }
+    public ArrayList<Music> musicFindData(String type, String fd) { ... }  // title / singer 검색
+}
+```
+
+- `MusicSystem ms = new GenieMusic()`처럼 부모 변수로 받으면 `ms.dataCollection()`이 선택한 쪽의 것을 호출한다(16일차 다형성). `UserMain`은 번호를 받아서 `GenieMusic`이나 `MelonMusic`을 만들고, 이후 메뉴는 `ms`로 똑같이 처리한다.
+- 데이터 읽는 방식은 `GenieMusic`이 `table.list-wrap a.title`, `a.artist`, `a.cover img`, `MelonMusic`이 `tr#lst50 div.rank01 a` 등이다. `Elements`를 돌면서 `Music`을 만들어 `list.add(musics)`한다.
+- `musicFindData(type, fd)`는 `type`이 `"title"`이면 `getTitle().contains(fd)`로, 아니면 가수로 찾는다.
+- `youtubeFindKey(String title)`은 `https://www.youtube.com/results?search_query=` 뒤에 `URLEncoder.encode(title, "UTF-8")`를 붙여서 읽고, 정규식 `"/watch\\?v=[^가-힣]+"`로 영상 키를 뽑는다. `MusicSystem`의 `main`에서 `youtubeFindKey("리센느")`로 시험한다. 인터넷이 필요한 이 부분은 실행하지 않았다.
+- `UserMain`에서 지니(1), 멜론(2)을 고르고 전체 목록(메뉴 1)을 실행하면 곡 번호와 제목이 이어서 출력되었다. 지니와 멜론 모두 확인했다. 차트는 실행한 때의 순위다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `Vector`로 `add`, `add(index)`, `remove`, `set`, `clear`, `isEmpty` 연습 (`Collection`) |
+| `ArrayList`의 `subList`, `sort`, `retainAll`, `addAll` 연습 (`Collection_2`) |
+| `Box<T>`로 제네릭 만들어 `String`, `Integer`로 쓰기 (`MainClass`) |
+| `Music`, `MusicSystem`(추상), `GenieMusic`, `MelonMusic`, `UserMain` 작성 |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Collection_2.java`는 주석과 달리 `list.containsAll(list3)`의 결과를 쓰지 않는다. `containsAll()`은 "`list`가 `list3`의 모든 데이터를 가지고 있는지"를 `true`, `false`로 알려 주는 메소드라서 합집합을 만들지 않는다. 합집합은 `removeAll()` 뒤에 `addAll()`을 하는 식으로 만들어야 한다고 알고 있다.
+- `Collection.java`는 파일 이름과 클래스 이름이 `Collection`이다. `java.util.Collection`과 이름이 같아서 `import java.util.*;`와 함께 쓰면 헷갈릴 수 있다(같은 패키지의 클래스가 먼저 쓰인다).
+- `MusicSystem.musicList(int page)`는 `end`가 목록 크기보다 크면 `subList`에서 `IndexOutOfBoundsException`이 날 것으로 보인다. 25일차 `BookSystem.bookListData`에는 `end > size`이면 `size`로 줄이는 코드가 있다. 읽고 쓴 것이고 실행하지 않았다.
+- `dataCollection()`은 `static`인 `mList`에 계속 `add`한다. 같은 프로그램에서 두 번 부르면 곡이 중복으로 쌓일 것으로 보인다. 지니와 멜론을 둘 다 부르는 경우도 그렇다.
+- `UserMain.java`는 메뉴 1(전체 목록)만 처리한다. 2(상세보기)와 3(검색)은 `musicDetailData`, `musicFindData`가 있지만 `UserMain`에서 부르지 않는다. 4가 종료다.
+- `GenieMusic`, `MelonMusic`은 `title`, `singer`, `poster`의 `Elements` 크기가 같다고 가정하고 `get(i)`를 한다. 크기가 다르면 예외가 난다. `catch`에서 `ex.printStackTrace()`로 출력은 한다.
+- `MyWindow.java`는 `main`이 비어 있다. `Music`의 `key`는 `youtubeFindKey`로 채울 예정인 변수로 보이고 아직 쓰지 않는다.
+- `.classpath`는 jsoup, Lombok이 있어야 컴파일된다. 프로젝트에 jar를 추가해야 한다.
+- `MainClass.java` 주석에 `CastClassException`이라고 적은 곳은 `ClassCastException`이다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 컬렉션은 배열의 고정 크기를 보완한 가변 자료구조이고 `List`(순서, 중복 허용), `Set`(중복 없음), `Map`(키와 값)으로 나뉜다. `ArrayList`가 가장 많이 쓰이고 `Vector`는 동기화, `LinkedList`는 추가와 삭제에 쓴다.
+- List의 기본 메소드는 `add`, `get`, `set`, `remove`, `size`, `clear`, `isEmpty`다. 중간에 넣거나 빼면 인덱스가 밀린다.
+- 두 List는 `retainAll`(교집합), `addAll`(합치기), `removeAll`(차집합)로 비교하고 `subList(start, end)`는 `end - 1`까지 자른다.
+- 제네릭 `<클래스형>`은 데이터형을 통일해서 형변환을 없앤다. 기본형은 Wrapper(`Integer`)를 쓴다.
+- 지니와 멜론은 `MusicSystem` 추상 클래스를 상속받고, 부모 변수로 받아서 같은 방식으로 처리한다.
+
+</details>
+
+---
+
+## 25일차 | 2026.11.13 (금) | Chapter 13~15. 컬렉션 정리 (ArrayList, Vector, LinkedList), 책 목록 시스템
+
+<details>
+<summary><b>List 세 가지 비교</b></summary>
+
+<br>
+
+- `Collection_1.java`는 `main`이 비어 있고 주석이 개념, 종류, 주요 메소드, 사용처, 선택 기준이다.
+
+| | `ArrayList` | `Vector` | `LinkedList` |
+|---|---|---|---|
+| 구조 | 배열 | 배열 | 연결 리스트 (`1-2-3`) |
+| 순서 | O | O | O |
+| 중복 | O | O | O |
+| 조회 | 빠름 | 빠름 | 느림 |
+| 동기화 | X | O | X |
+| 중간 추가, 삭제 | 느림 | 느림 | 빠름 |
+| 개발자 추천 | 선호 | 없음 | 용도에 따라 |
+
+- `ArrayList`는 가장 많이 쓰고 데이터베이스용이다. 게시물, 회원, 상품 목록, 검색 결과, 학생 성적 목록처럼 데이터를 자주 조회하고 순서대로 관리할 때 쓴다고 주석에 적었다.
+- `Vector`는 예전 프로그램의 유지보수용이다. 메소드가 동기화되어 있어서 `ArrayList`보다 성능이 낮고, 동시성 제어(오라클 트랜잭션)나 쓰레드 여러 개로 크롤링할 때 쓴다.
+- `LinkedList`는 중간에 데이터를 넣고 뺄 때 빠르다. 파일 제어와 큐, 데크, 스택에 쓴다. 인덱스로 조회하면 `ArrayList`보다 느리다.
+- Set은 순서와 인덱스가 없고 중복을 허용하지 않는다(`HashSet`, `TreeSet`). Map은 키와 값이고 키는 중복이 없다(`HashMap`, `Hashtable`, `Properties`). `Properties`는 환경 설정을 파일로 만든다고 적었다.
+- 큐(Queue)는 FIFO라서 네트워크와 운영체제에 쓰고, 스택(Stack)은 LIFO라서 메모리 구조와 메소드 호출에 쓴다고 주석에 적었다.
+
+</details>
+
+<details>
+<summary><b>ArrayList - 배열을 List로, 두 목록 비교</b></summary>
+
+<br>
+
+```java
+// ArrayList_2.java
+String[] names = {"홍길동", "이순신", "박문수", "심청이", "춘향이"};
+List<String> list = new ArrayList<String>();
+list = Arrays.asList(names);          // 배열 → List
+for (String s : list) System.out.println(s);
+```
+
+- `Arrays.asList(배열)`로 배열을 List로 바꾸면 `for-each`로 읽을 수 있다. 홍길동, 이순신, 박문수, 심청이, 춘향이가 한 줄씩 출력되었다.
+- `ArrayList_3.java`는 지니 차트와 멜론 차트의 곡명을 각각 `ArrayList<String>`에 담아서 두 목록을 비교한다. 24일차에 배운 메소드가 SQL의 집합 연산처럼 쓰인다.
+
+| 하고 싶은 것 | 코드 | 설명 |
+|---|---|---|
+| 지니에만 있는 곡 | `genie.removeAll(melon)` | 차집합 (MINUS) |
+| 멜론에만 있는 곡 | `melon.removeAll(genie)` | 차집합 |
+| 공통으로 가진 곡 | `genie.retainAll(melon)` | 교집합 (INTERSECT) |
+| 지니 + 멜론 | `genie.addAll(melon)` | 중복 포함 합집합 (UNION ALL) |
+
+- `removeAll`, `retainAll`은 호출한 List 자체를 바꾼다. 그래서 다음 비교 전에 `genie = a.genieData()`, `melon = a.melonData()`로 차트를 다시 읽어서 "복구"한다.
+- 주석에는 `genie.containsAll(melon)`을 "UNION"이라고 적었다. 24일차에 정리한 것처럼 `containsAll`은 합집합이 아니다.
+- 크롤링한 데이터는 오라클에 저장하고 List로 받아서 처리한다. 게시물과 댓글, 맛집과 댓글처럼 두 목록을 합쳐서 쓰는 경우가 있다고 적었다.
+- 실행하니 지니 50곡, 멜론 50곡이었고, 지니에만 있는 노래 13곡, 멜론에만 있는 노래 13곡, 공통 37곡(13 + 37 = 50)이었다. `addAll`로 합치면 100곡, `containsAll`을 부른 뒤의 지니는 그대로 50곡이었다. 차트는 실행한 때의 순위라서 곡 수는 바뀔 수 있다.
+- 주석에는 제네릭 개념(정의, 재사용, 형변환 없음, 가독성, `클래스<클래스형>`, 와일드카드 `<?>`, `<? extends Number>`)을 24일차에 이어서 정리했다.
+
+</details>
+
+<details>
+<summary><b>Vector와 LinkedList</b></summary>
+
+<br>
+
+- `Vector`는 `ArrayList`와 거의 같고 메소드가 동기화되어 있다. 예전 메소드 이름이 따로 있다.
+
+| 기능 | `ArrayList` | `Vector` 전용 |
+|---|---|---|
+| 추가 | `add()` | `addElement()` |
+| 수정 | `set()` | `setElementAt(데이터, index)` |
+| 삭제 | `remove()` | `removeElementAt(index)` |
+| 읽기 | `get()` | `elementAt()` |
+| 전체 삭제 | `clear()` | `removeAllElements()` |
+
+```java
+Vector<String> names = new Vector<String>();
+names.addElement("홍길동"); names.addElement("심청이"); names.addElement("박문수");
+names.removeElementAt(0);           // 심청이, 박문수
+names.setElementAt("춘향이", 0);    // 춘향이, 박문수
+names.removeAllElements();          // 인원:0 → 인원이 없다
+```
+
+- `LinkedList<Integer>`는 연결된 구조라서 중간에 추가나 삭제를 할 때 `ArrayList`, `Vector`처럼 인덱스를 옮기지 않는다. 인덱스로 검색하면 느리다. 큐를 쓸 때 쓴다고 주석에 적었다.
+
+```java
+LinkedList<Integer> list = new LinkedList<Integer>();
+list.add(1); list.add(2); list.add(3);   // 1 2 3
+list.add(4);                             // 1 2 3 4
+list.add(2, 5);                          // 인덱스 2에 5 → 1 2 5 3 4
+list.remove(0);                          // 2 5 3 4
+list.set(0, 100);                        // 100 5 3 4
+list.clear();                            // 갯수:0 → 데이터가 없습니다
+```
+
+- `LinkedList<Integer>`에서 `list.remove(0)`은 값 `0`이 아니라 인덱스 `0`을 지운다. `int`를 넣으면 `remove(int index)`가 호출되기 때문이다(26일차 `ListIterator_1`에서 다시 나온다).
+
+</details>
+
+<details>
+<summary><b>책 목록 시스템 - BookVO, BookSystem, UserBookMain</b></summary>
+
+<br>
+
+- 오라클의 `book` 테이블을 읽어서 책 목록을 보여 주는 프로그램이다. 테이블 컬럼은 `no`, `title`, `poster`, `author`, `pubdate`(`DATE`), `pages`, `price`이고 `BookVO`가 같은 모양이다(`@Data`, `Date`는 `java.util.Date`).
+
+| 클래스 | 역할 |
+|---|---|
+| `BookVO` | 책 한 권의 데이터 |
+| `BookSystem` | 전체 책을 `static ArrayList<BookVO> bList`에 모으고 목록, 상세, 검색, 삭제 기능 제공 |
+| `UserBookMain` | 콘솔 메뉴 |
+| `BookMain` | Swing 화면 (다음 섹션) |
+
+```java
+public class BookSystem {
+    @Getter
+    private static ArrayList<BookVO> bList = new ArrayList<BookVO>();
+    static                                       // 클래스가 처음 쓰일 때 한 번 실행
+    {
+        // 드라이버 등록 → 연결 → SELECT ... FROM book ORDER BY no ASC → bList.add(vo)
+    }
+}
+```
+
+- `static { }`은 `BookSystem`이 처음 메모리에 올라갈 때 한 번 실행되고, 모든 사용자가 같은 `bList`를 공유한다. 주석에는 `UserBookMain`의 `new BookSystem()`에서 `static {}`이 실행된다고 적었다.
+- 22일차 `Math_1`에서 본 JDBC 5단계(드라이버 등록, 연결, SQL 전송, 결과 받기, 닫기)를 `try` 안에서 그대로 쓴다.
+
+| 메소드 | 하는 일 |
+|---|---|
+| `bookListData(int page)` | 한 페이지 10권. `start = page*10 - 10`, `end = page*10`. `end`가 전체보다 크면 전체 크기로 줄인다. `subList(start, end)` |
+| `bookDetailData(int no)` | `bList`를 돌면서 `no`가 같은 `BookVO`를 돌려준다. 못 찾으면 빈 `BookVO` |
+| `bookFindData(String title)` | `title`을 `contains`한 책을 새 `ArrayList`에 모아서 돌려준다 |
+| `bookDelete(int no)` | `no`가 같은 책을 `bList`에서 `remove(i)` |
+
+- 총페이지는 `653 / 10.0` = `65.3` → `66`처럼 `Math.ceil(bList.size() / 10.0)`이다(주석에 적었다). 주석에는 이것이 사이트의 기본인 페이징 기법이라고 적었다.
+- 주석에는 `java.util`의 `Date`, `Calendar`, `StringTokenizer`(`split`을 쉽게 제어, 단어별 분리), `Random`(`nextInt(100)`은 `0~99`, `nextInt(100) + 1`은 `1~100`), `Collection`을 정리했다.
+- `UserBookMain`은 `while (true)`로 메뉴를 반복한다. 메뉴 옆에 쓴 `// for-each`, `// get(인덱스)`, `// remove`, `// set`은 각각 어떤 컬렉션 기능으로 처리하는지를 적은 것이다.
+
+| 메뉴 | 동작 |
+|---|---|
+| 1. 목록 | 총페이지를 보여 주고 페이지를 입력받아 `bookListData` 호출 |
+| 2. 상세보기 | 책 번호를 입력받아 `bookDetailData` 호출, 번호, 제목, 저자, 이미지, 총페이지, 출판일, 가격 출력 |
+| 3. 검색 | 검색어를 `toUpperCase()`로 바꿔서 `bookFindData` 호출 |
+| 4. 삭제 | 삭제 전후의 책 총개수를 출력하며 `bookDelete` 호출 |
+| 6. 종료 | `System.exit(0)` |
+
+- DB 주소가 가려져 있어서 `UserBookMain`은 `BookSystem`의 `static {}`에서 접속 오류가 나고 끝났다. 메뉴 동작은 코드를 읽고 쓴 것이다.
+
+</details>
+
+<details>
+<summary><b>책 목록 화면 - BookMain (Swing)</b></summary>
+
+<br>
+
+- `BookMain`은 `JFrame`을 상속받고 `ActionListener`, `MouseListener`를 구현한 화면이다. 위에는 제목 라벨, 검색 입력창과 `검색`, `목록` 버튼, 가운데는 `JTable`, 아래는 `이전`, 현재 페이지 라벨, `다음` 버튼이다.
+
+| 부품 | 역할 |
+|---|---|
+| `JLabel la` | `Book Center` 제목 (맑은 고딕, 45) |
+| `JTextField tf`, `JButton b1` | 검색어 입력, 검색 |
+| `JButton b4` | 목록 (1페이지로) |
+| `JTable table`, `DefaultTableModel model` | 번호, 이미지 칸, 책제목, 저자, 가격 5열. `isCellEditable`을 `false`로 만들어서 수정 못 하게 함 |
+| `JButton b2`, `b3`, `JLabel la2` | 이전, 다음, `1 page / 66 pages` 같은 표시 |
+
+- 화면을 만드는 부분은 생성자에 있다. `setLayout(null)`로 위치와 크기를 직접 정한다(`setBounds`). `setSize(800, 640)`, `setVisible(true)`, `setDefaultCloseOperation(EXIT_ON_CLOSE)`로 창을 띄운다.
+- `bookPrint()`는 테이블의 모든 행을 지우고(`model.removeRow`), `bs.bookListData(curpage)`로 10권을 읽어 `DecimalFormat("###,###")`으로 가격에 천 단위 쉼표와 `원`을 붙여 `model.addRow(data)`한다. 아래 라벨은 `curpage + " page / " + totalpage + " pages"`로 바꾼다.
+- `findData(String fd)`는 `bookFindData(fd)`로 찾은 결과를 테이블에 보여 주고, 결과가 없으면 `JOptionPane.showMessageDialog`로 "검색된 결과가 없습니다"를 띄운다.
+- `actionPerformed`는 `e.getSource()`로 어떤 부품에서 이벤트가 났는지 구분한다. `이전`은 `curpage > 1`이면 `curpage--`, `다음`은 `curpage < totalpage`이면 `curpage++` 한 뒤 `bookPrint()`를 부른다. 검색은 검색어가 비어 있으면 "검색어 입력" 창을 띄운다.
+- `mouseClicked`에서 `getClickCount() == 2`(더블 클릭)이면 선택한 행의 번호를 읽어 `bookDetailData`로 `BookVO`를 얻고 책제목, 저자, 가격, 총페이지, 출판일을 메시지 창으로 보여 준다.
+- `main`에서 `UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel")`로 JTattoo 모양을 적용한다. JTattoo jar가 없으면 `catch`가 삼키고 기본 모양으로 뜬다.
+- DB 주소가 가려져 있어서 `BookMain`을 실행하면 시작할 때 DB 접속 오류가 났고, 8초 뒤에도 프로그램은 계속 실행 중이었다(창을 직접 보지는 못했다). 책 목록이 비어 있는 창이 뜰 것으로 보이고, 목록, 검색, 상세 동작은 코드를 읽고 쓴 것이다.
+- 접근지정어 주석: 클래스는 모든 곳에서 쓰도록 `public`, 생성자와 메소드도 `public`, 변수는 `private`에 `getter`, `setter`(`public`)로 쓴다고 적었다. 이 화면의 변수는 `private`이 아니다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `Arrays.asList()`로 배열을 List로 바꿔서 출력 (`ArrayList_2`) |
+| 지니와 멜론 차트를 `removeAll`, `retainAll`, `addAll`로 비교 (`ArrayList_3`) |
+| `Vector`의 `addElement`, `removeElementAt`, `setElementAt`, `removeAllElements` (`Vector_1`) |
+| `LinkedList`의 `add(index, 값)`, `remove`, `set`, `clear` (`LinkedList_1`) |
+| 오라클 `book` 테이블을 읽는 `BookVO`, `BookSystem` 작성 (페이징, 상세, 검색, 삭제) |
+| 콘솔 메뉴 `UserBookMain`, Swing 화면 `BookMain` (목록, 이전/다음, 검색, 더블 클릭 상세) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Collection_1.java` 주석의 "버려Hashtable", "기타 여기도 버려", "데이터 물어서"는 수업 중 적은 메모로 보인다. 데이터 "묶어서"가 맞는 뜻이다.
+- `UserBookMain.java`는 목록, 검색 결과를 `System.out`이 아니라 `System.err.println`으로 출력한다. 이클립스 콘솔에서 빨간 글씨로 나온다. 오타로 보인다.
+- 메뉴에 `5. 수정`이 있지만 `5`를 처리하는 `else if`가 없어서 번호를 눌러도 메뉴가 다시 나온다. 메뉴 옆 `// set` 주석처럼 `set`으로 처리할 계획으로 보인다.
+- `UserBookMain`의 메뉴 2 안내문 "책 번호 입력(28~`count`)"에서 시작 번호 `28`이 고정되어 있다. DB의 `no`가 28부터 시작하는 것으로 보인다. 읽고 쓴 것이다.
+- `UserBookMain` 메뉴 3은 `fd.toUpperCase()`로 검색어를 대문자로 바꾼다. 제목에 소문자 영어가 있으면 못 찾을 것으로 보인다.
+- `BookSystem.bookListData(page)`는 `end`만 줄여 주고 `start`는 막지 않는다. 총페이지를 넘는 `page`를 입력하면 `subList(start, end)`에서 `start > end`가 되어 예외가 날 것으로 보인다. `UserBookMain`은 페이지를 검사하지 않는다. 읽고 쓴 것이다.
+- `BookSystem.bookDelete()`는 메모리의 `bList`에서만 지운다. 오라클의 `book` 테이블은 그대로다. 프로그램을 다시 켜면 `static {}`이 다시 읽어서 돌아온다.
+- `BookSystem.bookDetailData()`는 못 찾으면 `null`이 아니라 빈 `BookVO`를 돌려준다. 상세보기에서 존재하지 않는 번호를 넣으면 번호 0, 제목 `null`이 출력될 것으로 보인다.
+- `BookSystem`의 `static {}`에서 `rs`, `ps`, `conn`을 `close()`하는 줄은 `try` 안 끝에 있어서 예외가 나면 닫히지 않는다. 앞으로 배울 `try-with-resources`나 `finally`로 닫을 것.
+- `.classpath`에 jsoup(`ArrayList_3`), Lombok(`BookVO`, `BookSystem`), ojdbc(JDBC), JTattoo(`BookMain`) jar가 모두 필요하다.
+- `BookMain`의 `String[] col = {"번호", "", "책제목", "저자", "가격"}`의 두 번째 열(이미지 칸)은 빈 문자열을 넣어서 비워 둔다. 포스터를 넣는 것은 아직 구현하지 않았다. `BookVO.poster`를 이미지로 보여 줄 수 있는지 알아볼 것.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- `ArrayList`는 조회가 빠르고 가장 많이 쓰고, `Vector`는 동기화(예전 프로그램), `LinkedList`는 중간 추가와 삭제와 큐에 쓴다.
+- `Arrays.asList(배열)`로 배열을 List로 바꾸고, `removeAll`(차집합), `retainAll`(교집합), `addAll`(합치기)로 두 List를 비교한다. 이 메소드들은 원본 List를 바꾼다.
+- `Vector`는 `addElement`, `elementAt`, `removeElementAt`, `setElementAt`, `removeAllElements`로 쓸 수 있고 `LinkedList`는 `ArrayList`와 같은 `add`, `remove`, `set`, `clear`를 쓴다.
+- 데이터베이스 데이터는 `static {}`에서 한 번 읽어 `static ArrayList`에 담아 공유하고, 페이징은 `subList(start, end)`와 `Math.ceil(전체 / 10.0)`으로 한다.
+- Swing 화면은 이벤트를 `e.getSource()`로 구분하고 `DefaultTableModel`로 표를 바꾼다.
+
+</details>
+
+---
+
+## 26일차 | 2026.11.16 (월) | Chapter 13~15. 컬렉션 (Set, Map, Iterator, Queue, Stack), Chapter 14. 쓰레드 (시작)
+
+<details>
+<summary><b>Set - HashSet과 TreeSet</b></summary>
+
+<br>
+
+- Set은 순서가 없고(인덱스가 없다) 중복을 허용하지 않는다. List에서 중복을 지울 때나 WebSocket 채팅 접속자 정보에서 중복 사용자를 지울 때 쓴다고 주석에 적었다. 일반 `for`는 인덱스가 없어서 못 쓰고 `for-each`나 `Iterator`로 읽는다.
+- 주요 메소드는 `add(Object)`, `remove(Object)`, `size()`, `clear()`, `isEmpty()`다. `get()`, `set()`은 인덱스가 없어서 List처럼 쓰지 못한다.
+
+| | `HashSet` | `TreeSet` |
+|---|---|---|
+| 중복 | 허용 안 함 | 허용 안 함 |
+| 순서 | 저장 순서 보장 안 됨 | 자동 정렬 |
+| 특징 | 검색, 추가, 삭제가 평균적으로 빠름 | 범위 검색에 적합 (점수 순위, 가격순 목록) |
+
+```java
+HashSet<String> set = new HashSet<String>();
+set.add("사과"); set.add("배"); set.add("수박"); set.add("참외"); set.add("귤");
+set.add("사과"); set.add("참외");              // 같은 데이터는 제외
+set.size();                                    // 5
+set.remove("배");                              // 4
+set.clear();                                   // 0 → "과일이 없습니다"
+```
+
+```
+과일 갯수:5
+배, 귤, 수박, 사과, 참외        ← 넣은 순서가 아니다
+삭제 뒤:  4 → 귤, 수박, 사과, 참외
+```
+
+- 주석에는 `DISTINCT`가 오라클에서 중복을 제거하는 것과 같다고 적었다.
+- 객체를 `Set`에 넣을 때는 이름이 같아도 다른 객체로 본다. `Sawon s1 = new Sawon(1, "홍길동")`, `s2 = new Sawon(1, "홍길동")`을 같게 보려면 `equals()`와 `hashCode()`를 오버라이딩해야 한다(21일차에서 본 내용이다). `Set_2`가 이 경우다.
+
+```java
+class Sawon {
+    @Override
+    public int hashCode() { return Objects.hash(sabun, name); }
+    @Override
+    public boolean equals(Object obj) {
+        Sawon s = (Sawon) obj;
+        return this.name.equals(s.name) && this.sabun == s.sabun;
+    }
+}
+
+set.add(new Sawon(1, "홍길동"));
+set.add(new Sawon(1, "홍길동"));                 // 제외
+set.add(new Sawon(2, "박문수")); set.add(new Sawon(3, "이순신"));
+set.add(new Sawon(4, "강감찬")); set.add(new Sawon(5, "심청이"));
+```
+
+```
+사원 인원:5
+3-이순신, 1-홍길동, 4-강감찬, 5-심청이, 2-박문수       ← 순서는 저장 순서가 아니다
+```
+
+- 6번 넣었는데 `1-홍길동`이 중복으로 빠져서 5명이다.
+- `Set<Integer> set`, `List<Integer> list`로 난수 10개(`rand.nextInt(10) + 1`)를 같이 넣어 보면 `list`는 10개 그대로고 `set`은 중복이 빠져서 개수가 줄어든다(실행할 때마다 다르다. 한 번은 `set` 8개, `list` 10개였다). `Set<Integer> set = new HashSet<Integer>()`처럼 인터페이스 변수로 받으면 `new TreeSet<>()`로 바꿔도 메소드를 그대로 쓸 수 있다고 주석에 적었다.
+- `Set_5`는 중복이 있는 이름 10개를 `Arrays.asList`로 List로 만들고 `set.addAll(list)`로 중복을 뺀다(7명).
+
+</details>
+
+<details>
+<summary><b>TreeSet의 검색 메소드</b></summary>
+
+<br>
+
+- `TreeSet`은 값을 넣으면 자동으로 정렬된다. 정렬과 검색이 필요한 통계에 쓴다.
+
+```java
+TreeSet<Integer> tSet = new TreeSet<Integer>();
+HashSet<Integer> hSet = new HashSet<Integer>();
+for (int i = 0; i < 10; i++) {
+    int r = (int)(Math.random() * 100) + 1;
+    tSet.add(r); hSet.add(r);
+}
+```
+
+```
+===== HashSet에 저장된 데이터 ======  1 67 35 85 5 38 8 72 93
+===== TreeSet에 저장된 데이터 ======  1 5 8 35 38 67 72 85 93
+50보다 작은 수:[1, 5, 8, 35, 38]
+50보다 큰 수:[67, 72, 85, 93]
+```
+
+| 메소드 | 하는 일 |
+|---|---|
+| `headSet(50)` | 50보다 작은 값 |
+| `tailSet(50)` | 50 이상의 값 (50이 있으면 포함) |
+| `higher(30)` | 30 바로 위 값 |
+| `lower(30)` | 30 바로 아래 값 |
+| `ceiling(50)` | 50과 같거나 큰 값 중 가장 작은 값 |
+| `floor(50)` | 50과 같거나 작은 값 중 가장 큰 값 |
+| `first()`, `last()` | 가장 작은 값, 가장 큰 값 |
+
+- `Set_6`은 `HashSet`에 난수 10개를 넣고 `TreeSet`에 `addAll`로 옮겨 정렬해서 위 메소드를 모두 쓴다. 실행하니 `1 31 34 35 44 69 73 77 82 87`에서 `tailSet(50)`이 `[69, 73, 77, 82, 87]`, `headSet(50)`이 `[1, 31, 34, 35, 44]`, `higher(30)`이 `31`, `lower(30)`이 `1`, `ceiling(50)`이 `69`, `floor(50)`이 `44`, `first()`가 `1`, `last()`가 `87`이었다(난수라서 실행마다 다르다).
+- `Set_4` 주석에는 `Set set = new TreeSet()`처럼 부모 타입으로 받으면 `TreeSet`만 가진 검색 메소드(`headSet` 등)를 못 쓴다고 적었다. `A a = new B()`는 `A`의 메소드까지만 쓰는 것과 같은 설명이다(15~16일차 상속).
+
+</details>
+
+<details>
+<summary><b>Map - HashMap</b></summary>
+
+<br>
+
+- Map은 키와 값을 동시에 저장한다. 키는 중복이 없고(같은 키를 넣으면 덮어쓴다), 값은 중복이 허용된다. `HashMap`은 비동기라서 가장 많이 쓰고 `Hashtable`은 동기화(레거시)다.
+- 쓰는 곳은 Spring이 등록된 클래스를 관리하는 것, MyBatis가 SQL 문장을 관리하는 것, 자바스크립트와 코틀린으로 값을 넘길 때 쓰는 JSON(`키:값`), 쿠키, 세션, 요청값, 응답값이라고 주석에 적었다.
+
+| 메소드 | 하는 일 |
+|---|---|
+| `put(키, 값)` | 저장 |
+| `get(키)` | 값 읽기 |
+| `remove(키)` | 삭제 |
+| `containsKey(키)`, `containsValue(값)` | 키, 값이 있는지 |
+| `keySet()` | 키 전체 (`Set`) |
+| `values()` | 값 전체 |
+| `entrySet()` | 키 + 값 |
+| `size()`, `isEmpty()`, `clear()` | 개수, 존재 여부, 전체 삭제 |
+
+```java
+Map<String, String> map = new HashMap<String, String>();
+map.put("id", "admin");
+map.put("password", "1234");
+map.put("name", "홍길동");
+map.put("age", "30");
+map.put("sex", "남자");
+map.put("id", "hong");               // 덮어쓴다 → admin은 없어진다
+
+Set<String> set = map.keySet();      // [password, sex, name, id, age]
+for (String key : set) System.out.println(key + ":" + map.get(key));
+for (String s : map.values()) System.out.println(s);
+```
+
+```
+ID:hong
+Password:1234
+Name:홍길동
+Age:30
+Sex:남자
+[password, sex, name, id, age]
+```
+
+- `ID`가 `admin`이 아니라 `hong`으로 나왔다. 키 순서도 넣은 순서가 아니다. HashMap은 순서가 없다.
+- `Map_2`는 SQL 문장을 키로 관리한다(MyBatis XML이 하는 일). `"BoardList"` → `"SELECT * FROM board"`, `"BoardInsert"` → `"INSERT INTO board VALUES(?,?,?,?,?)"`처럼 넣고 `keySet()`으로 출력한다.
+- `Map_3`은 클래스를 관리한다(Spring이 하는 일). 인터페이스 `I`를 구현한 `A`, `B`, `C`, `D`를 `Container`의 `Map<String, I>`에 `"a"`, `"b"`, `"c"`, `"d"` 키로 한 번씩만 만들어서 넣고, `getBean("a")`를 부를 때마다 같은 객체를 돌려준다.
+
+```
+i=com.sist.map.A@a09ee92       ← 다섯 번 모두 같은 주소
+A:execute() Call...
+...
+B:execute() Call...
+C:execute() Call...
+D:execute() Call...
+```
+
+- 주석에는 이렇게 객체를 하나만 만들어 공유하는 것을 싱글턴이라고 적었다. Spring, SpringBoot, MyBatis, JPA 같은 프레임워크에서 쓰고, 최근 방문 기록은 쿠키로 저장한다고 적었다.
+- `컬렉션_정리.java`는 `Map<String, Integer>`로 과일 개수를 관리하는 정리용이다.
+
+```java
+Map<String, Integer> map = new HashMap<String, Integer>();
+map.put("사과", 100); map.put("배", 200); map.put("바나나", 150); map.put("포도", 180); map.put("참외", 120);
+
+map.get("사과");                          // 100
+map.containsKey("바나나");                // true
+for (String key : map.keySet()) ...       // 키
+for (int val : map.values()) ...          // 값
+for (Map.Entry<String, Integer> e : map.entrySet())
+    System.out.println(e.getKey() + ":" + e.getValue());     // 키 + 값
+```
+
+```
+전체 데이터:{배=200, 포도=180, 사과=100, 참외=120, 바나나=150}
+```
+
+</details>
+
+<details>
+<summary><b>Iterator와 ListIterator</b></summary>
+
+<br>
+
+- `Collections`는 Collection을 제어하는 클래스, `Arrays`는 배열을 제어하는 클래스다. `Iterator`, `ListIterator`는 컬렉션에 저장된 데이터를 하나씩 꺼내서 쓰는 방법이다.
+
+| | `Iterator` | `ListIterator` |
+|---|---|---|
+| 대상 | 컬렉션 전체 (`List`, `Set`, `Map`) | `List`만 |
+| 방향 | 한 방향 (앞으로) | 양방향 |
+| 하는 일 | 조회, 삭제(`remove()`) | 조회, 추가, 수정, 삭제 |
+| 메소드 | `hasNext()`, `next()`, `remove()` | 위 + `hasPrevious()`, `previous()`, `add()`, `set()` |
+| 실무 | 전체 조회, 조건에 맞는 데이터 삭제, 게시판 목록 | 이전/다음 페이지, 중간에 데이터 첨부, 탐색하면서 수정 |
+
+- 주석에는 단순한 조회는 `for-each`, 반복 도중에 삭제나 수정을 하면 `Iterator`를 쓴다고 적었다.
+
+```java
+List<String> list = new ArrayList<String>();
+list.add("사과"); list.add("배"); list.add("참외"); list.add("수박"); list.add("바나나");
+
+Iterator<String> it = list.iterator();
+while (it.hasNext())
+{
+    String f = it.next();
+    if (f.equals("참외"))
+        it.remove();               // 현재 데이터 삭제
+    System.out.println(f);
+}
+System.out.println(list);
+```
+
+```
+사과
+배
+참외
+수박
+바나나
+[사과, 배, 수박, 바나나]
+```
+
+- `it.remove()`는 `next()`로 읽은 `참외`를 지운다. 삭제한 다음에 `println(f)`를 해서 `참외`도 한 번 출력되고, 마지막 `list`에서는 빠져 있다.
+- `ListIterator_1.java`는 `for (int i : list)` 안에서 `list.remove(i)`로 지우는 코드가 실제로 실행된다. 지우면서 `for-each`로 읽으면 이렇게 실패한다.
+
+```
+Exception in thread "main" java.util.ConcurrentModificationException
+	at java.base/java.util.ArrayList$Itr.next(ArrayList.java:1049)
+	at com.sist.etc.ListIterator_1.main(ListIterator_1.java:55)
+```
+
+- `[1, 2, 3, 4, 5]`에서 `i = 1`일 때 `list.remove(1)`이 인덱스 1(값 `2`)을 지우고, 다음 `next()`에서 `ConcurrentModificationException`이 난다. 주석 처리된 `ListIterator`와 `it.remove()` 버전이 안전한 방법이다.
+- `Iterator_2.java`는 `Set`에서 `Iterator`를 얻고 `while (it.hasNext()) System.out.println();`을 돈다. `it.next()`를 부르지 않아서 `hasNext()`가 계속 `true`이고, 실행하면 빈 줄만 끝없이 출력된다(3초 뒤 멈춰 보니 아직 돌고 있었다). 주석에는 Set과 Map은 `Iterator`가 더 많이 쓰인다고 적었다.
+
+</details>
+
+<details>
+<summary><b>Queue와 Stack</b></summary>
+
+<br>
+
+| | `Queue` | `Stack` |
+|---|---|---|
+| 방식 | FIFO (먼저 넣은 것이 먼저 나옴) | LIFO (나중에 넣은 것이 먼저 나옴) |
+| 구현 | `LinkedList` | `Stack` |
+| 저장 | `offer()` | `push()` |
+| 맨 앞(뒤) 확인 | `peek()` | `peek()` |
+| 꺼내기 (삭제됨) | `poll()` | `pop()` |
+| 쓰이는 곳 | 네트워크, 운영체제, kafka | 메모리 구조, 메소드 호출, 주차장 |
+
+```java
+Queue<String> q = new LinkedList<String>();
+q.offer("홍길동"); q.offer("이순신"); q.offer("강감찬");
+q.size();      // 3
+q.peek();      // 홍길동
+q.poll();      // 홍길동
+q.poll();      // 이순신
+q.poll();      // 강감찬
+
+Stack<String> s = new Stack<String>();
+s.push("사과"); s.push("배"); s.push("포도");
+s.size();      // 3
+s.peek();      // 포도
+s.pop();       // 포도
+s.pop();       // 배
+s.pop();       // 사과
+```
+
+- `Queue`는 줄 서기, `Stack`은 쌓아 둔 접시를 위에서부터 꺼내는 것과 같다. `peek()`는 꺼내지 않고 확인만 해서 개수가 줄지 않는다.
+
+</details>
+
+<details>
+<summary><b>쓰레드 (시작)</b></summary>
+
+<br>
+
+- `Thread_1.java`는 `main`이 비어 있고 주석이 개념이다. 쓰레드는 한 개의 프로그램(프로세스) 안에서 여러 기능이 동시에 수행되게 하는 것이다. 게임, 서버, 크롤링에 쓴다.
+- 사용처는 데이터 수집(크롤링), 네트워크 서버(여러 명이 접속하면 통신을 따로 처리), 게임(비행기, 몬스터, 배경 스크롤), 웹 서버와 오라클 서버다. CPU가 시분할로 작업을 나눠서 수행한다.
+- `java.lang` 패키지라서 `import` 없이 쓴다.
+
+| 만드는 방법 | 형태 |
+|---|---|
+| 1. 상속 | `class MyThread extends Thread { public void run() { ... } }` |
+| 2. 인터페이스 | `class MyThread implements Runnable { public void run() { ... } }` |
+| 3. 익명 함수 (람다) | `new Runnable() -> { ... }` |
+
+- 쓰레드 작업 내용은 `run()`에 적고 한 가지 일만 한다. 주석에는 `Thread`를 상속받는 경우 자원 공유, 반드시 처리할 내용이 있다고 적었다.
+- 생명주기는 `new Thread()`(생성) → `start()`(대기: 필요한 자원 확보) → `run()`(동작) → 일시정지(`sleep()`, `wait()`) → 소멸(`join()`, `interrupt()`)이다.
+- 동작 방식은 비동기화(웹, 여러 가지 일을 동시에 처리)와 동기화(은행, 한 번씩 수행)다.
+
+| 메소드 | 하는 일 |
+|---|---|
+| `start()` | 대기 상태로 만들고 `run()` 호출 |
+| `run()` | 쓰레드 동작 |
+| `sleep()` | 일시 정지 |
+| `interrupt()` | 쓰레드 종료 |
+| `currentThread()` | 현재 실행 중인 쓰레드 |
+| `getName()`, `setName()` | 쓰레드 이름 (`Thread-0` ...) |
+| `getPriority()`, `setPriority()` | 우선순위 (1~10) |
+| `wait()`, `join()` | 대기, 모든 쓰레드가 끝날 때까지 기다림 |
+
+- 우선순위는 `MAX_PRIORITY`가 10, `MIN_PRIORITY`가 1, `NORM_PRIORITY`가 5다. 주석에는 10이 `main`, 1이 GC, 5가 사용자 정의라고 적었다. 오늘은 개념만 정리했고 실제 쓰레드를 만든 코드는 없다.
+
+</details>
+
+<details>
+<summary><b>실습</b></summary>
+
+<br>
+
+| 한 일 |
+|---|
+| `HashSet`으로 과일 중복 제거, `remove`, `clear`, `isEmpty` (`Set_1`) |
+| `equals()`, `hashCode()` 오버라이딩한 `Sawon`을 `HashSet`에 넣어 중복 제거 (`Set_2`) |
+| `Set`과 `List`에 난수 넣어 개수 비교, 조건 검색 (`Set_3`) |
+| `HashSet`과 `TreeSet`의 정렬 차이, `headSet`, `tailSet` (`Set_4`) |
+| `Arrays.asList()`와 `Set`으로 이름 중복 제거 (`Set_5`) |
+| `TreeSet`의 `higher`, `lower`, `ceiling`, `floor`, `first`, `last` (`Set_6`) |
+| `HashMap`으로 키와 값 저장, 덮어쓰기, `keySet`, `values` (`Map_1`) |
+| `Map`으로 SQL 문장 관리 (`Map_2`), 클래스 관리와 싱글턴 (`Map_3`) |
+| `Iterator`로 읽으면서 삭제 (`Iterator_1`, `Iterator_2`), `ListIterator` (`ListIterator_1`) |
+| `Queue`(FIFO), `Stack`(LIFO) 연습 |
+| `Map<String, Integer>`로 `containsKey`, `keySet`, `values`, `entrySet` 정리 (`컬렉션_정리`) |
+
+</details>
+
+<details>
+<summary><b>더 알아볼 것</b></summary>
+
+<br>
+
+- `Iterator_2.java`의 `while (it.hasNext()) System.out.println();`은 끝나지 않는다. `String f = it.next();`로 읽고 `println(f)`를 해야 한다. 실행하면 빈 줄이 끝없이 나오니 바로 정지할 것.
+- `ListIterator_1.java`는 `ConcurrentModificationException`으로 끝난다. 실행 결과가 오류인 채로 남겨 둔 코드로 보인다. 주석 처리된 `ListIterator`나 `it.remove()`로 바꿔서 확인할 것. 이 파일은 `list.remove(i)`에서 `int i`가 인덱스인지 값인지도 헷갈린다. `remove(int index)`가 호출되었다.
+- `Set_2.java`의 `equals(Object obj)`는 `Sawon s = (Sawon) obj;`로 바로 형변환한다. `Sawon`이 아닌 객체와 비교하면 `ClassCastException`이 날 것으로 보인다. 21일차 `Object_3`은 `instanceof`로 먼저 확인했다. `null`을 비교해도 안 된다. 읽고 쓴 것이다.
+- `Set_3.java`의 주석은 "1~100 사이의 숫자 추출"인데 코드는 `rand.nextInt(10) + 1`이라서 1~10이다. 10개를 1~10에서 뽑으니 중복이 자주 생긴다. 출력의 "set 검색"은 `i < 5`, `i > 5`다. 5 자신은 어느 쪽에도 안 나온다.
+- `Set_4.java`는 `System.out.print("\n===== TreeSet에 저장된 데이터 ======")` 뒤에 줄바꿈 없이 이어 찍어서, 마지막 숫자 뒤에 `====== TreeSet 검색 ======`이 같은 줄에 붙어서 나온다.
+- `Set_4.java`의 라벨 "50보다 큰 수"는 `tailSet(50)`이 50 이상이라서 50이 들어 있으면 50이 포함된다. `Set_6`의 라벨은 "50이상"으로 맞다. `import java.net.Inet4Address;`는 쓰지 않는다.
+- `Set_5.java`는 `list2.addAll(list2)`로 비어 있는 `list2`를 자기 자신에게 더하고, 그 아래에서 `list2`가 아니라 `list`를 출력한다. 그래서 세 번째 "전체 회원 목록"이 첫 번째와 똑같이 10명으로 나온다. `list2.addAll(set)`을 하려고 한 것으로 보인다.
+- `Map_1.java`는 키 순서가 넣은 순서와 다르게 나온다(`[password, sex, name, id, age]`). 순서가 필요하면 `LinkedHashMap`이나 `TreeMap`이 있다고 알고 있다. 오늘 수업에는 안 나왔다.
+- 주석의 `ketSet()`은 `keySet()`, `hsNext()`는 `hasNext()`, `next(0`은 `next()`, `Hashset`은 `HashSet`, `Collction`은 `Collection`, `경웨`는 "경우에" 오타다.
+- `컬렉션_정리.java`에서 `for (int val : map.values())`는 `Integer`를 `int`로 자동 언박싱한다. 값이 `null`인 키가 있으면 `NullPointerException`이 날 것이다. 읽고 쓴 것이다.
+- `Thread_1.java` 주석에 `main`의 우선순위를 10(`MAX_PRIORITY`)이라고 적었다. 보통 `main` 쓰레드는 5(`NORM_PRIORITY`)로 알고 있다. 코드로 확인하지 않았다. `Thread.currentThread().getPriority()`를 찍어 볼 것. 주석의 `Join()`, `wait()`도 어떤 클래스의 메소드인지 확인할 것(`wait()`는 `Object`에 있다).
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- `HashSet`은 중복 제거에 쓰고 순서가 없다. 객체를 중복으로 보려면 `equals()`와 `hashCode()`를 오버라이딩한다. `TreeSet`은 자동 정렬되어서 `headSet`, `tailSet`, `higher`, `lower`, `ceiling`, `floor`, `first`, `last`로 범위를 찾는다.
+- `HashMap`은 `put(키, 값)`, `get(키)`, `keySet()`, `values()`, `entrySet()`으로 쓴다. 같은 키를 넣으면 덮어쓰고, SQL 관리(MyBatis), 클래스 관리(Spring), 쿠키와 세션에 쓴다.
+- 반복하면서 삭제할 때는 `for-each`에서 `remove`하지 말고 `Iterator`의 `remove()`를 쓴다. `Iterator`는 한 방향이고, `ListIterator`는 `List`에서 양방향과 추가, 수정이 된다. `next()`를 부르지 않으면 `hasNext()`가 계속 `true`다.
+- `Queue`(`LinkedList`)는 FIFO(`offer`, `peek`, `poll`), `Stack`은 LIFO(`push`, `peek`, `pop`)다.
+- List는 DB 결과, Set은 접속자 정보, Map은 클래스, 쿠키, SQL 관리에 쓴다.
+- 쓰레드는 프로그램 안에서 여러 기능을 동시에 수행하게 하고 `Thread` 상속, `Runnable` 구현, 람다로 만든다. 생명주기는 생성, `start()`, `run()`, 일시정지, 소멸이다.
+
+</details>
