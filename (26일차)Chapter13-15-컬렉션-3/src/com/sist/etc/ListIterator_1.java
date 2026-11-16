@@ -34,12 +34,50 @@ package com.sist.etc;
  *      = 이전 / 다음 페이지
  *      = 데이터 탐색 => 수정 가능
  *      = 리스트 중간에 데이터 첨부
+ *   ----------------------------------------
+ *   Iterator : 하나씩 조회 => 삭제
+ *   ListIterator : 조회 + 추가 + 수정 + 삭제
+ *   단순한 조회 => for-each
+ *   => 반복 도중에 삭제나 수정 => Iterator
  */
+import java.util.*;
 public class ListIterator_1 {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		List<Integer> list=new ArrayList<Integer>();
+		list.add(1);
+		list.add(2);
+		list.add(3);
+		list.add(4);
+		list.add(5);
+		
+		for(int i:list)
+		{
+			if(i<3)
+				list.remove(i); 
+		}
+		
+		/*ListIterator<Integer> it=list.listIterator();
+		while(it.hasNext())
+		{
+			int num=it.next();
+			if(num<3)
+				it.remove();
+		}
+		System.out.println(list);
+		while(it.hasPrevious())
+		{
+			System.out.println(it.previous());
+		}*/ 
+		
+		/*for(int i=0;i<list.size();i++)
+		{
+			int ii=list.get(i);
+			if(i<3)
+				list.remove(i);
+			System.out.println("인덱스 4번 삭제");
+		}*/
 	}
 
 }
