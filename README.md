@@ -7293,3 +7293,151 @@ s.pop();       // 사과
 - 쓰레드는 프로그램 안에서 여러 기능을 동시에 수행하게 하고 `Thread` 상속, `Runnable` 구현, 람다로 만든다. 생명주기는 생성, `start()`, `run()`, 일시정지, 소멸이다.
 
 </details>
+
+---
+
+## 27일차 | 2026.11.17 (화) | Chapter 14. 쓰레드 (크롤링, ThreadPool, 정렬)
+
+<details>
+<summary><b>쓰레드 정리 - 장단점, 사용법, ThreadPool</b></summary>
+
+<br>
+
+- `쓰레드정리.java`는 `main`이 비어 있고 주석에 정리만 적은 파일이다.
+- 주석에는 쓰레드를 한 프로그램 안에서 여러 작업을 동시에 수행하는 작은 단위라고 적었다. 장점은 여러 작업을 동시에 처리하고, CPU 활용도가 올라가고, 대기 시간이 줄어드는 것이다. 단점은 코드가 복잡하고(중첩 클래스), 충돌 가능성이 많아서 동기화가 필요하고, 동기화는 속도가 늦다는 것이다.
+- 주로 쓰는 곳은 네트워크 서버(사용자 정의, 오라클 서버, 웹 서버)라고 적었다.
+
+| 메소드 | 하는 일 |
+|---|---|
+| `start()` | 쓰레드 실행 시작. `run()`을 호출한다 |
+| `run()` | 실제 쓰레드 작업 내용 |
+| `sleep()` | 지정한 시간 동안 대기 |
+| `join()` | 다른 쓰레드가 끝날 때까지 대기 |
+| `interrupt()` | 현재 쓰레드를 종료 |
+| `currentThread()` | 현재 실행 중인 쓰레드 확인 |
+| `isAlive()` | 실행 중인지 확인 |
+
+- 만드는 방법은 `Thread` 상속, `Runnable` 구현, 익명 클래스, 람다 네 가지이고 `Runnable`을 권장한다고 적었다.
+- `run()`을 직접 호출하면 새 쓰레드가 생기지 않는다. `start()`로 호출해야 한다.
+- 주석에는 웹 애플리케이션은 자체에서 쓰레드를 쓰기 때문에 `Thread`를 직접 쓰면 프로그램이 동작하지 않는다고도 적었다. 코드로 확인하지 않았다.
+
+| | `Thread` | `ThreadPool` |
+|---|---|---|
+| 생성 | 직접 생성 `new Thread()` | 풀에서 관리 |
+| 시작 | `start()` | `submit()` |
+| 결과 | 직접 구현 | `Future` |
+| 종료 대기 | `join()` | `get()` |
+| 종료 | `interrupt()` | `shutdown()` |
+| 재사용 | 안 된다 | 된다 |
+| 작업 인터페이스 | `Runnable` | `Callable` |
+
+- `ThreadPool`은 쓰레드를 미리 만들어 두고 작업이 있으면 재사용하는 방법이다. 장점은 메모리를 아끼고 생성 비용이 줄어드는 것이다. 단점은 풀 크기를 관리해야 하고, 작업이 많으면 대기가 생기고, 잘못 설정하면 성능이 떨어지는 것이다.
+- 주요 메소드는 `newFixedThreadPool()`(쓰레드 생성), `execute()`(결과 없는 실행), `submit()`(결과가 있는 실행), `shutdown()`(종료)라고 적었다. 주석에 `nexFixedThreadPool`, `쓰에드`처럼 오타가 있으니 메소드 이름은 `newFixedThreadPool`로 쓴다.
+- 지니뮤직_ThreadPool 주석에는 메소드 앞에 오는 제어어 `final`, `static`, `abstract`, `synchronized`를 정리했다. `synchronized`는 동기화, `abstract`는 구현이 안 된 메소드, `static`은 객체가 공통으로 쓰는 메소드, `final`은 오버라이딩이 안 된다는 뜻이다.
+
+</details>
+
+<details>
+<summary><b>Music, Main - 정렬 (Comparator)</b></summary>
+
+<br>
+
+- `Music`은 `@Data`(롬복)로 `mno`, `title`, `singer`, `album`, `poster`를 가진 VO다. 크롤링 세 클래스가 같이 쓴다.
+- `Main.java`에는 `MusicVO(mno, title)`를 만들고 `toString()`을 오버라이딩해서 `1:아이유` 모양으로 찍는다. 주석에는 `toString()`이 오버라이딩을 가장 많이 하는 메소드라고 적었다.
+
+```java
+list.sort(Comparator.comparingInt(MusicVO::getMno));              // 번호 오름차순
+list.sort(Comparator.comparing(MusicVO::getTitle));               // 제목 오름차순 (문자열)
+list.sort(Comparator.comparingInt(MusicVO::getMno).reversed());   // 번호 내림차순
+```
+
+```
+[1:아이유, 2:리센느, 3:아일릿]      ← 처음
+[1:아이유, 2:리센느, 3:아일릿]      ← 번호 오름차순
+[2:리센느, 1:아이유, 3:아일릿]      ← 제목 오름차순 (리센느 < 아이유 < 아일릿)
+[3:아일릿, 2:리센느, 1:아이유]      ← 번호 내림차순
+```
+
+- `MusicVO::getMno`는 메소드 참조다. 정수는 `comparingInt`, 문자열은 `comparing`을 쓰고, 내림차순은 뒤에 `reversed()`를 붙인다.
+
+</details>
+
+<details>
+<summary><b>지니뮤직_일반 - 쓰레드 없이 4페이지 수집</b></summary>
+
+<br>
+
+- 지니뮤직 Top200(`https://www.genie.co.kr/chart/top200?ditc=D&ymd=20261117&hh=14&rtm=Y&pg=` + 페이지)을 `Jsoup`으로 1~4페이지 차례로 읽는다. 한 페이지에 50곡이라 모두 200곡이다.
+- `table.list-wrap a.title`(제목), `a.artist`(가수), `a.cover img`(포스터 `src`), `a.albumtitle`(앨범)을 `select`로 뽑아 `Music`에 담는다. 순위(`mno`)는 변수 `k`를 하나 두고 곡마다 `k++`로 이어 붙인다.
+- 한 페이지가 끝날 때까지 기다린 뒤에 다음 페이지를 읽는 동기 방식이다. 이 방식의 시간을 재서 쓰레드 버전과 비교한다. `main`에서 `System.currentTimeMillis()`로 시작과 끝을 재서 `총 걸린시간`을 찍는다.
+- 실행해 보니 `2페이지 수집 완료 : 50`부터 `5페이지 수집 완료 : 200`까지 나왔다. 반복 변수 `i`는 1~4인데 출력에 `(i+1)`을 쓰기 때문에 한 페이지씩 밀려서 찍힌다. 수집은 1~4페이지가 맞다.
+- 한 번 실행했을 때 `총 걸린시간:900MS`였다.
+
+</details>
+
+<details>
+<summary><b>지니뮤직_크롤링 - Thread 4개로 페이지별 수집</b></summary>
+
+<br>
+
+- 페이지마다 쓰레드를 하나씩 만들어 4페이지를 동시에 읽는다. 쓰레드는 `Thread[] threads = new Thread[4]`에 `new Thread(new Runnable() { ... })`로 만든다.
+- 익명 클래스 안에서 `page`를 쓰려면 `final int page = i + 1;`로 바꿔 둔다.
+- 쓰레드마다 자기 `temp` 리스트에 `Music`을 모으고, 끝나면 공유 리스트 `list`에 `synchronized(list) { list.addAll(temp); }`로 합친다. 여러 쓰레드가 동시에 `list`에 넣으면 충돌할 수 있어서 동기화한다.
+- 순서는 이렇다.
+
+```java
+for (int i = 0; i < 4; i++) { threads[i] = new Thread(new Runnable() { ... }); }  // 1. 생성
+for (Thread t : threads) t.start();                                              // 2. 모두 시작
+for (Thread t : threads) t.join();                                               // 3. 모두 끝날 때까지 대기
+list.sort(Comparator.comparingInt(Music::getMno));                               // 4. 순위순 정렬
+```
+
+- `start()`와 `join()`은 `run()` 안이 아니라 쓰레드를 만드는 `for`가 끝난 뒤에 써야 한다. `run()` 안에 두면 쓰레드를 만들기만 하고 시작하는 코드가 실행되지 않아서 아무것도 안 뜬다.
+- 순위는 `(page - 1) * 50 + i + 1`로 계산한다. `i + 1`만 쓰면 페이지마다 1~50이 반복돼서 정렬해도 번호가 겹친다.
+- 실행해 보니 `1페이지`, `3페이지`, `4페이지`, `2페이지` 순서로 끝났다. 쓰레드는 끝나는 순서가 정해져 있지 않다. 그래서 마지막에 `mno`로 정렬한다. `전체 수집 완료 : 200곡`이 나왔고 1번부터 200번까지 순서대로 찍혔다.
+- 한 번 실행했을 때 `총 걸린시간:656MS`였다.
+
+</details>
+
+<details>
+<summary><b>지니뮤직_ThreadPool - ExecutorService, Callable, Future</b></summary>
+
+<br>
+
+- 쓰레드를 직접 만들지 않고 `ExecutorService service = Executors.newFixedThreadPool(2)`로 풀을 만든다. 주석에는 쓰레드 4개라고 적었지만 코드는 `newFixedThreadPool(2)`라서 2개다.
+- 페이지별 작업은 `Callable<List<Music>>`로 만들고 `service.submit(...)`으로 등록한다. `call()`이 `List<Music>`을 돌려준다. `Runnable`의 `run()`과 달리 결과를 돌려준다.
+- `submit()`이 돌려주는 `Future<List<Music>>`를 `futures` 리스트에 모아 둔다.
+
+```java
+for (Future<List<Music>> future : futures) {
+    list.addAll(future.get());        // 작업이 끝날 때까지 기다렸다가 결과를 받는다
+}
+service.shutdown();                   // 풀 종료
+```
+
+- `future.get()`을 1~4페이지 순서로 호출하기 때문에 `list`에 곡이 1~200번 순서로 쌓인다. 그래서 따로 정렬하지 않는다. 실제로 1번부터 200번까지 순서대로 찍혔다.
+- 풀에 쓰레드가 2개뿐이라 4개 작업 중 2개가 먼저 돌고 나머지가 기다린다. `1페이지`, `2페이지`, `4페이지`, `3페이지` 순서로 끝났다.
+- 한 번 실행했을 때 `총 걸린시간:676MS`였다.
+
+| 방식 | 클래스 | 한 번 실행한 시간 |
+|---|---|---|
+| 순차 | `지니뮤직_일반` | 900MS |
+| `Thread` 4개 | `지니뮤직_크롤링` | 656MS |
+| `ThreadPool` 2개 | `지니뮤직_ThreadPool` | 676MS |
+
+- 시간은 네트워크 상태에 따라 달라서 한 번 잰 값이다. 이 실행에서는 쓰레드 쪽이 순차보다 빨랐다.
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 쓰레드는 `Thread` 상속, `Runnable` 구현, 익명 클래스, 람다로 만들고, `start()`로 시작해야 새 쓰레드가 돈다. `run()`을 직접 부르면 새 쓰레드가 생기지 않는다.
+- 여러 쓰레드가 한 리스트에 동시에 넣으면 충돌할 수 있어서 `synchronized`로 동기화하고, 모든 쓰레드가 끝날 때까지 `join()`으로 기다린 뒤 정렬한다.
+- 쓰레드의 끝나는 순서는 정해져 있지 않으므로 순위(`mno`)를 페이지 번호로 계산해 두고 마지막에 정렬한다.
+- `ThreadPool`은 `Callable`로 결과를 받고 `Future.get()`으로 읽고 `shutdown()`으로 닫는다. 쓰레드는 재사용된다.
+- 정렬은 `Comparator.comparingInt`, `comparing`에 메소드 참조(`::`)를 쓰고 내림차순은 `reversed()`를 붙인다.
+
+</details>
