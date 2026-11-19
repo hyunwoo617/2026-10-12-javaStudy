@@ -7441,3 +7441,125 @@ service.shutdown();                   // 풀 종료
 - 정렬은 `Comparator.comparingInt`, `comparing`에 메소드 참조(`::`)를 쓰고 내림차순은 `reversed()`를 붙인다.
 
 </details>
+
+---
+
+## 28일차 | 2026.11.18 (수) | Chapter 18. 입출력(IO) (File, 파일 읽기/쓰기, Buffered, 지니뮤직 파일 저장)
+
+<details>
+<summary><b>IO 정리 - 스트림 종류와 File 클래스 (IO_1, IO_2)</b></summary>
+
+<br>
+
+- `IO_1`과 `IO_2`의 주석에는 IO를 Input(외부 데이터를 프로그램으로 가져오기)과 Output(프로그램 데이터를 외부로 보내기)으로 나누어 정리했다.
+- 스트림은 데이터가 이동하는 단방향 통로이고, 1byte 단위(`InputStream`/`OutputStream`)와 2byte 단위(`Reader`/`Writer`)로 나뉜다.
+
+| 구분 | 클래스 | 쓰는 곳 |
+|---|---|---|
+| 바이트 스트림 | `FileInputStream` / `FileOutputStream` | 이미지, zip, PDF 등 |
+| 문자 스트림 | `FileReader` / `FileWriter` | 한글이 있는 txt, csv |
+| 보조 스트림 | `BufferedReader` / `BufferedWriter` | 한 줄씩, 빠르게 읽고 쓰기 |
+| 변환 | `InputStreamReader` | 1byte를 2byte로 변환 |
+
+- `IO_1`은 `FileReader`로 파일을 한 글자씩 `read()`해서 `-1`(파일 끝)이 나올 때까지 출력하는 코드다.
+- `IO_2`는 `File` 객체로 파일 정보를 읽는다. 주석에 정리한 메소드는 `getName()`, `getPath()`, `getParent()`, `length()`, `lastModified()`, `isHidden()`, `canRead()`, `canWrite()`, `isFile()`, `isDirectory()`, `listFiles()`, `mkdir()`/`mkdirs()`, `createNewFile()`, `delete()`, `exists()`이다.
+- `IO_1`, `IO_2`의 파일 경로는 `C:\javaDev\javaStudy\Chapter18-입출력(IO)-1\src\...`로 적혀 있다. 지금 프로젝트 폴더 이름은 `(28일차)Chapter18-입출력(IO)-1`이고 이 경로에는 파일이 없다.
+- 이 경로 그대로 `IO_2`를 실행하면 오류 없이 `파일인지:false`, `폴더인지:false`, `수정일:1970-01-01 09:00:00`이 나온다. `File`은 없는 경로여도 예외를 던지지 않는다.
+
+```java
+File file=new File("C:\javaDev\javaStudy\Chapter18-입출력(IO)-1\src\com\sist\io\IO_2.java");
+System.out.println("***파일명:"+file.getName());
+System.out.println("파일인지:"+file.isFile());
+```
+
+</details>
+
+<details>
+<summary><b>IO_3, IO_4 - 폴더 목록과 폴더/파일 생성·삭제</b></summary>
+
+<br>
+
+- `IO_3`은 `c:\javaDev` 폴더의 `listFiles()`를 돌면서 파일이면 이름과 크기, 폴더면 `DIR`을 출력한다. 크기가 1000바이트 이상이면 `KB`, 미만이면 `Bytes`로 표시한다.
+- 실행하면 `db.properties 64Bytes`, `eclipse DIR`, `javaStudy DIR`, `lombok-1.18.48.jar 2055KB`, `movie.txt 558KB` 같은 줄이 나온다.
+- `IO_4`는 `mkdir()`, `createNewFile()`, `mkdirs()`, `delete()` 예제가 대부분 주석 처리되어 있고, 살아 있는 코드는 `c:\upload` 안의 파일을 모두 `delete()`한 뒤 폴더를 `delete()`하는 부분이다.
+- 폴더는 안에 파일이 있으면 `delete()`가 안 되므로 `listFiles()`로 파일을 먼저 지우고 폴더를 지운다. 주석에는 이것이 `rm -rf upload`와 같다고 적혀 있다.
+- `c:\upload`가 없으면 `listFiles()`가 `null`을 돌려주므로 `IO_4`를 실행하면 `for`에서 예외가 난다. 이 보고서에서는 파일을 지우는 코드라서 실행하지 않았다.
+
+</details>
+
+<details>
+<summary><b>파일_입출력_1 ~ 4 - 바이트/문자 스트림으로 읽기, 쓰기, 복사</b></summary>
+
+<br>
+
+- `파일_입출력_1`은 `FileOutputStream("c:\java_data\sawon.txt",true)`로 `1|홍길동|개발부|대리|4000\n`을 이어서 쓰고(`true`는 append), `FileInputStream`의 `readAllBytes()`로 읽어 `byte[]`를 출력한다.
+- `new FileOutputStream("파일명")`은 기존 파일을 덮어쓰고(w), `new FileOutputStream("파일명",true)`는 뒤에 이어 쓴다(a)고 주석에 정리했다.
+- `파일_입출력_2`는 `FileInputStream`으로 1024바이트씩 `read(buffer,0,1024)`해서 `FileOutputStream`으로 `write(buffer,0,i)`하는 파일 복사다. 읽은 바이트 수가 `-1`이면 끝이다.
+- `파일_입출력_3`은 `FileReader`로 `IO_1.java`를 한 글자씩 읽어 출력한다. `Reader`는 2byte 단위라 한글이 깨지지 않는다.
+- `파일_입출력_4`는 `main`이 비어 있고 주석에 정리만 있다. 무엇을(글자/사진/숫자/객체), 어디에(파일/메모리/네트워크), 어떻게(바이트/문자) 저장할지 세 가지로 나누어 설명한다.
+- 오라클은 스트림이 아니라 JDBC로 SQL을 전송하고, XML, JSON, HTML은 외부 라이브러리가 따로 있다고 적혀 있다.
+
+```java
+FileOutputStream fos=new FileOutputStream("c:\java_data\sawon.txt",true);
+fos.write("1|홍길동|개발부|대리|4000\n".getBytes());
+fos.close();
+```
+
+</details>
+
+<details>
+<summary><b>io2 - 지니뮤직 데이터를 파일에 저장하고 읽기</b></summary>
+
+<br>
+
+- `Music`은 롬복 `@Data`로 만든 `mno`, `title`, `singer`, `album`, `poster` 데이터 클래스다.
+- `Genie_DataCollection`은 27일차의 ThreadPool 방식을 가져온 클래스다. `newFixedThreadPool(4)`로 4페이지를 `Callable`로 나누어 `Jsoup`으로 수집하고 `Future.get()`으로 1~4페이지 순서대로 `list`에 합친다.
+- 한 번 실행했을 때 각 페이지에서 50곡씩 수집됐고(`3페이지`, `1페이지`, `2페이지`, `4페이지` 순서로 끝났다) 합계는 200곡이었다. 1위는 `꿈꾸던 어른이 되었나요? 머무르`였다.
+- `Main`은 이 `list`를 `c:\java_data\genie.txt`에 `mno|title|singer|album|poster` 형식으로 한 줄씩 `FileWriter`(이어쓰기)로 저장한다. `genie.txt`가 없으면 `createNewFile()`로 만든다.
+- 이어쓰기(`true`)라서 `Main`을 여러 번 실행하면 같은 곡이 반복해서 쌓인다. 파일을 덮어쓰지 않는다.
+- `MusicData`는 `FileReader.read()`로 `genie.txt`를 한 글자씩 읽어 `StringBuffer`에 모은 뒤 `\n`으로 줄을, `\|`로 항목을 `split`해서 번호, 곡명, 가수명, 앨범, 이미지를 출력한다. 주석에 `FileReader`의 `read()` 대신 `BufferedReader`의 `readLine()`을 쓸 수 있다고 적혀 있다.
+- `Main`과 `MusicData`는 `c:\java_data\genie.txt`를 직접 바꾸거나 읽으므로 실행해 보지 않았다. 수집 부분만 따로 돌려서 위 결과를 확인했다.
+
+```java
+String data=m.getMno()+"|"+m.getTitle()+"|"+m.getSinger()+"|"
+          +m.getAlbum()+"|"+m.getPoster()+"\r\n";
+fw.write(data);
+```
+
+</details>
+
+<details>
+<summary><b>Buffered_1 ~ 4 - BufferedReader로 빠르게 읽기</b></summary>
+
+<br>
+
+- `Buffered_1`은 `BufferedReader(new InputStreamReader(System.in))`로 키보드 입력을 한 줄 `readLine()`으로 읽는다. 입력으로 `안녕 hello`를 주면 `입력:`에 이어 그 값이 그대로 출력된다.
+- `Buffered_2`는 같은 `c:\javaDev\movie.txt`를 `FileReader.read()`로 한 글자씩 읽을 때와 `BufferedReader.readLine()`으로 한 줄씩 읽을 때의 시간을 잰다.
+- 한 번 실행했을 때 `FileReader` 방식은 `520MS`, `BufferedReader` 방식은 `18MS`였다. 시간은 화면 출력 속도 등에 따라 달라서 한 번 잰 값이다.
+- 주석에는 `BufferedReader`에 `FileInputStream`(파일), `System.in`(키보드), `socket.getInputStream()`(네트워크), `url.getInputStream()`(웹)을 `InputStreamReader`로 감싸 연결할 수 있다고 정리했다.
+- `Buffered_3`은 `URI`/`URL`/`HttpURLConnection`으로 영화진흥위원회 박스오피스 페이지(`kobis.or.kr`)를 열어 `BufferedReader.readLine()`으로 한 줄씩 출력한다. 실행 때 결과가 일정하게 나오지 않아 이 문서에는 결과를 적지 않았다.
+- `Buffered_4`는 `main`이 비어 있고 주석에 `ObjectInputStream`/`ObjectOutputStream`, `PrintStream`(JSON 브라우저 전송)이 다음에 나온다고 정리돼 있다.
+
+```java
+BufferedReader br=new BufferedReader(
+    new InputStreamReader(new FileInputStream("c:\javaDev\movie.txt")));
+while(true) {
+    String msg=br.readLine();
+    if(msg==null) break;
+}
+```
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 입출력은 파일, 메모리(키보드/화면), 네트워크로 나뉘고, 데이터 단위에 따라 1byte는 `~InputStream`/`~OutputStream`, 2byte(한글)는 `~Reader`/`~Writer`를 쓴다.
+- 파일 복사나 업로드/다운로드처럼 종류가 다양한 파일은 바이트 스트림, 텍스트는 문자 스트림을 쓴다.
+- `File` 클래스는 파일·폴더 정보 확인(`getName`, `length`, `isFile`, `exists`)과 생성·삭제(`mkdir`, `createNewFile`, `delete`)를 맡는다.
+- 한 글자씩 읽는 `read()`는 느리고, `BufferedReader.readLine()`은 모아서 읽어 이번 실행에서 520MS와 18MS로 차이가 났다.
+- `java.io`는 체크 예외라서 `try/catch`가 반드시 필요하고, 쓰기는 덮어쓰기(w)와 이어쓰기(a)를 구분해야 한다.
+
+</details>
