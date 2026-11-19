@@ -7634,3 +7634,148 @@ while(true) {
 - `java.io`는 체크 예외라서 `try/catch`가 반드시 필요하고, 쓰기는 덮어쓰기(w)와 이어쓰기(a)를 구분해야 한다.
 
 </details>
+
+---
+
+## 29일차 | 2026.11.19 (목) | Chapter 18. 입출력(IO) (Buffered, 객체 직렬화, Files), Chapter 19. 네트워크 (Socket, ServerSocket)
+
+<details>
+<summary><b>IO_1 - BufferedWriter로 파일에 저장하기</b></summary>
+
+<br>
+
+- 주석에 IO 클래스를 용도별로 정리했다. 글자는 `BufferedReader`/`BufferedWriter`, 이미지·동영상 같은 바이트는 `BufferedInputStream`/`BufferedOutputStream`, 객체는 `ObjectInputStream`/`ObjectOutputStream`, 파일·폴더 관리는 `File`/`Files`이다.
+- `BufferedReader`는 `readLine()`으로 한 줄씩 읽고, `BufferedWriter`는 `write()`와 `newLine()`으로 저장한다.
+- 코드는 `c:\java_data\student.txt`가 없으면 `createNewFile()`로 만들고, `FileWriter(file,true)`(이어쓰기)로 `Hello IOStream\r\n`을 쓴 뒤 `BufferedWriter`로 감싸 `Hello Oracle!!`을 쓰고 `저장 완료!!`를 출력한다.
+- 이어쓰기라서 실행할 때마다 파일 뒤에 내용이 쌓인다. 내 폴더에 쓰는 코드라 실행하지 않았다.
+- `fw.close()`는 주석 처리돼 있고 마지막에 `bw.close()`만 호출한다. `bw.close()`가 감싼 `FileWriter`도 함께 닫는다.
+
+```java
+FileWriter fw=new FileWriter(file,true); // append
+fw.write("Hello IOStream\r\n");
+BufferedWriter bw=new BufferedWriter(fw);
+bw.write("Hello Oracle!!");
+bw.close();
+```
+
+</details>
+
+<details>
+<summary><b>IO_2, IO_3 - 웹 데이터 읽기와 BufferedStream 파일 복사</b></summary>
+
+<br>
+
+- `IO_2`는 `Scanner`로 `1.박스오피스, 2.실시간 예매율, 3.좌석 점유율` 중 번호를 입력받아 영화진흥위원회(`kobis.or.kr`)의 해당 주소를 `URI`/`URL`/`HttpURLConnection`으로 연다.
+- `BufferedReader(new InputStreamReader(conn.getInputStream()))`로 `readLine()`을 `null`이 나올 때까지 돌리며 `movie` 문자열에 모아 출력한다. 웹 응답이라 실행 때마다 결과가 달라서 이 문서에는 적지 않았다.
+- `strUrl[0]`은 빈 문자열이라 `0`을 입력하면 기본 주소를 연다. 범위 밖 번호를 넣으면 `strUrl[menu]`에서 `ArrayIndexOutOfBoundsException`이 나고 `catch`의 `printStackTrace()`로 출력된다.
+- `IO_3`은 `c:\javaDev\shoes.csv`를 `BufferedInputStream`으로 1024바이트씩 `read(buffer,0,1024)`하고 `BufferedOutputStream`으로 `write(buffer,0,i)`해서 `c:\java_data\shoes.csv`로 복사한다. 끝나면 `파일 복사 완료(다운로드)`를 출력한다.
+- 주석에는 웹에서 한 번 쓰면 다운로드가 된다고 적혀 있다. 파일을 만드는 코드라 실행하지 않았다.
+
+```java
+byte[] buffer=new byte[1024];
+int i=0;
+while((i=bis.read(buffer, 0, 1024))!=-1)
+{
+    bos.write(buffer, 0, i);
+}
+```
+
+</details>
+
+<details>
+<summary><b>IO_4, IO_5 - 객체 직렬화로 ArrayList 저장하고 읽기</b></summary>
+
+<br>
+
+- `IO_4`의 `Music` 클래스는 `Serializable`을 구현한 데이터 클래스로 `mno`, `title`, `singer`, `album`, `poster`를 private으로 두고 getter/setter로 접근한다.
+- `IO_4`는 `c:\java_data\genie.txt`를 `BufferedReader.readLine()`으로 한 줄씩 읽어 `\n`으로 모은 뒤, `split("\n")`과 `split("\|")`로 나누어 `Music` 객체를 만들어 `ArrayList<Music>`에 담고 출력한다.
+- 그다음 `ObjectOutputStream(new FileOutputStream("c:\java_data\music.txt"))`의 `writeObject(list)`로 리스트를 통째로 저장하고 `저장 완료!!`를 출력한다.
+- `IO_5`는 `ObjectInputStream`의 `readObject()`로 `music.txt`에서 `ArrayList<Music>`을 읽어(`(ArrayList<Music>)` 캐스팅) 번호, 곡명, 가수명, 앨범, 포스터를 출력한다. 컴파일 때 `unchecked or unsafe operations` 안내가 나온다.
+- 주석에는 객체를 저장할 때 직렬화를 쓰고, DB가 없을 때 무료로 데이터를 보관하는 방법이라고 적혀 있다.
+- `IO_4` 상단 주석은 java.lang, java.text, java.util 클래스와 IO 클래스를 지금까지 배운 것을 모아 정리한 내용이다.
+- `c:\java_data`의 파일을 읽고 쓰는 코드라 `IO_4`, `IO_5`는 실행하지 않았다.
+
+```java
+ObjectOutputStream oos=
+   new ObjectOutputStream(new FileOutputStream("c:\java_data\music.txt"));
+oos.writeObject(list);
+oos.close();
+```
+
+</details>
+
+<details>
+<summary><b>IO_6 - Files 클래스 (java.nio)</b></summary>
+
+<br>
+
+- `Path`는 파일의 위치, `Files`는 파일 담당 클래스이고 `Files`의 메소드는 모두 static이다. 주석에는 `exists()`, `createFile`, `writeString()`, `readString()`, `copy()`, `move()`, `delete()`, `deleteIfExists()`가 정리돼 있다.
+- 파일 생성, 문자열 저장, 읽기, 존재 여부 확인, 복사, 이동은 모두 주석 처리돼 있고, 살아 있는 코드는 `Files.deleteIfExists(Paths.get("test.txt"))`로 삭제하는 부분이다.
+- 파일이 없어도 예외 없이 지나가며, 임시 폴더에서 실행했을 때 `삭제 완료!!`가 출력됐다.
+- 마지막 주석에는 실무에서는 `Files`보다 `BufferedReader`/`FileWriter`를 아직 많이 쓰고, `Files`는 업로드에 쓸 예정이라고 적혀 있다.
+
+```java
+Path path=Paths.get("test.txt");
+Files.deleteIfExists(path);
+System.out.println("삭제 완료!!");
+```
+
+</details>
+
+<details>
+<summary><b>Chapter19 네트워크 - Server / Client (에코 서버)</b></summary>
+
+<br>
+
+- `Server`의 주석에는 통신 순서가 정리돼 있다. `ServerSocket(PORT)`로 bind(개통)와 listen(대기)을 하고, 클라이언트는 `new Socket(서버IP,서버PORT)`로 접속하고, 서버가 `accept()`로 수락해 `Socket`을 받고, `getInputStream()`/`getOutputStream()`으로 읽고 쓰고, `close()`로 끝낸다.
+- 서버는 식당, 클라이언트는 손님, IP는 식당 주소, PORT는 입구 번호, `Socket`은 둘을 잇는 통로로 비유해 두었다.
+- `Server`는 `Runnable`을 구현한다. 생성자에서 `ServerSocket(3355)`를 만들고 `Server Start...`를 출력하고, `main`에서 `new Thread(server).start()`로 `run()`을 돌린다.
+- `run()`은 `while(true)` 안에서 `ss.accept()`로 접속을 기다리다가, 접속하면 `Client IP`와 `Client PORT`를 출력하고 `readLine()`으로 한 줄을 받아 `받은 메세지:`를 출력한 뒤 `서버입니다!! 받은 메세지:...`를 돌려보낸다. 서버 PORT는 고정이고 클라이언트 PORT는 자동으로 정해진다.
+- `Client`는 `new Socket("192.168.0.21",3355)`로 접속해 `서버 접속 완료`를 출력하고, `Hi Server!!\n`을 보내고 `readLine()`으로 받은 응답을 `서버 응답:`으로 출력한다.
+- `Client`의 접속 IP(`192.168.0.21`)는 코드에 고정돼 있어서 서버가 그 주소에서 돌고 있어야 접속된다. 두 클래스 모두 `catch(Exception ex) {}`가 비어 있어 오류가 나도 화면에 아무것도 나오지 않는다.
+- 서버와 클라이언트가 서로 연결되는 코드라 실행하지 않고 소스만 보고 정리했다.
+
+```java
+Socket s=ss.accept();
+BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+OutputStream out=s.getOutputStream();
+String msg=in.readLine();
+out.write(("서버입니다!! 받은 메세지:"+msg+"\n").getBytes());
+```
+
+</details>
+
+<details>
+<summary><b>네트워크-2 - 채팅 프로그램 시작 (ChatMain, Server)</b></summary>
+
+<br>
+
+- `ChatMain`은 `JFrame`을 상속하고 `ActionListener`, `Runnable`을 구현한 채팅 클라이언트 화면이다. 주석에는 `JFrame`, `JWindow`, `JDialog`, `JPanel`과 버튼, 입력, 목록 컴포넌트가 정리돼 있다.
+- 화면은 가운데 `JTextArea`(수정 불가, `JScrollPane`), 아래쪽 `JPanel`에 `JTextField`(처음에는 `setEnabled(false)`), `접속`, `종료` 버튼으로 구성한다.
+- `접속` 버튼은 `JOptionPane.showInputDialog`로 이름을 받고 `new Socket("localhost",3355)`로 서버에 연결하며, `OutputStream`과 `BufferedReader`를 준비하고 `new Thread(this).start()`로 서버가 보내는 값을 계속 받는다. 연결되면 입력창을 켜고 접속 버튼은 끈다.
+- 입력창에서 Enter를 치면 `msg+"\n"`을 `out.write()`로 보내고 입력창을 비운다. 서버에서 받은 값은 `run()`에서 `readLine()`으로 읽어 `ta.append()`로 출력한다.
+- 주석에는 `Socket`은 DB의 `Connection`, `BufferedReader`/`OutputStream`은 `PreparedStatement`/`ResultSet`과 비슷한 역할이라고 비교해 두었다.
+- `Server`(네트워크-2)는 아직 완성되지 않았다. 생성자에서 `ss=new ServerSocket(PORT)`를 쓰는데 `ss` 변수를 선언하지 않아 컴파일 오류(`cannot find symbol`)가 난다. `run()`과 `main`은 비어 있고, 안의 `Client` 클래스(`Thread` 상속)도 비어 있다.
+- `ChatMain`은 GUI 창이라 실행하지 않았다.
+
+```java
+s=new Socket("localhost",3355);
+out=s.getOutputStream();
+in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+new Thread(this).start();
+```
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 텍스트는 `BufferedReader`/`BufferedWriter`, 이미지·동영상 같은 바이트 데이터는 `BufferedInputStream`/`BufferedOutputStream`을 쓰고, 객체는 `Serializable`을 구현해서 `ObjectOutputStream.writeObject()`로 통째로 저장한다.
+- `Files`는 `deleteIfExists`, `copy`, `move` 등으로 파일을 쉽게 관리하는 static 메소드 모음이지만 아직은 `BufferedReader`/`FileWriter`를 더 쓴다고 정리했다.
+- 네트워크는 서버가 `ServerSocket`으로 대기하고 `accept()`로 받으면, 클라이언트가 `Socket`으로 접속해 `getInputStream()`/`getOutputStream()`으로 주고받는다.
+- 서버는 고정 PORT를, 클라이언트는 자동 PORT를 쓰고, 한 줄 단위 통신은 `\n`과 `readLine()`을 맞춰야 한다.
+- 채팅은 클라이언트가 서버 응답을 계속 받아야 하므로 `Runnable` + `Thread`를 쓴다.
+
+</details>
