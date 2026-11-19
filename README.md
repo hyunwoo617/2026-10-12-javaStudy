@@ -7241,6 +7241,77 @@ s.pop();       // 사과
 </details>
 
 <details>
+<summary><b>쓰레드 - Thread_2 (정리), Thread_3 (식당 직원 3명)</b></summary>
+
+<br>
+
+- `Thread_2.java`는 `main`이 없고 주석만 있는 정리 파일이다. `start()`(새 쓰레드 생성, `run()` 실행 명령), `run()`(실제 동작, 직접 호출하면 일반 메소드), `sleep()`, `join()`을 정리했다.
+- 쓰레드가 여러 개면 CPU가 시간을 나눠서 동작하기 때문에 실행 순서가 매번 달라질 수 있고, 공유 데이터가 충돌할 수 있다고 적었다.
+- `Thread Pool`은 쓰레드를 미리 만들어 두고 필요할 때 빌려 쓰고 반환해서 재사용하는 방식이다. 일반 쓰레드는 작업마다 새로 만들어서 메모리가 부족해질 수 있다고 비교했다.
+- `Thread_3.java`는 식당 직원 3명이 짜장면, 짬뽕, 볶음밥을 만드는 예제다. 익명 `Runnable`로 `Thread` 3개를 만들고 `t1`, `t2`, `t3`를 `start()`한다.
+- 두 번 실행했는데 첫 번째는 `직원 1`, `직원 3`, `직원 2` 순서로, 두 번째는 `직원 1`, `직원 2`, `직원 3` 순서로 출력됐다. 같은 코드인데 순서가 달라졌다.
+
+```java
+Thread t1=new Thread(new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("직원 1:짜장면 만들기");
+    }
+});
+t1.start();
+```
+
+</details>
+
+<details>
+<summary><b>쓰레드 - Thread_4 (ThreadPool로 주문 처리)</b></summary>
+
+<br>
+
+- `Thread_4.java`는 `Executors.newFixedThreadPool(3)`으로 직원 3명을 만들고 주문 5개(`볶음밥`, `짜장면`, `울면`, `탕수육`, `짬뽕`)를 `execute()`로 맡긴다. 각 작업은 `Thread.currentThread().getName()`으로 이름을 찍고 `sleep(2000)` 뒤에 완료를 출력한다.
+- 마지막의 `pool.shutdown()`은 새 주문을 받지 않겠다는 뜻이다.
+- 반복문이 `for(int i=0;i<=5;i++)`라서 `i`가 5까지 돌고, `food[5]`는 범위를 벗어난다. 실행하면 `pool-1-thread-1`에서 `ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 5`가 났다.
+- 이 오류 때문에 6번째 작업만 실패하고 나머지 주문 5개(`짜장면`, `울면`, `볶음밥`, `짬뽕`, `탕수육`)는 정상적으로 `완료`까지 출력됐다. 직원 3명이 먼저 3개를 처리하고, 끝난 쓰레드가 다음 주문을 받아서 처리했다.
+- `i<5`로 고치면 오류가 없는 코드가 된다.
+
+```java
+ExecutorService pool=Executors.newFixedThreadPool(3);
+for(int i=0;i<=5;i++)   // food는 길이 5라서 i=5에서 오류
+{
+    int no=i;
+    pool.execute(new Runnable() { ... food[no] ... });
+}
+pool.shutdown();
+```
+
+</details>
+
+<details>
+<summary><b>쓰레드 - Thread_5 (JProgressBar 달리기)</b></summary>
+
+<br>
+
+- `Thread_5.java`는 `JFrame`에 `JProgressBar` 5개와 `시작`, `종료` 버튼을 올린 화면 예제다. GUI 창이 뜨는 코드라서 이번 정리에서는 실행하지 않고 소스로만 설명한다.
+- `시작`을 누르면 `BarThread`(`Thread`를 상속한 중첩 클래스) 5개를 만들어 `start()`한다. 각 쓰레드는 0에서 100까지 값을 올리면서 `Math.random()*300`밀리초씩 `sleep`한다.
+- 100에 도착하면 `static int rank`를 올리고 `interrupt()`를 호출한 뒤 `"N번째 R등"`을 출력한다. `종료`는 `System.exit(0)`이다.
+- 중첩 클래스는 바깥 클래스의 변수(`bar`)를 바로 쓸 수 있어서 `bar[index].setValue(i)`가 가능하다고 주석에 적혀 있다.
+- `rank++`는 쓰레드 5개가 동시에 건드리지만 `synchronized`가 없다. 코드에 있는 그대로이고, 동시에 도착하면 등수가 겹칠 수 있다.
+- `go()` 메소드는 `bar[0]`만 100번 올리는 코드인데 어디서도 호출되지 않는다.
+
+```java
+class BarThread extends Thread {
+    public void run() {
+        for(int i=0;i<=100;i++) {
+            bar[index].setValue(i);
+            Thread.sleep((int)(Math.random()*300));
+        }
+    }
+}
+```
+
+</details>
+
+<details>
 <summary><b>실습</b></summary>
 
 <br>
