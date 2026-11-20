@@ -7731,8 +7731,8 @@ System.out.println("삭제 완료!!");
 - 서버는 식당, 클라이언트는 손님, IP는 식당 주소, PORT는 입구 번호, `Socket`은 둘을 잇는 통로로 비유해 두었다.
 - `Server`는 `Runnable`을 구현한다. 생성자에서 `ServerSocket(3355)`를 만들고 `Server Start...`를 출력하고, `main`에서 `new Thread(server).start()`로 `run()`을 돌린다.
 - `run()`은 `while(true)` 안에서 `ss.accept()`로 접속을 기다리다가, 접속하면 `Client IP`와 `Client PORT`를 출력하고 `readLine()`으로 한 줄을 받아 `받은 메세지:`를 출력한 뒤 `서버입니다!! 받은 메세지:...`를 돌려보낸다. 서버 PORT는 고정이고 클라이언트 PORT는 자동으로 정해진다.
-- `Client`는 `new Socket("192.168.0.21",3355)`로 접속해 `서버 접속 완료`를 출력하고, `Hi Server!!\n`을 보내고 `readLine()`으로 받은 응답을 `서버 응답:`으로 출력한다.
-- `Client`의 접속 IP(`192.168.0.21`)는 코드에 고정돼 있어서 서버가 그 주소에서 돌고 있어야 접속된다. 두 클래스 모두 `catch(Exception ex) {}`가 비어 있어 오류가 나도 화면에 아무것도 나오지 않는다.
+- `Client`는 `new Socket("192.168.0.31",11111)`로 접속해 `서버 접속 완료`를 출력하고, `Hi Server!!\n`을 보내고 `readLine()`으로 받은 응답을 `서버 응답:`으로 출력한다.
+- `Client`의 접속 IP(`192.168.0.31`)와 PORT(`11111`)는 코드에 고정돼 있어서 서버가 그 주소에서 돌고 있어야 접속된다. `Server`의 `PORT`는 `3355`로 그대로라서 이 코드끼리는 PORT가 맞지 않는다. 두 클래스 모두 `catch(Exception ex) {}`가 비어 있어 오류가 나도 화면에 아무것도 나오지 않는다.
 - 서버와 클라이언트가 서로 연결되는 코드라 실행하지 않고 소스만 보고 정리했다.
 
 ```java
@@ -7746,17 +7746,20 @@ out.write(("서버입니다!! 받은 메세지:"+msg+"\n").getBytes());
 </details>
 
 <details>
-<summary><b>네트워크-2 - 채팅 프로그램 시작 (ChatMain, Server)</b></summary>
+<summary><b>네트워크-2 - 채팅 프로그램 (ChatMain, Server)</b></summary>
 
 <br>
 
 - `ChatMain`은 `JFrame`을 상속하고 `ActionListener`, `Runnable`을 구현한 채팅 클라이언트 화면이다. 주석에는 `JFrame`, `JWindow`, `JDialog`, `JPanel`과 버튼, 입력, 목록 컴포넌트가 정리돼 있다.
 - 화면은 가운데 `JTextArea`(수정 불가, `JScrollPane`), 아래쪽 `JPanel`에 `JTextField`(처음에는 `setEnabled(false)`), `접속`, `종료` 버튼으로 구성한다.
 - `접속` 버튼은 `JOptionPane.showInputDialog`로 이름을 받고 `new Socket("localhost",3355)`로 서버에 연결하며, `OutputStream`과 `BufferedReader`를 준비하고 `new Thread(this).start()`로 서버가 보내는 값을 계속 받는다. 연결되면 입력창을 켜고 접속 버튼은 끈다.
-- 입력창에서 Enter를 치면 `msg+"\n"`을 `out.write()`로 보내고 입력창을 비운다. 서버에서 받은 값은 `run()`에서 `readLine()`으로 읽어 `ta.append()`로 출력한다.
+- 입력창에서 Enter를 치면 `"["+name+"]"+msg+"\n"`을 `out.write()`로 보내고 입력창을 비운다. 서버에서 받은 값은 `run()`에서 `readLine()`으로 읽어 `ta.append()`로 출력하고, `JScrollBar`의 `setValue(bar.getMaximum())`로 스크롤을 맨 아래로 내린다. 창을 닫으면 `EXIT_ON_CLOSE`로 종료한다.
+- 주석에는 TCP(전화기: 채팅, 이메일, FTP)와 UDP(우편: 동영상, 스트림 서버, 게임), 화상 채팅·CCTV용 RTCP가 정리돼 있다. TCP는 신뢰성이 좋지만 속도가 늦다고 적혀 있다.
 - 주석에는 `Socket`은 DB의 `Connection`, `BufferedReader`/`OutputStream`은 `PreparedStatement`/`ResultSet`과 비슷한 역할이라고 비교해 두었다.
-- `Server`(네트워크-2)는 아직 완성되지 않았다. 생성자에서 `ss=new ServerSocket(PORT)`를 쓰는데 `ss` 변수를 선언하지 않아 컴파일 오류(`cannot find symbol`)가 난다. `run()`과 `main`은 비어 있고, 안의 `Client` 클래스(`Thread` 상속)도 비어 있다.
-- `ChatMain`은 GUI 창이라 실행하지 않았다.
+- `Server`(네트워크-2)는 `ServerSocket ss`를 선언하고 `PORT`(3355)로 구동한다. `main`에서 `new Thread(server).start()`를 하고, `run()`은 `while(true)`로 `accept()`한 `Socket`마다 안쪽 `Client`(`Thread` 상속)를 만들어 `waitVc`(`Vector`)에 넣고 `start()`한다.
+- 안쪽 `Client`는 접속자마다 `OutputStream`과 `BufferedReader`를 갖고, `run()`에서 `readLine()`으로 받은 문자열을 `waitVc`의 모든 접속자에게 `out.write()`로 보낸다. 그래서 한 사람이 보낸 채팅이 모두에게 보인다.
+- 주석에는 `Function` 클래스에 `LOGIN=100` 같은 상수를 두는 방식이 예시로 적혀 있다.
+- `ChatMain`은 GUI 창, `Server`는 접속을 기다리는 서버라 실행하지 않았고 컴파일만 확인했다.
 
 ```java
 s=new Socket("localhost",3355);
@@ -7777,5 +7780,81 @@ new Thread(this).start();
 - 네트워크는 서버가 `ServerSocket`으로 대기하고 `accept()`로 받으면, 클라이언트가 `Socket`으로 접속해 `getInputStream()`/`getOutputStream()`으로 주고받는다.
 - 서버는 고정 PORT를, 클라이언트는 자동 PORT를 쓰고, 한 줄 단위 통신은 `\n`과 `readLine()`을 맞춰야 한다.
 - 채팅은 클라이언트가 서버 응답을 계속 받아야 하므로 `Runnable` + `Thread`를 쓴다.
+
+</details>
+
+---
+
+## 30일차 | 2026.11.20 (금) | Chapter 19. 네트워크 (다중 접속 채팅 프로그램, 프로토콜 Function)
+
+<details>
+<summary><b>Function - 서버와 클라이언트 사이의 프로토콜 약속</b></summary>
+
+<br>
+
+- `Function`은 숫자로 요청 종류를 구분하는 상수 클래스이다. `LOGIN=100`(이미 접속한 사람), `MYLOG=110`(본인), `CHAT=200`, `EXIT=300`(남아 있는 사람), `MYEXIT=310`(실제 나가는 사람), `UPDATE=400`이 정의돼 있다.
+- 주석에는 클라이언트(서버에 접속해 요청하고 응답을 화면에 출력), 서버(접속 대기와 허용, 받은 데이터 처리 후 응답), 쓰레드(접속자마다 독립적으로 통신)의 역할이 정리돼 있다.
+- 통신 흐름은 서버 구동, 클라이언트 접속, 요청(`actionPerformed`), 서버 수신과 처리와 응답(`Client.run()`), 클라이언트 출력(`run()`) 순서로 적혀 있다.
+- 주석 안에 `jdbc:oracle:thin:@IP:1521`을 예로 들어 오라클도 같은 접속 방식이라고 비교해 두었다.
+
+```java
+public static final int LOGIN=100;
+public static final int CHAT=200;
+public static final int EXIT=300;
+```
+
+</details>
+
+<details>
+<summary><b>Server - 접속자별 Client 쓰레드와 동기화</b></summary>
+
+<br>
+
+- `Server`는 `Runnable`을 구현하고 `ServerSocket`을 `PORT=3355`로 연다. `run()`이 `accept()`로 받은 `Socket`마다 `Client`(중첩 클래스, `Thread` 상속)를 만들어 `start()`한다. 주석에는 중첩 클래스와 PORT 번호(80, 25, 21, 1521, 3306, 8080 등)가 정리돼 있다.
+- `Client`는 접속자 정보 `id`, `name`, `sex`와 통신 정보 `Socket`, `OutputStream`, `BufferedReader`를 갖는다.
+- `run()`은 `readLine()`으로 받은 문자열을 `StringTokenizer(msg,"|")`로 나눠 첫 토큰을 프로토콜 번호로 읽고 `switch`(`case Function.LOGIN->`)로 분기한다. 로그인 메시지는 `100|id|name|sex` 형태이다.
+- `LOGIN`: 이미 접속한 사람 모두에게 로그인 정보와 입장 알림(`[알림 ☞] ...님 입장하셨습니다`)을 보낸 뒤 `waitVc`에 추가한다. 접속한 본인에게는 `MYLOG`을 보내 채팅창을 열게 하고, `waitVc`의 모든 접속자 정보를 차례로 보낸다.
+- `CHAT`: `messageAll()`로 `[이름]메시지`를 모두에게 보낸다.
+- `EXIT`: 모두에게 `EXIT`와 퇴장 알림을 보내고, 같은 `id`의 `Client`에게 `MYEXIT`를 보낸 뒤 `waitVc`에서 지우고 스트림을 닫는다.
+- `messageTo()`는 한 사람에게, `messageAll()`은 `waitVc` 전체에게 보내며 둘 다 `synchronized`이다. 주석에는 일반 쓰레드는 비동기라서 동기화를 쓴다고 적혀 있다.
+- 서버 코드라 실행하지 않았고 컴파일만 확인했다. `catch(Exception ex) {}`가 비어 있어 오류가 나도 화면에 나오지 않는다.
+
+```java
+case Function.CHAT->{
+    messageAll(Function.CHAT+"|["+name+"]"+st.nextToken());
+}
+```
+
+</details>
+
+<details>
+<summary><b>LoginForm, ClientMainForm - 로그인 창과 채팅 클라이언트</b></summary>
+
+<br>
+
+- `LoginForm`은 `JFrame`을 상속하고 `setLayout(null)`로 `setBounds()`를 써서 직접 배치한다. 아이디와 이름 `JTextField`, 남자/여자 `JRadioButton`(`ButtonGroup`으로 묶고 남자를 기본 선택), `로그인`과 `취소` 버튼으로 구성한다.
+- `ClientMainForm`은 `ActionListener`와 `Runnable`을 구현한다. `main`에서 `UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel")`로 JTattoo 룩앤필을 적용하고, 접속자 목록은 `JTable`, 입력창은 `JTextField`, `쪽지보내기`, `정보 보기`, `나가기` 버튼을 둔다.
+- 로그인 버튼을 누르면 아이디와 이름이 비어 있는지 검사하고, 성별은 라디오 선택에 따라 `남자`/`여자`로 정해 `connect()`를 부른다. `connect()`는 `new Socket("localhost",3355)`로 접속해 `100|id|name|sex\n`을 보내고 `new Thread(this).start()`한다.
+- 채팅 입력창에서 Enter를 치면 `200|메시지`를, `나가기`를 누르면 `300|`을 서버로 보낸다.
+- `run()`은 서버 응답을 `StringTokenizer`로 나눠 `LOGIN`이면 테이블에 행을 추가하고, `MYLOG`이면 로그인 창을 숨기고 채팅 창을 보여 주며 제목을 아이디로 정하고, `CHAT`이면 `JTextArea`에 출력한다. `EXIT`이면 그 아이디의 행을 테이블에서 지우고, `MYEXIT`이면 `dispose()`와 `System.exit(0)`로 종료한다.
+- 주석 처리된 `new Socket("192.168.0.31",11111)`은 수업 서버에 접속할 때 쓰는 값이다.
+- GUI 창이고 서버와 연결해야 하므로 실행하지 않았고 컴파일만 확인했다(JTattoo jar 필요).
+
+```java
+out.write((Function.LOGIN+"|"+id+"|"
+        +name+"|"+sex+"\n").getBytes());
+```
+
+</details>
+
+<details>
+<summary><b>오늘 정리</b></summary>
+
+<br>
+
+- 서버와 클라이언트가 `번호|값|값` 형태의 문자열을 주고받고, 첫 번호(`Function`의 상수)로 로그인, 채팅, 나가기를 구분하는 프로토콜을 만들었다.
+- 서버는 접속자마다 `Client` 쓰레드를 만들고 `Vector`에 모아서, 한 명에게만 보내는 `messageTo()`와 전체에게 보내는 `messageAll()`로 나눠 보낸다.
+- 클라이언트는 `run()`이 서버 응답을 계속 읽어 로그인 목록 갱신, 채팅 출력, 종료를 처리한다.
+- 어제의 단순 채팅(`ChatMain`)에는 `[이름]` 붙이기, 스크롤 자동 내리기, 서버의 전체 전송이 추가됐다.
 
 </details>
